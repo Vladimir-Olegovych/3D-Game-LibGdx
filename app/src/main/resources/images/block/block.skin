@@ -1,0 +1,7 @@
+{
+  Color: {
+    default: {
+      hex: #FFFFFFFF
+    }
+  }
+}

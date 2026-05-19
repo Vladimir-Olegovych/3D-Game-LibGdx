@@ -1,0 +1,53 @@
+{
+  "textureSizeX" : 0.1,
+  "textureSizeY" : 0.1,
+  "textureDataList" : [ {
+    "blockType" : "GRASS",
+    "up" : {
+      "x" : 6,
+      "y" : 1
+    },
+    "down" : {
+      "x" : 7,
+      "y" : 5
+    },
+    "side" : {
+      "x" : 7,
+      "y" : 4
+    },
+    "solid" : true,
+    "generatesCollider" : true
+  }, {
+    "blockType" : "DIRT",
+    "up" : {
+      "x" : 7,
+      "y" : 5
+    },
+    "down" : {
+      "x" : 7,
+      "y" : 5
+    },
+    "side" : {
+      "x" : 7,
+      "y" : 5
+    },
+    "solid" : true,
+    "generatesCollider" : true
+  }, {
+    "blockType" : "STONE",
+    "up" : {
+      "x" : 3,
+      "y" : 4
+    },
+    "down" : {
+      "x" : 3,
+      "y" : 4
+    },
+    "side" : {
+      "x" : 3,
+      "y" : 4
+    },
+    "solid" : true,
+    "generatesCollider" : true
+  } ]
+}
