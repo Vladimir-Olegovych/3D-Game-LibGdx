@@ -1,16 +1,16 @@
 package app.feature.game.ecs.components
 
 import com.artemis.Component
-import com.badlogic.gdx.physics.bullet.dynamics.btRigidBody
 import com.gigapi.core.effects.DisposableEffect
+import core.bullet.PhysicalData
 
 class PhysicalComponent: DisposableEffect, Component() {
 
-    var body: btRigidBody? = null
+    var physicalData: PhysicalData? = null
 
     override fun dispose() {
-        body?.dispose()
-        body = null
+        physicalData?.dispose()
+        physicalData = null
     }
     
 }

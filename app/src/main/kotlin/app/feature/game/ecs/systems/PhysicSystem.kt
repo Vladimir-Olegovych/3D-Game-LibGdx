@@ -29,26 +29,40 @@ class PhysicSystem: BaseSystem() {
     private lateinit var physicalMapper: ComponentMapper<PhysicalComponent>
     private lateinit var meshMapper: ComponentMapper<MeshComponent>
 
+    private lateinit var texture: Texture
+
     @BusEvent
-    fun onChunkDataCreated(event: GameEvent.OnCreateChunkData) {
+    fun onChunkBodyCreated(event: GameEvent.OnCreateChunkRigidBody) {
         val entityId = event.chunkEntityId
-        val body = PhysicsUtils.createChunkBody(event.chunkData)
-        physicalMapper.create(entityId).body = body
-        physicsWorld.world.addRigidBody(body)
+        val physicalData = PhysicsUtils.createChunkBody(event.chunkData)
+        physicalMapper.create(entityId).physicalData = physicalData
+        physicsWorld.world.addRigidBody(physicalData.getBody())
+    }
+    @BusEvent
+    fun onChunkBodyRemoved(event: GameEvent.OnRemoveChunkRigidBody) {
+        val entityId = event.chunkEntityId
+        val component = physicalMapper[entityId]?: return
+        component.physicalData?.apply {
+            physicsWorld.world.removeRigidBody(getBody())
+        }
+        component.dispose()
+
+        physicalMapper.remove(entityId)
     }
 
     override fun initialize() {
         val meshTexture: TextureRegion = assetManager.get<TextureAtlas>(SkinID.BLOCK.atlas).findRegion("bl_wood")
-        val t = extractRegionAsTexture(meshTexture)
-        for (i in 0 .. 400) {
+        texture = extractRegionAsTexture(meshTexture)
+
+        for (i in 0 .. 300) {
             val entityId = world.create()
-            val body = PhysicsUtils.createTestBox()
+            val physicalData = PhysicsUtils.createTestBox()
             meshMapper.create(entityId).apply {
                 this@apply.meshData = MeshUtils.createBoxMeshData()
-                this@apply.meshTextureData = t
+                this@apply.meshTextureData = texture
             }
-            physicalMapper.create(entityId).body = body
-            physicsWorld.world.addRigidBody(body)
+            physicalMapper.create(entityId).physicalData = physicalData
+            physicsWorld.world.addRigidBody(physicalData.getBody())
         }
     }
 
@@ -58,6 +72,7 @@ class PhysicSystem: BaseSystem() {
 
     override fun dispose() {
         super.dispose()
+        texture.dispose()
         physicsWorld.dispose()
     }
 

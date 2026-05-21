@@ -9,13 +9,16 @@ import com.artemis.ComponentMapper
 import com.artemis.annotations.All
 import com.artemis.annotations.Wire
 import com.badlogic.gdx.assets.AssetManager
+import com.badlogic.gdx.graphics.PerspectiveCamera
 import com.badlogic.gdx.graphics.Texture
 import com.badlogic.gdx.graphics.g2d.TextureAtlas
+import com.gigapi.eventbus.EventBus
 import com.gigapi.eventbus.annotation.BusEvent
+import com.gigapi.math.vector.IntVector3
 import core.assets.SkinID
 import core.chunk.ChunkManager
+import core.defaults.CameraTypes
 import core.math.createMatrixForChunk
-import kotlin.text.get
 
 @All(MeshComponent::class)
 class ChunkSystem: BaseSystem() {
@@ -24,6 +27,10 @@ class ChunkSystem: BaseSystem() {
     private lateinit var chunkManager: ChunkManager
     @Wire
     private lateinit var assetManager: AssetManager
+    @Wire(name = CameraTypes.GL_3D)
+    private lateinit var camera: PerspectiveCamera
+    @Wire
+    private lateinit var eventBus: EventBus
 
     private lateinit var transformMapper: ComponentMapper<TransformComponent>
     private lateinit var chunkMapper: ComponentMapper<ChunkComponent>
@@ -32,7 +39,6 @@ class ChunkSystem: BaseSystem() {
     private lateinit var chunkMeshTextureData: Texture
 
     override fun initialize() {
-        chunkManager.generateWorld(world)
         chunkMeshTextureData = assetManager.get<TextureAtlas>(SkinID.BLOCK.atlas).textures.first()
     }
 
@@ -52,5 +58,23 @@ class ChunkSystem: BaseSystem() {
         }
     }
 
-    override fun processSystem() {}
+    @BusEvent
+    fun onChunkDataRemoved(event: GameEvent.OnRemoveChunkData) {
+        chunkMapper.remove(event.chunkEntityId)
+    }
+
+    @BusEvent
+    fun onMeshDataRemoved(event: GameEvent.OnRemoveChunkMeshData) {
+        meshMapper[event.chunkEntityId]?.dispose()
+        meshMapper.remove(event.chunkEntityId)
+    }
+
+    private var timeSinceLastUpdate = 0f
+
+    override fun processSystem() {
+        timeSinceLastUpdate += world.delta
+        if (timeSinceLastUpdate < 1f) return
+        timeSinceLastUpdate = 0f
+        eventBus.sendEvent(GameEvent.LoadAdditionalChunksRequest(world, IntVector3.roundToInt(camera.position)))
+    }
 }

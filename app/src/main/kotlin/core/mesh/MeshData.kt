@@ -18,15 +18,11 @@ class RawMeshData(
         mesh.setIndices(indices)
 
         return MeshData(
-            vertices = vertices,
-            indices = indices,
             mesh = mesh
         )
     }
 }
 
 class MeshData(
-    val vertices: FloatArray,
-    val indices: ShortArray,
     val mesh: Mesh
 )

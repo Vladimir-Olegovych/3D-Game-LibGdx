@@ -12,7 +12,6 @@ import com.badlogic.gdx.graphics.GL20
 import com.badlogic.gdx.graphics.PerspectiveCamera
 import com.badlogic.gdx.graphics.glutils.ShaderProgram
 import com.badlogic.gdx.math.Vector3
-import com.badlogic.gdx.physics.bullet.DebugDrawer
 import core.defaults.CameraTypes
 import core.shaders.ShaderTypes
 
@@ -62,7 +61,7 @@ class DrawSystem: IteratingSystem() {
         val meshTextureData = meshComponent.meshTextureData?: return
         val mesh = meshComponent.meshData?.mesh?: return
 
-        val bodyTransform = physicalMapper[entityId]?.body?.worldTransform
+        val bodyTransform = physicalMapper[entityId]?.physicalData?.getBody()?.worldTransform
         val staticTransform = transformMapper[entityId]?.transform
 
         if (staticTransform != null) {

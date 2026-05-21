@@ -5,9 +5,12 @@ import com.artemis.World
 import com.gigapi.core.effects.DisposableEffect
 import com.gigapi.core.effects.LaunchedEffect
 import com.gigapi.eventbus.EventBus
+import com.gigapi.eventbus.annotation.BusEvent
 import com.gigapi.general.Context
 import com.gigapi.math.vector.IntVector3
 import core.blocks.BlockType
+import core.chunk.world.WorldDataHelper
+import core.chunk.world.WorldGenerationData
 import core.mesh.MeshData
 import core.mesh.MeshHelper
 import core.noice.PerlinNoise
@@ -15,21 +18,26 @@ import core.scope.DispatcherTypes
 import kotlinx.coroutines.*
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
+import kotlin.random.Random
+
 
 class ChunkManager: LaunchedEffect, DisposableEffect {
 
     companion object {
-        const val DRAW_RADIUS = 16
+        const val DRAW_RADIUS = 32
         const val CHUNK_SIZE = 8
         const val CHUNK_HEIGHT = 255
     }
 
-    private val noice = PerlinNoise()
+    private val noice = PerlinNoise(Random.nextInt())
+
+    private val chunkDataPositionToEntityId = HashMap<IntVector3, Int>()
+    private val chunkMeshPositionToEntityId = HashMap<IntVector3, Int>()
+
     private val chunkDataMap = HashMap<IntVector3, ChunkData>()
     private val meshDataMap = HashMap<IntVector3, MeshData>()
 
-    private val defaultParallelism = 6
-    private val parallelism = Semaphore(defaultParallelism)
+    private val parallelismMesh = Semaphore(12)
     private var generationJob: Job? = null
 
     private lateinit var eventBus: EventBus
@@ -42,39 +50,92 @@ class ChunkManager: LaunchedEffect, DisposableEffect {
         meshHelper = context.getObject()
         defaultScope = CoroutineScope(Dispatchers.Default)
         mainScope = CoroutineScope(context.getObject<CoroutineDispatcher>(DispatcherTypes.MAIN))
+        eventBus.registerHandler(this)
     }
 
+    override fun dispose() {
+        chunkDataPositionToEntityId.clear()
+        chunkMeshPositionToEntityId.clear()
 
-    fun generateWorld(world: World, playerPosition: IntVector3 = IntVector3()) {
+        meshDataMap.clear()
+        chunkDataMap.clear()
+
+        generationJob?.cancel()
+        defaultScope.cancel()
+        generationJob = null
+    }
+
+    @BusEvent
+    fun loadAdditionalChunks(event: GameEvent.LoadAdditionalChunksRequest) {
+        tryGenerateWorld(event.world, event.playerPosition)
+    }
+
+    private fun tryGenerateWorld(world: World, playerPosition: IntVector3 = IntVector3()) {
         if(generationJob != null) return
         generationJob = worldGeneration(world, playerPosition)
     }
 
-    private fun worldGeneration(world: World, playerPosition: IntVector3) = mainScope.launch {
-        val positions = getPositions()
-
-        val entityMap = positions.map { position ->
-            position to world.create()
+    private fun worldGeneration(world: World, playerPosition: IntVector3) = defaultScope.launch {
+        //New world generation data by playerPosition
+        val worldGenerationData = getWorldGenerationData(playerPosition)?: run {
+            generationJob = null
+            return@launch
         }
-
-        val chunkDataJobs = entityMap.map { (position, entityId) ->
+        //Update new data for map
+        mainScope.launch {
+            worldGenerationData.chunkPositionsToRemove.forEach {
+                if(chunkMeshPositionToEntityId[it] != null) {
+                    eventBus.sendEvent(GameEvent.OnRemoveChunkMeshData(chunkMeshPositionToEntityId[it]!!))
+                    eventBus.sendEvent(GameEvent.OnRemoveChunkRigidBody(chunkMeshPositionToEntityId[it]!!))
+                    meshDataMap.remove(it)
+                    chunkMeshPositionToEntityId.remove(it)
+                }
+            }
+            worldGenerationData.chunkDataToRemove.forEach {
+                if(chunkDataPositionToEntityId[it] != null) {
+                    eventBus.sendEvent(GameEvent.OnRemoveChunkData(chunkDataPositionToEntityId[it]!!))
+                    chunkDataMap.remove(it)
+                    chunkDataPositionToEntityId.remove(it)
+                }
+            }
+        }.join()
+        //Creating new entity ids for chunks
+        val resultGenerationData = mainScope.async {
+            val dataMap = HashMap<IntVector3, Int>()
+            for(position in  worldGenerationData.chunkDataPositionsToCreate) {
+                val entityId = world.create()
+                dataMap[position] = entityId
+                chunkDataPositionToEntityId[position] = entityId
+            }
+            val meshMap = HashMap<IntVector3, Int>()
+            for(position in  worldGenerationData.chunkPositionsToCreate) {
+                val entityId = chunkDataPositionToEntityId[position]!!
+                meshMap[position] = entityId
+                chunkMeshPositionToEntityId[position] = entityId
+            }
+            return@async Pair(dataMap, meshMap)
+        }.await()
+        //ChunkData jobs
+        val chunkDataJobs = resultGenerationData.first.map { (position, entityId) ->
             defaultScope.async {
-                generateChunkData(position, entityId)
+                //parallelismChunk.withPermit {
+                    generateChunkData(position, entityId)
+                //}
             }
         }
         chunkDataJobs.joinAll()
-
+        //MeshData jobs
         val fullChunkDataMap = chunkDataMap.toMap()
-
-        val meshDataJobs = entityMap.map { (position, entityId) ->
+        val meshDataJobs = resultGenerationData.second.map { (position, entityId) ->
             defaultScope.async {
-                parallelism.withPermit {
+                parallelismMesh.withPermit {
                     generateMeshData(position, entityId, fullChunkDataMap)
                 }
             }
         }
         meshDataJobs.joinAll()
-        generationJob = null
+        //End Generation Callback
+        mainScope.launch { generationJob = null }.join()
     }
 
     private suspend fun generateChunkData(position: IntVector3, entityId: Int) {
@@ -103,32 +164,36 @@ class ChunkManager: LaunchedEffect, DisposableEffect {
             val meshData = rawMeshData.createMeshData()
             meshDataMap[position] = meshData
             eventBus.sendEvent(GameEvent.OnCreateChunkMeshData(entityId, meshData))
+            eventBus.sendEvent(GameEvent.OnCreateChunkRigidBody(entityId, chunkDataMap[position]!!))
         }.join()
     }
 
-    override fun dispose() {
-        meshDataMap.clear()
-        chunkDataMap.clear()
-        generationJob?.cancel()
-        defaultScope.cancel()
-        generationJob = null
-    }
+    private fun getWorldGenerationData(playerPosition: IntVector3): WorldGenerationData? {
+        val allChunkPositionsNeeded = WorldDataHelper.getChunkPositionsAroundPlayer(playerPosition)
 
-    private fun getPositions(): List<IntVector3> {
-        val mutableList = mutableListOf<IntVector3>()
-        for (x in -DRAW_RADIUS .. DRAW_RADIUS) {
-            for (y in 0..0) {
-                for (z in -DRAW_RADIUS .. DRAW_RADIUS) {
-                    val pos = IntVector3(x, y, z)
-                    mutableList.add(pos)
-                }
-            }
+        val allChunkDataPositionsNeeded = WorldDataHelper.getDataPositionsAroundPlayer(playerPosition)
+
+        val chunkPositionsToCreate = WorldDataHelper.selectPositionsToCreate(meshDataMap, allChunkPositionsNeeded, playerPosition)
+        val chunkDataPositionsToCreate = WorldDataHelper.selectDataPositionsToCreate(chunkDataMap, allChunkDataPositionsNeeded, playerPosition)
+
+        if(chunkPositionsToCreate.isEmpty() || chunkDataPositionsToCreate.isEmpty()) {
+            return null
         }
-        return mutableList
+
+        val chunkPositionsToRemove = WorldDataHelper.getUnneededChunks(meshDataMap, allChunkPositionsNeeded)
+        val chunkDataToRemove = WorldDataHelper.getUnneededData(chunkDataMap, allChunkDataPositionsNeeded)
+
+        val data = WorldGenerationData(
+            chunkPositionsToCreate = chunkPositionsToCreate,
+            chunkDataPositionsToCreate = chunkDataPositionsToCreate,
+            chunkPositionsToRemove = chunkPositionsToRemove,
+            chunkDataToRemove = chunkDataToRemove
+        )
+        return data
     }
 
     private fun setChunkBlocks(chunkData: ChunkData) {
-        val scale = 0.055
+        val scale = 0.0015
         val amplitude = (chunkData.chunkHeight * 0.35).toInt()
         val baseHeight = chunkData.chunkHeight / 2
 

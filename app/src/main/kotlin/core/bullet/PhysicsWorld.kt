@@ -19,7 +19,7 @@ class PhysicsWorld: LaunchedEffect, DisposableEffect {
 
 
     override fun launch(context: Context) {
-        world.gravity = Vector3(0f, -2f, 0f)
+        world.gravity = Vector3(0f, -10f, 0f)
         world.forceUpdateAllAabbs = false
     }
 

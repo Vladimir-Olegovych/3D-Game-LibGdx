@@ -15,10 +15,10 @@ import java.util.concurrent.Executor
 object DefaultGameSetupManager: Executor, LaunchedEffect {
     override fun launch(context: Context) {
         val camera = PerspectiveCamera(67f, Gdx.graphics.width.toFloat(), Gdx.graphics.height.toFloat())
-        camera.position.set(10f, 100f, 10f)
-        camera.lookAt(-10f, 100f, -10f)
+        camera.position.set(10f, 200f, 10f)
+        camera.lookAt(-10f, 200f, -10f)
         camera.near = 1f
-        camera.far = 3000f
+        camera.far = 1000f
         camera.update()
         context.setObject(CameraTypes.GL_3D, camera)
         //---

@@ -13,22 +13,28 @@ import core.math.createMatrixForChunk
 
 object PhysicsUtils {
 
-    fun createTestBox(): btRigidBody {
+    fun createTestBox(): PhysicalData {
+        val physicalData = PhysicalData()
+
         val shape = btBoxShape(Vector3(1f, 1f, 1f))
-        val motionState = btDefaultMotionState(Matrix4().setToTranslation(Vector3(10f, 200f, 10f)))
+        physicalData.shapes.add(shape)
+        val motionState = btDefaultMotionState(Matrix4().setToTranslation(Vector3(10f, 400f, 10f)))
+        physicalData.motionStates.add(motionState)
         val localInertia = Vector3(0f, 0f, 0f)
         shape.calculateLocalInertia(1f, localInertia)
 
         val bodyInfo = btRigidBody.btRigidBodyConstructionInfo(1f, motionState, shape, localInertia)
         val body = btRigidBody(bodyInfo)
         bodyInfo.dispose()
-        return body
+        physicalData.rigidBodies.add(body)
+        physicalData.setBody(body)
+        return physicalData
     }
 
-    fun createChunkBody(chunk: ChunkData): btRigidBody {
-
+    fun createChunkBody(chunk: ChunkData): PhysicalData {
+        val physicalData = PhysicalData()
         val compound = btCompoundShape()
-
+        physicalData.compounds.add(compound)
         val w = chunk.chunkWidth
         val h = chunk.chunkHeight
 
@@ -86,7 +92,7 @@ object PhysicsUtils {
                     val shape = btBoxShape(
                         Vector3(sizeX / 2f, sizeY / 2f, sizeZ / 2f)
                     )
-
+                    physicalData.shapes.add(shape)
                     val transform = Matrix4().setToTranslation(
                         x + sizeX / 2f,
                         y + sizeY / 2f,
@@ -99,7 +105,7 @@ object PhysicsUtils {
         }
 
         val motionState = btDefaultMotionState(createMatrixForChunk(chunk))
-
+        physicalData.motionStates.add(motionState)
         val info = btRigidBody.btRigidBodyConstructionInfo(
             0f,
             motionState,
@@ -111,7 +117,8 @@ object PhysicsUtils {
         info.dispose()
 
         body.activationState = DISABLE_SIMULATION
-
-        return body
+        physicalData.rigidBodies.add(body)
+        physicalData.setBody(body)
+        return physicalData
     }
 }

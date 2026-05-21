@@ -9,6 +9,9 @@ class ChunkData(
     val chunkHeight: Int,
     val blocksArray: Array<BlockType>
 ) {
+
+    var modified = false
+
     fun setBlockByLocal(blockType: BlockType, x: Int, y: Int, z: Int){
         val index: Int = x * chunkHeight * chunkWidth + y * chunkWidth + z
         blocksArray[index] = blockType
