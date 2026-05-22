@@ -27,7 +27,7 @@ class ChunkManager: LaunchedEffect, DisposableEffect {
         const val DRAW_RADIUS_Y = 2
 
         const val CHUNK_SIZE = 8
-        const val CHUNK_HEIGHT = 32
+        const val CHUNK_HEIGHT = 64
     }
     private val parallelismMesh = Semaphore(12 * 6)
 

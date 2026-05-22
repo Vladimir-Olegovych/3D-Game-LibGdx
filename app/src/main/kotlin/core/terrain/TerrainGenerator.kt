@@ -9,6 +9,7 @@ import core.noice.PerlinNoise
 import core.terrain.biome.BiomeGenerator
 import core.terrain.layers.SurfaceLayerHandler
 import core.terrain.layers.UndergroundLayerHandler
+import kotlin.random.Random
 
 class TerrainGenerator: LaunchedEffect {
 
@@ -17,7 +18,7 @@ class TerrainGenerator: LaunchedEffect {
     private lateinit var noices: NoiseSettings
 
     override fun launch(context: Context) {
-        val noice = PerlinNoise(100)
+        val noice = PerlinNoise(Random.nextInt())
         val domainXConfig = NoiseSettings(
             noiseZoom = 0.005f,
             octaves = 1,

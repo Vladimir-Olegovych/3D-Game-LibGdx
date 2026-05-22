@@ -46,9 +46,13 @@ class DrawSystem: IteratingSystem() {
         simpleShader.setUniformf("ambientLight", 0.04f, 0.04f, 0.06f)
         simpleShader.setUniformf("viewPosition", camera.position)
         simpleShader.setUniformf("objectColor", 1f, 1f, 1f)
+        simpleShader.setUniformf("cameraFar", camera.far)
+        simpleShader.setUniformf("fogColor", 135 / 255f, 206 / 255f, 240 / 255f)
     }
 
     private val tmpVec = Vector3()
+    private val cameraForwardXZ = Vector3()
+    private val toObjectXZ = Vector3()
 
     override fun process(entityId: Int) {
         val meshComponent = meshMapper[entityId] ?: return
@@ -63,13 +67,24 @@ class DrawSystem: IteratingSystem() {
             bodyTransform != null -> bodyTransform
             else -> return
         }
-
         val objectPosition = transformMatrix.getTranslation(tmpVec)
         val objectRadius = meshComponent.boundingRadius
         val toObject = tmpVec.set(objectPosition).sub(camera.position)
+
+        cameraForwardXZ.set(camera.direction).y = 0f
+        if (!cameraForwardXZ.isZero) cameraForwardXZ.nor()
+        toObjectXZ.set(toObject).y = 0f
+
         if (toObject.dot(camera.direction) + objectRadius < 0f) {
-            return
+            if(!toObjectXZ.isZero) {
+                val dotProduct = cameraForwardXZ.dot(toObjectXZ)
+                val isBack = dotProduct + objectRadius < 0f
+                if (isBack) return
+            } else {
+                return
+            }
         }
+
 
         simpleShader.setUniformMatrix("transform", transformMatrix)
         meshTextureData.bind(0)

@@ -44,7 +44,7 @@ class PerlinNoise(private val seed: Int = 0) {
         val normalized = value / maxAmplitude
 
         val absVal = abs(normalized) * settings.redistributionModifier
-        val transformed = absVal.pow(settings.exponent.toFloat())
+        val transformed = absVal.pow(settings.exponent)
 
         return normalized.sign * transformed
     }
