@@ -31,14 +31,6 @@ class DrawSystem: IteratingSystem() {
     @Wire(name = ShaderTypes.SIMPLE_SHADER)
     private lateinit var simpleShader: ShaderProgram
 
-    //private val debugDrawer = DebugDrawer()
-
-    override fun initialize() {
-        //debugDrawer.debugMode = btIDebugDraw.DebugDrawModes.DBG_MAX_DEBUG_DRAW_MODE
-
-        //physicsWorld.world.debugDrawer = debugDrawer
-    }
-
     override fun begin() {
         Gdx.gl.glEnable(GL20.GL_CULL_FACE)
         Gdx.gl.glEnable(GL20.GL_DEPTH_TEST)
@@ -56,29 +48,31 @@ class DrawSystem: IteratingSystem() {
         simpleShader.setUniformf("objectColor", 1f, 1f, 1f)
     }
 
+    private val tmpVec = Vector3()
+
     override fun process(entityId: Int) {
-        val meshComponent = meshMapper[entityId]?: return
-        val meshTextureData = meshComponent.meshTextureData?: return
-        val mesh = meshComponent.meshData?.mesh?: return
+        val meshComponent = meshMapper[entityId] ?: return
+        val meshTextureData = meshComponent.meshTextureData ?: return
+        val mesh = meshComponent.meshData?.mesh ?: return
 
         val bodyTransform = physicalMapper[entityId]?.physicalData?.getBody()?.worldTransform
         val staticTransform = transformMapper[entityId]?.transform
 
-        if (staticTransform != null) {
-            simpleShader.setUniformMatrix("transform", staticTransform)
-        } else if(bodyTransform != null) {
-            simpleShader.setUniformMatrix("transform", bodyTransform)
-        } else {
+        val transformMatrix = when {
+            staticTransform != null -> staticTransform
+            bodyTransform != null -> bodyTransform
+            else -> return
+        }
+
+        val objectPosition = transformMatrix.getTranslation(tmpVec)
+        val objectRadius = meshComponent.boundingRadius
+        val toObject = tmpVec.set(objectPosition).sub(camera.position)
+        if (toObject.dot(camera.direction) + objectRadius < 0f) {
             return
         }
 
+        simpleShader.setUniformMatrix("transform", transformMatrix)
         meshTextureData.bind(0)
         mesh.render(simpleShader, GL20.GL_TRIANGLES)
-    }
-
-    override fun end() {
-        //debugDrawer.begin(camera)
-        //physicsWorld.world.debugDrawWorld()
-        //debugDrawer.end()
     }
 }

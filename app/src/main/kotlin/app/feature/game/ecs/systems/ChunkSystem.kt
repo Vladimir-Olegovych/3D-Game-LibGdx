@@ -12,6 +12,8 @@ import com.badlogic.gdx.assets.AssetManager
 import com.badlogic.gdx.graphics.PerspectiveCamera
 import com.badlogic.gdx.graphics.Texture
 import com.badlogic.gdx.graphics.g2d.TextureAtlas
+import com.badlogic.gdx.math.Vector3
+import com.badlogic.gdx.math.collision.BoundingBox
 import com.gigapi.eventbus.EventBus
 import com.gigapi.eventbus.annotation.BusEvent
 import com.gigapi.math.vector.IntVector3
@@ -52,10 +54,17 @@ class ChunkSystem: BaseSystem() {
     @BusEvent
     fun onMeshDataCreated(event: GameEvent.OnCreateChunkMeshData) {
         val entityId = event.chunkEntityId
-        meshMapper.create(entityId).apply {
-            this@apply.meshData = event.meshData
-            this@apply.meshTextureData = chunkMeshTextureData
-        }
+        val meshComp = meshMapper.create(entityId)
+        val mesh = event.meshData.mesh ?: return
+
+        val boundingBox = BoundingBox()
+        mesh.calculateBoundingBox(boundingBox)
+
+        val radius = boundingBox.getDimensions(Vector3()).len()
+
+        meshComp.meshData = event.meshData
+        meshComp.meshTextureData = chunkMeshTextureData
+        meshComp.boundingRadius = radius
     }
 
     @BusEvent

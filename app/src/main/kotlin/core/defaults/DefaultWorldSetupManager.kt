@@ -10,12 +10,17 @@ import com.gigapi.eventbus.EventBus
 import com.gigapi.general.Context
 import core.bullet.PhysicsWorld
 import core.chunk.ChunkManager
+import core.terrain.TerrainGenerator
+import core.noice.NoiceTypes
+import core.noice.PerlinNoise
 
 object DefaultWorldSetupManager: LaunchedEffect {
 
     override fun launch(context: Context) {
         Bullet.init()
+        //---
         context.setObject(PhysicsWorld())
+        //---
         context.setObject(EventBus())
         //---
         context.setObject(ChunkManager())
@@ -24,6 +29,8 @@ object DefaultWorldSetupManager: LaunchedEffect {
         context.setObject(DrawSystem())
         context.setObject(ChunkSystem())
         context.setObject(PhysicSystem())
+        //---
+        context.setObject(TerrainGenerator())
     }
 
 }

@@ -13,41 +13,41 @@ import core.chunk.world.WorldDataHelper
 import core.chunk.world.WorldGenerationData
 import core.mesh.MeshData
 import core.mesh.MeshHelper
-import core.noice.PerlinNoise
 import core.scope.DispatcherTypes
+import core.terrain.TerrainGenerator
 import kotlinx.coroutines.*
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
-import kotlin.random.Random
 
 
 class ChunkManager: LaunchedEffect, DisposableEffect {
 
     companion object {
-        const val DRAW_RADIUS = 32
-        const val CHUNK_SIZE = 8
-        const val CHUNK_HEIGHT = 255
-    }
+        const val DRAW_RADIUS_X = 32
+        const val DRAW_RADIUS_Y = 2
 
-    private val noice = PerlinNoise(Random.nextInt())
+        const val CHUNK_SIZE = 8
+        const val CHUNK_HEIGHT = 32
+    }
+    private val parallelismMesh = Semaphore(12 * 6)
 
     private val chunkDataPositionToEntityId = HashMap<IntVector3, Int>()
     private val chunkMeshPositionToEntityId = HashMap<IntVector3, Int>()
 
     private val chunkDataMap = HashMap<IntVector3, ChunkData>()
     private val meshDataMap = HashMap<IntVector3, MeshData>()
-
-    private val parallelismMesh = Semaphore(12)
     private var generationJob: Job? = null
 
     private lateinit var eventBus: EventBus
     private lateinit var meshHelper: MeshHelper
+    private lateinit var terrainGenerator: TerrainGenerator
     private lateinit var defaultScope: CoroutineScope
     private lateinit var mainScope: CoroutineScope
 
     override fun launch(context: Context) {
         eventBus = context.getObject()
         meshHelper = context.getObject()
+        terrainGenerator = context.getObject()
         defaultScope = CoroutineScope(Dispatchers.Default)
         mainScope = CoroutineScope(context.getObject<CoroutineDispatcher>(DispatcherTypes.MAIN))
         eventBus.registerHandler(this)
@@ -118,15 +118,20 @@ class ChunkManager: LaunchedEffect, DisposableEffect {
         //ChunkData jobs
         val chunkDataJobs = resultGenerationData.first.map { (position, entityId) ->
             defaultScope.async {
-                //parallelismChunk.withPermit {
-                    generateChunkData(position, entityId)
-                //}
+                generateChunkData(position, entityId)
             }
         }
         chunkDataJobs.joinAll()
         //MeshData jobs
         val fullChunkDataMap = chunkDataMap.toMap()
-        val meshDataJobs = resultGenerationData.second.map { (position, entityId) ->
+        val renderData = resultGenerationData.second.filter { (position, _) ->
+            val ownChunkData = fullChunkDataMap[position]!!
+            val data = ownChunkData.isAll(BlockType.AIR)
+            if (data) {
+                mainScope.launch { meshDataMap[position] = MeshData(null) }
+            };!data
+        }
+        val meshDataJobs = renderData.map { (position, entityId) ->
             defaultScope.async {
                 parallelismMesh.withPermit {
                     generateMeshData(position, entityId, fullChunkDataMap)
@@ -141,7 +146,7 @@ class ChunkManager: LaunchedEffect, DisposableEffect {
     private suspend fun generateChunkData(position: IntVector3, entityId: Int) {
         val chunkData = withContext(Dispatchers.Default) {
             val data = ChunkData.create(position, CHUNK_SIZE, CHUNK_HEIGHT)
-            setChunkBlocks(data)
+            terrainGenerator.generateChunkData(data)
             data
         }
         mainScope.launch {
@@ -161,27 +166,31 @@ class ChunkManager: LaunchedEffect, DisposableEffect {
         }
 
         mainScope.launch {
+            if (rawMeshData.isEmpty()) return@launch
             val meshData = rawMeshData.createMeshData()
             meshDataMap[position] = meshData
+
             eventBus.sendEvent(GameEvent.OnCreateChunkMeshData(entityId, meshData))
             eventBus.sendEvent(GameEvent.OnCreateChunkRigidBody(entityId, chunkDataMap[position]!!))
         }.join()
     }
 
     private fun getWorldGenerationData(playerPosition: IntVector3): WorldGenerationData? {
+        val copyMesh = meshDataMap.toMap()
+        val copyChunk = chunkDataMap.toMap()
         val allChunkPositionsNeeded = WorldDataHelper.getChunkPositionsAroundPlayer(playerPosition)
 
         val allChunkDataPositionsNeeded = WorldDataHelper.getDataPositionsAroundPlayer(playerPosition)
 
-        val chunkPositionsToCreate = WorldDataHelper.selectPositionsToCreate(meshDataMap, allChunkPositionsNeeded, playerPosition)
-        val chunkDataPositionsToCreate = WorldDataHelper.selectDataPositionsToCreate(chunkDataMap, allChunkDataPositionsNeeded, playerPosition)
+        val chunkPositionsToCreate = WorldDataHelper.selectPositionsToCreate(copyMesh, allChunkPositionsNeeded, playerPosition)
+        val chunkDataPositionsToCreate = WorldDataHelper.selectDataPositionsToCreate(copyChunk, allChunkDataPositionsNeeded, playerPosition)
 
         if(chunkPositionsToCreate.isEmpty() || chunkDataPositionsToCreate.isEmpty()) {
             return null
         }
 
-        val chunkPositionsToRemove = WorldDataHelper.getUnneededChunks(meshDataMap, allChunkPositionsNeeded)
-        val chunkDataToRemove = WorldDataHelper.getUnneededData(chunkDataMap, allChunkDataPositionsNeeded)
+        val chunkPositionsToRemove = WorldDataHelper.getUnneededChunks(copyMesh, allChunkPositionsNeeded)
+        val chunkDataToRemove = WorldDataHelper.getUnneededData(copyChunk, allChunkDataPositionsNeeded)
 
         val data = WorldGenerationData(
             chunkPositionsToCreate = chunkPositionsToCreate,
@@ -190,32 +199,5 @@ class ChunkManager: LaunchedEffect, DisposableEffect {
             chunkDataToRemove = chunkDataToRemove
         )
         return data
-    }
-
-    private fun setChunkBlocks(chunkData: ChunkData) {
-        val scale = 0.0015
-        val amplitude = (chunkData.chunkHeight * 0.35).toInt()
-        val baseHeight = chunkData.chunkHeight / 2
-
-        for (x in 0 until chunkData.chunkWidth) {
-            for (z in 0 until chunkData.chunkWidth) {
-                val worldX = chunkData.position.x * chunkData.chunkWidth + x
-                val worldZ = chunkData.position.z * chunkData.chunkWidth + z
-
-                val noiseValue = noice.warp(worldX * scale, worldZ * scale)
-                val surfaceHeight = (baseHeight + noiseValue * amplitude).toInt()
-                    .coerceIn(0, chunkData.chunkHeight - 1)
-
-                for (y in 0 until chunkData.chunkHeight) {
-                    val block = when {
-                        y < surfaceHeight - 4 -> BlockType.STONE
-                        y < surfaceHeight -> BlockType.DIRT
-                        y == surfaceHeight -> BlockType.GRASS
-                        else -> BlockType.AIR
-                    }
-                    chunkData.setBlockByLocal(block, x, y, z)
-                }
-            }
-        }
     }
 }

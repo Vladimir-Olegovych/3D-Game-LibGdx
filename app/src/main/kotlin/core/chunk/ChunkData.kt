@@ -12,9 +12,22 @@ class ChunkData(
 
     var modified = false
 
+    fun isAll(blockType: BlockType): Boolean {
+        blocksArray.forEach { if (blockType != it) return false }
+        return true
+    }
+
+    fun setBlockByLocal(blockType: BlockType, localPosition: IntVector3){
+        setBlockByLocal(blockType, localPosition.x, localPosition.y, localPosition.z)
+    }
+
     fun setBlockByLocal(blockType: BlockType, x: Int, y: Int, z: Int){
         val index: Int = x * chunkHeight * chunkWidth + y * chunkWidth + z
         blocksArray[index] = blockType
+    }
+
+    fun getBlockByLocal(localPosition: IntVector3): BlockType {
+        return getBlockByLocal(localPosition.x, localPosition.y, localPosition.z)
     }
 
     fun getBlockByLocal(x: Int, y: Int, z: Int): BlockType {

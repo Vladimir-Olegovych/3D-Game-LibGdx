@@ -8,6 +8,8 @@ class RawMeshData(
     val vertices: FloatArray,
     val indices: ShortArray,
 ) {
+    fun isEmpty(): Boolean = vertices.isEmpty()
+
     fun createMeshData() : MeshData {
         val mesh = Mesh(true, vertices.size / 8, indices.size,
             VertexAttribute(VertexAttributes.Usage.Position, 3, "a_Position"),
@@ -24,5 +26,5 @@ class RawMeshData(
 }
 
 class MeshData(
-    val mesh: Mesh
+    val mesh: Mesh? = null
 )

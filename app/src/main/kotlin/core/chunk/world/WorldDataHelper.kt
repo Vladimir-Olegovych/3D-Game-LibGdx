@@ -4,6 +4,7 @@ import com.gigapi.math.vector.IntVector3
 import core.chunk.ChunkData
 import core.chunk.ChunkManager
 import core.mesh.MeshData
+import kotlin.ranges.step
 
 object WorldDataHelper {
     fun chunkPositionFromBlockCoords(worldBlockPosition: IntVector3): IntVector3 {
@@ -27,29 +28,25 @@ object WorldDataHelper {
     ): List<IntVector3> {
         val chunkSize = ChunkManager.CHUNK_SIZE
         val chunkHeight = ChunkManager.CHUNK_HEIGHT
-        val chunkDrawingRange = ChunkManager.DRAW_RADIUS
+        val chunkDrawingRangeX = ChunkManager.DRAW_RADIUS_X
+        val chunkDrawingRangeY = ChunkManager.DRAW_RADIUS_Y
 
+        val startX = playerPosition.x - chunkDrawingRangeX * chunkSize
+        val startY = playerPosition.y - chunkDrawingRangeY * chunkHeight
+        val startZ = playerPosition.z - chunkDrawingRangeX * chunkSize
 
-        val startX = playerPosition.x - chunkDrawingRange * chunkSize
-        val startZ = playerPosition.z - chunkDrawingRange * chunkSize
-        val endX = playerPosition.x + chunkDrawingRange * chunkSize
-        val endZ = playerPosition.z + chunkDrawingRange * chunkSize
+        val endX = playerPosition.x + chunkDrawingRangeX * chunkSize
+        val endY = playerPosition.y + chunkDrawingRangeY * chunkHeight
+        val endZ = playerPosition.z + chunkDrawingRangeX * chunkSize
 
         val chunkPositionsToCreate = mutableListOf<IntVector3>()
 
         for (x in startX..endX step chunkSize) {
-            for (z in startZ..endZ step chunkSize) {
-                var chunkPos = chunkPositionFromBlockCoords(IntVector3(x, 0, z))
-                chunkPositionsToCreate.add(chunkPos)
-
-                /*
-                var y = -chunkHeight
-                while (y >= playerPosition.y - chunkHeight * 3) {
-                    chunkPos = chunkPositionFromBlockCoords(IntVector3(x, y, z))
+            for (y in startY..endY step chunkHeight) {
+                for (z in startZ..endZ step chunkSize) {
+                    val chunkPos = chunkPositionFromBlockCoords(IntVector3(x, y, z))
                     chunkPositionsToCreate.add(chunkPos)
-                    y -= chunkHeight
                 }
-                 */
             }
         }
 
@@ -60,28 +57,25 @@ object WorldDataHelper {
     ): List<IntVector3> {
         val chunkSize = ChunkManager.CHUNK_SIZE
         val chunkHeight = ChunkManager.CHUNK_HEIGHT
-        val chunkDrawingRange = ChunkManager.DRAW_RADIUS
+        val chunkDrawingRangeX = ChunkManager.DRAW_RADIUS_X
+        val chunkDrawingRangeY = ChunkManager.DRAW_RADIUS_Y
 
+        val startX = playerPosition.x - (chunkDrawingRangeX + 1) * chunkSize
+        val startY = playerPosition.y - (chunkDrawingRangeY + 1)* chunkHeight
+        val startZ = playerPosition.z - (chunkDrawingRangeX + 1) * chunkSize
 
-        val startX = playerPosition.x - (chunkDrawingRange + 1) * chunkSize
-        val startZ = playerPosition.z - (chunkDrawingRange + 1) * chunkSize
-        val endX = playerPosition.x + (chunkDrawingRange + 1) * chunkSize
-        val endZ = playerPosition.z + (chunkDrawingRange + 1) * chunkSize
+        val endX = playerPosition.x + (chunkDrawingRangeX + 1) * chunkSize
+        val endY = playerPosition.y + (chunkDrawingRangeY + 1)* chunkHeight
+        val endZ = playerPosition.z + (chunkDrawingRangeX + 1) * chunkSize
 
         val chunkPositionsToCreate = mutableListOf<IntVector3>()
 
         for (x in startX..endX step chunkSize) {
-            for (z in startZ..endZ step chunkSize) {
-                var chunkPos = chunkPositionFromBlockCoords(IntVector3(x, 0, z))
-                chunkPositionsToCreate.add(chunkPos)
-                /*
-                var y = -chunkHeight
-                while (y >= playerPosition.y - chunkHeight * 3) {
-                    chunkPos = chunkPositionFromBlockCoords(IntVector3(x, y, z))
+            for (y in startY..endY step chunkHeight) {
+                for (z in startZ..endZ step chunkSize) {
+                    val chunkPos = chunkPositionFromBlockCoords(IntVector3(x, y, z))
                     chunkPositionsToCreate.add(chunkPos)
-                    y -= chunkHeight
                 }
-                 */
             }
         }
 

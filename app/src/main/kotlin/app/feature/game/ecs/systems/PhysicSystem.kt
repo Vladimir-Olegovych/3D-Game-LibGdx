@@ -54,7 +54,7 @@ class PhysicSystem: BaseSystem() {
         val meshTexture: TextureRegion = assetManager.get<TextureAtlas>(SkinID.BLOCK.atlas).findRegion("bl_wood")
         texture = extractRegionAsTexture(meshTexture)
 
-        for (i in 0 .. 300) {
+        for (i in 0 .. 1) {
             val entityId = world.create()
             val physicalData = PhysicsUtils.createTestBox()
             meshMapper.create(entityId).apply {

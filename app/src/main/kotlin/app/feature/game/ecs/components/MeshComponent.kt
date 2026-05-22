@@ -8,6 +8,7 @@ import core.mesh.MeshData
 class MeshComponent: DisposableEffect, Component() {
     var meshData: MeshData? = null
     var meshTextureData: GLTexture? = null
+    var boundingRadius = 0f
 
     override fun dispose() {
         meshData?.mesh?.dispose()
