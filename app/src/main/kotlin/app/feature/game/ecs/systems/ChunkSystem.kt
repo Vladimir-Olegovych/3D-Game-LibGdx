@@ -3,6 +3,7 @@ package app.feature.game.ecs.systems
 import app.feature.game.ecs.components.ChunkComponent
 import app.feature.game.ecs.components.MeshComponent
 import app.feature.game.ecs.components.TransformComponent
+import app.feature.game.event.EventBusTypes
 import app.feature.game.event.GameEvent
 import com.artemis.BaseSystem
 import com.artemis.ComponentMapper
@@ -31,7 +32,7 @@ class ChunkSystem: BaseSystem() {
     private lateinit var assetManager: AssetManager
     @Wire(name = CameraTypes.GL_3D)
     private lateinit var camera: PerspectiveCamera
-    @Wire
+    @Wire(name = EventBusTypes.MAIN_EVENT_BUS)
     private lateinit var eventBus: EventBus
 
     private lateinit var transformMapper: ComponentMapper<TransformComponent>

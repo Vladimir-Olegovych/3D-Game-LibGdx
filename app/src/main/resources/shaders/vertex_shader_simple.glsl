@@ -17,14 +17,11 @@ void main() {
     vec4 worldPosition = transform * vec4(a_Position, 1.0);
     varViewPosition = worldPosition.xyz;
 
-    // Вычисляем расстояние до камеры
     float distance = length(viewPosition - worldPosition.xyz);
 
-    // Настройте эти значения под вашу сцену
-    float fogStart = cameraFar - 30;   // Расстояние, где туман начинает появляться
-    float fogEnd = cameraFar;    // Расстояние, где туман полностью скрывает объект
+    float fogStart = cameraFar - 30;
+    float fogEnd = cameraFar;
 
-    // Линейный туман (чем больше distance, тем меньше v_FogFactor)
     v_FogFactor = clamp((fogEnd - distance) / (fogEnd - fogStart), 0.0, 1.0);
 
     varNormal = normalize((transform * vec4(a_Normal, 0.0)).xyz);

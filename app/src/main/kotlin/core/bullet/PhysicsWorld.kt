@@ -24,7 +24,7 @@ class PhysicsWorld: LaunchedEffect, DisposableEffect {
     }
 
     fun update(deltaTime: Float) {
-        world.stepSimulation(deltaTime, 1, 1f / 60f)
+        world.stepSimulation(deltaTime, 1, deltaTime)
     }
 
     override fun dispose() {

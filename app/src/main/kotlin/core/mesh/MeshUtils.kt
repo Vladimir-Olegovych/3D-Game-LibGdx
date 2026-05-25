@@ -1,7 +1,7 @@
 package core.mesh
 
 object MeshUtils {
-    fun createBoxMeshData(): MeshData {
+    fun createBoxMeshData(): RawMeshData {
         val vertexPositions = arrayOf(
             floatArrayOf(-1f, -1f,  1f),
             floatArrayOf( 1f, -1f,  1f),
@@ -73,6 +73,6 @@ object MeshUtils {
         return RawMeshData(
             vertices = vertices.toFloatArray(),
             indices = indices.toShortArray()
-        ).createMeshData()
+        )
     }
 }

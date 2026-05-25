@@ -12,9 +12,14 @@ class ChunkData(
 
     var modified = false
 
-    fun isAll(blockType: BlockType): Boolean {
+    fun isAllBlock(blockType: BlockType): Boolean {
         blocksArray.forEach { if (blockType != it) return false }
         return true
+    }
+
+    fun hasBlock(blockType: BlockType): Boolean {
+        blocksArray.forEach { if (blockType == it) return true }
+        return false
     }
 
     fun setBlockByLocal(blockType: BlockType, localPosition: IntVector3){

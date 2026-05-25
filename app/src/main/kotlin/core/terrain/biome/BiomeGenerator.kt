@@ -3,6 +3,7 @@ package core.terrain.biome
 import com.gigapi.math.vector.IntVector3
 import core.blocks.BlockType
 import core.chunk.ChunkData
+import core.chunk.ChunkManager
 import core.noice.DomainWarping
 import core.noice.NoiceUtils
 import core.noice.NoiseSettings
@@ -22,7 +23,7 @@ class BiomeGenerator(
             z = chunkData.position.z * chunkData.chunkWidth + z
         )
 
-        val ground = getSurfaceHeightNoise(worldPosition.x, worldPosition.z, 300)
+        val ground = getSurfaceHeightNoise(worldPosition.x, worldPosition.z, ChunkManager.WORLD_HEIGHT)
 
         for (y in 0 until chunkData.chunkHeight) {
             worldPosition.y = chunkData.position.y * chunkData.chunkHeight + y

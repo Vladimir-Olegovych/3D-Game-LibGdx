@@ -1,5 +1,6 @@
 package app.feature.game
 
+import app.feature.game.event.EventBusTypes
 import com.artemis.BaseSystem
 import com.artemis.WorldConfiguration
 import com.badlogic.gdx.Gdx
@@ -31,7 +32,7 @@ class GameFragment(
 
         val controller = gameContext.getObject<FirstPersonCameraController>()
         camera = gameContext.getObject(CameraTypes.GL_3D)
-        eventBus = gameContext.getObject()
+        eventBus = gameContext.getObject(EventBusTypes.MAIN_EVENT_BUS)
 
         Gdx.input.isCursorCatched = true
         Gdx.input.inputProcessor = controller
@@ -79,6 +80,7 @@ class GameFragment(
     override fun onDestroy() {
         Gdx.input.inputProcessor = null
         Gdx.input.isCursorCatched = false
+
         artemisWorld.disposeALL()
         eventBus.clear()
         gameContext.removeContext(context)

@@ -1,7 +1,6 @@
 package app.feature.game.ecs.systems
 
 import app.feature.game.ecs.components.MeshComponent
-import app.feature.game.ecs.components.PhysicalComponent
 import app.feature.game.ecs.components.TransformComponent
 import com.artemis.ComponentMapper
 import com.artemis.annotations.All
@@ -21,11 +20,8 @@ class DrawSystem: IteratingSystem() {
     private val lightDirection = Vector3(30f, 30f, 10f).nor()
 
     private lateinit var meshMapper: ComponentMapper<MeshComponent>
-    private lateinit var physicalMapper: ComponentMapper<PhysicalComponent>
     private lateinit var transformMapper: ComponentMapper<TransformComponent>
 
-    //@Wire
-    //private lateinit var physicsWorld: PhysicsWorld
     @Wire(name = CameraTypes.GL_3D)
     private lateinit var camera: PerspectiveCamera
     @Wire(name = ShaderTypes.SIMPLE_SHADER)
@@ -59,15 +55,9 @@ class DrawSystem: IteratingSystem() {
         val meshTextureData = meshComponent.meshTextureData ?: return
         val mesh = meshComponent.meshData?.mesh ?: return
 
-        val bodyTransform = physicalMapper[entityId]?.physicalData?.getBody()?.worldTransform
-        val staticTransform = transformMapper[entityId]?.transform
+        val transform = transformMapper[entityId]?.transform?: return
 
-        val transformMatrix = when {
-            staticTransform != null -> staticTransform
-            bodyTransform != null -> bodyTransform
-            else -> return
-        }
-        val objectPosition = transformMatrix.getTranslation(tmpVec)
+        val objectPosition = transform.getTranslation(tmpVec)
         val objectRadius = meshComponent.boundingRadius
         val toObject = tmpVec.set(objectPosition).sub(camera.position)
 
@@ -86,7 +76,7 @@ class DrawSystem: IteratingSystem() {
         }
 
 
-        simpleShader.setUniformMatrix("transform", transformMatrix)
+        simpleShader.setUniformMatrix("transform", transform)
         meshTextureData.bind(0)
         mesh.render(simpleShader, GL20.GL_TRIANGLES)
     }

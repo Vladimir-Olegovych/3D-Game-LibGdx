@@ -65,7 +65,7 @@ object WorldDataHelper {
         val startZ = playerPosition.z - (chunkDrawingRangeX + 1) * chunkSize
 
         val endX = playerPosition.x + (chunkDrawingRangeX + 1) * chunkSize
-        val endY = playerPosition.y + (chunkDrawingRangeY + 1)* chunkHeight
+        val endY = playerPosition.y + (chunkDrawingRangeY + 1) * chunkHeight
         val endZ = playerPosition.z + (chunkDrawingRangeX + 1) * chunkSize
 
         val chunkPositionsToCreate = mutableListOf<IntVector3>()

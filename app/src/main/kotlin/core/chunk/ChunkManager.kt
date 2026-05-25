@@ -1,5 +1,6 @@
 package core.chunk
 
+import app.feature.game.event.EventBusTypes
 import app.feature.game.event.GameEvent
 import com.artemis.World
 import com.gigapi.core.effects.DisposableEffect
@@ -24,10 +25,12 @@ class ChunkManager: LaunchedEffect, DisposableEffect {
 
     companion object {
         const val DRAW_RADIUS_X = 32
-        const val DRAW_RADIUS_Y = 2
+        const val DRAW_RADIUS_Y = 3
 
         const val CHUNK_SIZE = 8
         const val CHUNK_HEIGHT = 64
+
+        const val WORLD_HEIGHT = 300
     }
     private val parallelismMesh = Semaphore(12 * 6)
 
@@ -38,19 +41,21 @@ class ChunkManager: LaunchedEffect, DisposableEffect {
     private val meshDataMap = HashMap<IntVector3, MeshData>()
     private var generationJob: Job? = null
 
-    private lateinit var eventBus: EventBus
+    private lateinit var mainEventBus: EventBus
+    private lateinit var physicsEventBus: EventBus
     private lateinit var meshHelper: MeshHelper
     private lateinit var terrainGenerator: TerrainGenerator
     private lateinit var defaultScope: CoroutineScope
     private lateinit var mainScope: CoroutineScope
 
     override fun launch(context: Context) {
-        eventBus = context.getObject()
+        mainEventBus = context.getObject(EventBusTypes.MAIN_EVENT_BUS)
+        physicsEventBus = context.getObject(EventBusTypes.PHYSICS_EVENT_BUS)
         meshHelper = context.getObject()
         terrainGenerator = context.getObject()
         defaultScope = CoroutineScope(Dispatchers.Default)
         mainScope = CoroutineScope(context.getObject<CoroutineDispatcher>(DispatcherTypes.MAIN))
-        eventBus.registerHandler(this)
+        mainEventBus.registerHandler(this)
     }
 
     override fun dispose() {
@@ -85,15 +90,15 @@ class ChunkManager: LaunchedEffect, DisposableEffect {
         mainScope.launch {
             worldGenerationData.chunkPositionsToRemove.forEach {
                 if(chunkMeshPositionToEntityId[it] != null) {
-                    eventBus.sendEvent(GameEvent.OnRemoveChunkMeshData(chunkMeshPositionToEntityId[it]!!))
-                    eventBus.sendEvent(GameEvent.OnRemoveChunkRigidBody(chunkMeshPositionToEntityId[it]!!))
+                    mainEventBus.sendEvent(GameEvent.OnRemoveChunkMeshData(chunkMeshPositionToEntityId[it]!!))
+                    physicsEventBus.sendEvent(GameEvent.OnRemoveRigidBody(chunkMeshPositionToEntityId[it]!!))
                     meshDataMap.remove(it)
                     chunkMeshPositionToEntityId.remove(it)
                 }
             }
             worldGenerationData.chunkDataToRemove.forEach {
                 if(chunkDataPositionToEntityId[it] != null) {
-                    eventBus.sendEvent(GameEvent.OnRemoveChunkData(chunkDataPositionToEntityId[it]!!))
+                    mainEventBus.sendEvent(GameEvent.OnRemoveChunkData(chunkDataPositionToEntityId[it]!!))
                     chunkDataMap.remove(it)
                     chunkDataPositionToEntityId.remove(it)
                 }
@@ -126,10 +131,10 @@ class ChunkManager: LaunchedEffect, DisposableEffect {
         val fullChunkDataMap = chunkDataMap.toMap()
         val renderData = resultGenerationData.second.filter { (position, _) ->
             val ownChunkData = fullChunkDataMap[position]!!
-            val data = ownChunkData.isAll(BlockType.AIR)
-            if (data) {
+            val bool = ownChunkData.isAllBlock(BlockType.AIR)
+            if (bool) {
                 mainScope.launch { meshDataMap[position] = MeshData(null) }
-            };!data
+            };!bool
         }
         val meshDataJobs = renderData.map { (position, entityId) ->
             defaultScope.async {
@@ -151,7 +156,7 @@ class ChunkManager: LaunchedEffect, DisposableEffect {
         }
         mainScope.launch {
             chunkDataMap[position] = chunkData
-            eventBus.sendEvent(GameEvent.OnCreateChunkData(entityId, chunkData))
+            mainEventBus.sendEvent(GameEvent.OnCreateChunkData(entityId, chunkData))
         }.join()
     }
 
@@ -170,8 +175,8 @@ class ChunkManager: LaunchedEffect, DisposableEffect {
             val meshData = rawMeshData.createMeshData()
             meshDataMap[position] = meshData
 
-            eventBus.sendEvent(GameEvent.OnCreateChunkMeshData(entityId, meshData))
-            eventBus.sendEvent(GameEvent.OnCreateChunkRigidBody(entityId, chunkDataMap[position]!!))
+            mainEventBus.sendEvent(GameEvent.OnCreateChunkMeshData(entityId, meshData))
+            physicsEventBus.sendEvent(GameEvent.OnCreateChunkRigidBody(entityId, chunkDataMap[position]!!))
         }.join()
     }
 

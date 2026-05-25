@@ -1,7 +1,8 @@
 package app.feature.game.ecs.systems
 
 import app.feature.game.ecs.components.MeshComponent
-import app.feature.game.ecs.components.PhysicalComponent
+import app.feature.game.ecs.components.TransformComponent
+import app.feature.game.event.EventBusTypes
 import app.feature.game.event.GameEvent
 import com.artemis.BaseSystem
 import com.artemis.ComponentMapper
@@ -12,87 +13,77 @@ import com.badlogic.gdx.graphics.Texture
 import com.badlogic.gdx.graphics.TextureData
 import com.badlogic.gdx.graphics.g2d.TextureAtlas
 import com.badlogic.gdx.graphics.g2d.TextureRegion
+import com.badlogic.gdx.math.Vector3
+import com.gigapi.eventbus.EventBus
 import com.gigapi.eventbus.annotation.BusEvent
 import core.assets.SkinID
-import core.bullet.PhysicsUtils
-import core.bullet.PhysicsWorld
+import core.bullet.PhysicsWorldUpdater
 import core.mesh.MeshUtils
 
 
 class PhysicSystem: BaseSystem() {
 
     @Wire
-    private lateinit var physicsWorld: PhysicsWorld
-    @Wire
-    private lateinit var assetManager: AssetManager
+    private lateinit var physicsWorldUpdater: PhysicsWorldUpdater
+    @Wire(name = EventBusTypes.PHYSICS_EVENT_BUS)
+    private lateinit var physicsEventBus: EventBus
 
-    private lateinit var physicalMapper: ComponentMapper<PhysicalComponent>
+    private lateinit var transformMapper: ComponentMapper<TransformComponent>
+
+    //Delete
+    @Wire private lateinit var assetManager: AssetManager
     private lateinit var meshMapper: ComponentMapper<MeshComponent>
-
     private lateinit var texture: Texture
 
-    @BusEvent
-    fun onChunkBodyCreated(event: GameEvent.OnCreateChunkRigidBody) {
-        val entityId = event.chunkEntityId
-        val physicalData = PhysicsUtils.createChunkBody(event.chunkData)
-        physicalMapper.create(entityId).physicalData = physicalData
-        physicsWorld.world.addRigidBody(physicalData.getBody())
-    }
-    @BusEvent
-    fun onChunkBodyRemoved(event: GameEvent.OnRemoveChunkRigidBody) {
-        val entityId = event.chunkEntityId
-        val component = physicalMapper[entityId]?: return
-        component.physicalData?.apply {
-            physicsWorld.world.removeRigidBody(getBody())
-        }
-        component.dispose()
-
-        physicalMapper.remove(entityId)
-    }
-
     override fun initialize() {
+        physicsWorldUpdater.start()
+
         val meshTexture: TextureRegion = assetManager.get<TextureAtlas>(SkinID.BLOCK.atlas).findRegion("bl_wood")
         texture = extractRegionAsTexture(meshTexture)
 
-        for (i in 0 .. 1) {
+        val rawBoxMesh = MeshUtils.createBoxMeshData()
+
+        for (i in 0 .. 100) {
             val entityId = world.create()
-            val physicalData = PhysicsUtils.createTestBox()
+            transformMapper.create(entityId)
             meshMapper.create(entityId).apply {
-                this@apply.meshData = MeshUtils.createBoxMeshData()
+                this@apply.meshData = rawBoxMesh.createMeshData()
                 this@apply.meshTextureData = texture
             }
-            physicalMapper.create(entityId).physicalData = physicalData
-            physicsWorld.world.addRigidBody(physicalData.getBody())
+            physicsEventBus.sendEvent(GameEvent.OnCreateMeshRigidBody(
+                entityId = entityId,
+                position = Vector3(10f, 400f, 10f),
+                rawMeshData = rawBoxMesh
+            ))
         }
     }
 
-    override fun processSystem() {
-        physicsWorld.update(world.delta)
+    @BusEvent
+    fun onRigidBodyTransformUpdate(event: GameEvent.OnRigidBodyTransformUpdate) {
+        val component = transformMapper[event.entityId]?: return
+        component.transform = event.transform
     }
+
+    override fun processSystem() {}
 
     override fun dispose() {
-        super.dispose()
         texture.dispose()
-        physicsWorld.dispose()
+        physicsWorldUpdater.stop()
     }
 
+    //Delete
     fun extractRegionAsTexture(region: TextureRegion): Texture {
-        // 1. Получаем данные исходной текстуры
         val texture = region.getTexture()
         val textureData: TextureData = texture.getTextureData()
         if (!textureData.isPrepared()) {
             textureData.prepare()
         }
         val fullPixmap: Pixmap = textureData.consumePixmap()
-
-        // 2. Создаем новый Pixmap размером с нашу область
         val regionPixmap = Pixmap(
             region.getRegionWidth(),
             region.getRegionHeight(),
             fullPixmap.getFormat()
         )
-
-        // 3. Копируем пиксели из нужной области
         regionPixmap.drawPixmap(
             fullPixmap,  // исходный Pixmap
             0,  // x целевой координаты
@@ -102,12 +93,7 @@ class PhysicSystem: BaseSystem() {
             region.getRegionWidth(),
             region.getRegionHeight()
         )
-
-        // 4. Создаем новую текстуру из скопированных пикселей
         val newTexture = Texture(regionPixmap)
-
-
-        // 5. Очищаем Pixmap'ы для освобождения памяти
         fullPixmap.dispose()
         regionPixmap.dispose()
 

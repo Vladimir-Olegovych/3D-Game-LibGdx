@@ -2,23 +2,93 @@ package core.bullet
 
 import com.badlogic.gdx.math.Matrix4
 import com.badlogic.gdx.math.Vector3
+import com.badlogic.gdx.physics.bullet.collision.*
 import com.badlogic.gdx.physics.bullet.collision.CollisionConstants.DISABLE_SIMULATION
-import com.badlogic.gdx.physics.bullet.collision.btBoxShape
-import com.badlogic.gdx.physics.bullet.collision.btCompoundShape
 import com.badlogic.gdx.physics.bullet.dynamics.btRigidBody
 import com.badlogic.gdx.physics.bullet.linearmath.btDefaultMotionState
+import com.badlogic.gdx.physics.bullet.linearmath.btTransform
+import com.badlogic.gdx.physics.bullet.linearmath.btVector3
 import core.blocks.BlockType
 import core.chunk.ChunkData
 import core.math.createMatrixForChunk
+import core.mesh.RawMeshData
+import java.nio.ByteBuffer
+import java.nio.ByteOrder
 
 object PhysicsUtils {
 
-    fun createTestBox(): PhysicalData {
-        val physicalData = PhysicalData()
+    fun createMeshBody(
+        position: Vector3,
+        rawMeshData: RawMeshData,
+        mass: Float = 0f,
+        restitution: Float = 0.5f,
+        friction: Float = 0.5f,
+        additionalDampingFactor: Float = 0.005f,
+        additionalLinearDampingThresholdSqr: Float = 0.01f,
+        additionalAngularDampingThresholdSqr: Float = 0.01f,
+        additionalAngularDampingFactor: Float = 0.005f
+    ): PhysicalData {
+        val vertices = rawMeshData.vertices
+        val indices = rawMeshData.indices
+
+        val vertexBuffer = ByteBuffer.allocateDirect(vertices.size * 4)
+            .order(ByteOrder.nativeOrder())
+        vertexBuffer.asFloatBuffer().apply { put(vertices); position(0) }
+
+        val indexBuffer = ByteBuffer.allocateDirect(indices.size * 2)
+            .order(ByteOrder.nativeOrder())
+        indexBuffer.asShortBuffer().apply { put(indices); position(0) }
+
+        val indexedMesh = btIndexedMesh().apply {
+            vertexBase = vertexBuffer
+            vertexStride = 3 * 4
+            numVertices = vertices.size / 3
+            triangleIndexBase = indexBuffer
+            triangleIndexStride = 2
+            numTriangles = indices.size / 3
+            indexType = 1
+        }
+        val indexVertexArray = btTriangleIndexVertexArray()
+        indexVertexArray.addIndexedMesh(indexedMesh)
+
+        val shape = btBvhTriangleMeshShape(indexVertexArray, true, true)
+
+        val startTransform = btTransform().apply {
+            setIdentity()
+            origin.set(position)
+        }
+        val motionState = btDefaultMotionState(startTransform.inverse())
+
+        val localInertia = Vector3(0f, 0f, 0f)
+        if (mass > 0f) {
+            shape.calculateLocalInertia(mass, localInertia)
+        }
+
+        val bodyInfo = btRigidBody.btRigidBodyConstructionInfo(mass, motionState, shape, localInertia)
+        bodyInfo.restitution = restitution
+        bodyInfo.friction = friction
+        bodyInfo.additionalDampingFactor = additionalDampingFactor
+        bodyInfo.additionalLinearDampingThresholdSqr = additionalLinearDampingThresholdSqr
+        bodyInfo.additionalAngularDampingThresholdSqr = additionalAngularDampingThresholdSqr
+        bodyInfo.additionalAngularDampingFactor = additionalAngularDampingFactor
+
+        val body = btRigidBody(bodyInfo)
+        bodyInfo.dispose()
+
+        val physicalData = PhysicalData(mass == 0F)
+        physicalData.collisionShapes.add(shape)
+        physicalData.motionStates.add(motionState)
+        physicalData.rigidBodies.add(body)
+        physicalData.setBody(body)
+
+        return physicalData
+    }
+    fun createTestBox(position: Vector3): PhysicalData {
+        val physicalData = PhysicalData(false)
 
         val shape = btBoxShape(Vector3(1f, 1f, 1f))
         physicalData.shapes.add(shape)
-        val motionState = btDefaultMotionState(Matrix4().setToTranslation(Vector3(10f, 400f, 10f)))
+        val motionState = btDefaultMotionState(Matrix4().setToTranslation(position))
         physicalData.motionStates.add(motionState)
         val localInertia = Vector3(0f, 0f, 0f)
         shape.calculateLocalInertia(1f, localInertia)
@@ -32,7 +102,7 @@ object PhysicsUtils {
     }
 
     fun createChunkBody(chunk: ChunkData): PhysicalData {
-        val physicalData = PhysicalData()
+        val physicalData = PhysicalData(true)
         val compound = btCompoundShape()
         physicalData.compounds.add(compound)
         val w = chunk.chunkWidth
