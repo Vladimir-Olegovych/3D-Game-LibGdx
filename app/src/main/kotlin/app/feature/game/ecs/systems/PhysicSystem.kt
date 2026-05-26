@@ -43,18 +43,22 @@ class PhysicSystem: BaseSystem() {
 
         val rawBoxMesh = MeshUtils.createBoxMeshData()
 
-        for (i in 0 .. 100) {
-            val entityId = world.create()
-            transformMapper.create(entityId)
-            meshMapper.create(entityId).apply {
-                this@apply.meshData = rawBoxMesh.createMeshData()
-                this@apply.meshTextureData = texture
+        for (x in 0 .. 5) {
+            for (y in 0 .. 5) {
+                for (z in 0 .. 5) {
+                    val entityId = world.create()
+                    transformMapper.create(entityId)
+                    meshMapper.create(entityId).apply {
+                        this@apply.meshData = rawBoxMesh.createMeshData()
+                        this@apply.meshTextureData = texture
+                    }
+                    physicsEventBus.sendEvent(GameEvent.OnCreateMeshRigidBody(
+                        entityId = entityId,
+                        position = Vector3(x * 2.2F + 10, y * 2.2F + 300, z * 2.2F + 10),
+                        rawMeshData = rawBoxMesh
+                    ))
+                }
             }
-            physicsEventBus.sendEvent(GameEvent.OnCreateMeshRigidBody(
-                entityId = entityId,
-                position = Vector3(10f, 400f, 10f),
-                rawMeshData = rawBoxMesh
-            ))
         }
     }
 

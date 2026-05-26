@@ -1,4 +1,4 @@
-package core.noice
+package core.noice.models
 
 data class NoiseSettings(
     val noiseZoom: Float,

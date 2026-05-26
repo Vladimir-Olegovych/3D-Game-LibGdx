@@ -10,7 +10,9 @@ import com.gigapi.eventbus.EventBus
 import com.gigapi.general.Context
 import core.bullet.PhysicsWorldUpdater
 import core.chunk.ChunkManager
+import core.noice.models.NoiceTypes
 import core.noice.PerlinNoise
+import core.noice.RandomNoise
 import core.terrain.TerrainGenerator
 import core.terrain.biome.ForestBiomeGenerator
 
@@ -30,7 +32,8 @@ object DefaultWorldSetupManager: LaunchedEffect {
         context.setObject(ChunkSystem())
         context.setObject(PhysicSystem())
         //---
-        context.setObject(PerlinNoise())
+        context.setObject(NoiceTypes.PERLIN_WORLD, PerlinNoise(0))
+        context.setObject(NoiceTypes.RANDOM_WORLD, RandomNoise(0))
         //---
         context.setObject(ForestBiomeGenerator())
         //---

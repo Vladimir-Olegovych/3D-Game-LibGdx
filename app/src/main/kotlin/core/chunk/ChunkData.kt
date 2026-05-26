@@ -9,9 +9,6 @@ class ChunkData(
     val chunkHeight: Int,
     val blocksArray: Array<BlockType>
 ) {
-
-    var modified = false
-
     fun isAllBlock(blockType: BlockType): Boolean {
         blocksArray.forEach { if (blockType != it) return false }
         return true

@@ -16,16 +16,16 @@ abstract class BlockLayerHandler {
         chunkData: ChunkData,
         localPosition: IntVector3,
         worldPosition: IntVector3,
-        surfaceHeightNoise: Int
+        heightNoise: Pair<Float, Int>,
     ) {
-        handling(chunkData, localPosition, worldPosition, surfaceHeightNoise)
-        next?.handle(chunkData, localPosition, worldPosition, surfaceHeightNoise)
+        handling(chunkData, localPosition, worldPosition, heightNoise)
+        next?.handle(chunkData, localPosition, worldPosition, heightNoise)
     }
 
     protected abstract fun handling(
         chunkData: ChunkData,
         localPosition: IntVector3,
         worldPosition: IntVector3,
-        surfaceHeightNoise: Int
+        heightNoice: Pair<Float, Int>
     )
 }

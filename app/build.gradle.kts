@@ -19,9 +19,9 @@ dependencies {
     api("com.fasterxml.jackson.core:jackson-core:2.14.2")
     api("com.fasterxml.jackson.core:jackson-annotations:2.14.2")
 
+    api("com.esotericsoftware:kryo:5.5.0")
     api("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.1")
     api("net.onedaybeard.artemis:artemis-odb:2.3.0")
-    api("com.esotericsoftware:kryonet:2.22.0-RC1")
 }
 
 application {

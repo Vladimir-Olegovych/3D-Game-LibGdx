@@ -21,4 +21,11 @@ class TerrainGenerator: LaunchedEffect {
         }
     }
 
+    companion object {
+        const val CAVE_THRESHOLD = 0.2F
+        const val CAVE_LEVEL = -120
+        const val UNDERGROUND_HEIGHT = 80
+        const val WORLD_HEIGHT = 300
+    }
+
 }

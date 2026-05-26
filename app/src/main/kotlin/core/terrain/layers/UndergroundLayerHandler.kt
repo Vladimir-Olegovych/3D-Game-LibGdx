@@ -3,21 +3,29 @@ package core.terrain.layers
 import com.gigapi.math.vector.IntVector3
 import core.blocks.BlockType
 import core.chunk.ChunkData
-import core.chunk.ChunkManager
 import core.terrain.BlockLayerHandler
-import kotlin.math.roundToInt
+import core.terrain.TerrainGenerator.Companion.UNDERGROUND_HEIGHT
+import kotlin.random.Random
 
 class UndergroundLayerHandler(
-    private val undergroundBlockType: BlockType = BlockType.STONE,
-    private val surfaceLevel: Int = 3
+    private val seed: Int,
+    private val undergroundBlockType: BlockType = BlockType.STONE
 ): BlockLayerHandler() {
     override fun handling(
         chunkData: ChunkData,
         localPosition: IntVector3,
         worldPosition: IntVector3,
-        surfaceHeightNoise: Int
+        heightNoice: Pair<Float, Int>
     ) {
-        if (worldPosition.y < surfaceHeightNoise - surfaceLevel) {
+        val heightNoice = heightNoice.second
+        if(worldPosition.y > heightNoice) return
+
+        val random = Random(seed + worldPosition.x.toLong() * 31L + worldPosition.z.toLong() * 71L)
+        val undergroundHeight = random.nextInt(
+            UNDERGROUND_HEIGHT, (UNDERGROUND_HEIGHT + UNDERGROUND_HEIGHT / 1.5).toInt()
+        )
+
+        if (worldPosition.y <= undergroundHeight) {
             chunkData.setBlockByLocal(undergroundBlockType, localPosition)
         }
     }

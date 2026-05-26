@@ -6,15 +6,13 @@ import core.chunk.ChunkData
 import core.chunk.ChunkManager
 import core.terrain.BlockLayerHandler
 
-class WaterLayerHandler(
-    private val waterLevel: Int = ChunkManager.WORLD_HEIGHT / 3
-): BlockLayerHandler() {
+class WaterLayerHandler: BlockLayerHandler() {
 
     override fun handling(
         chunkData: ChunkData,
         localPosition: IntVector3,
         worldPosition: IntVector3,
-        surfaceHeightNoise: Int
+        heightNoice: Pair<Float, Int>
     ) {
 
         //chunkData.setBlockByLocal(block, localPosition)

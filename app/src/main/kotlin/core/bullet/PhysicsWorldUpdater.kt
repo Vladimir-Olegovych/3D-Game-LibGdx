@@ -10,7 +10,7 @@ import com.gigapi.eventbus.annotation.BusEvent
 import com.gigapi.general.Context
 import kotlinx.coroutines.Dispatchers
 
-class PhysicsWorldUpdater: LaunchedEffect, DeltaUpdater(1 / 20F, Dispatchers.Default) {
+class PhysicsWorldUpdater: LaunchedEffect, DeltaUpdater(1 / 60F, Dispatchers.Default) {
 
     private lateinit var physicalEventBus: EventBus
     private lateinit var mainEventBus: EventBus
@@ -65,6 +65,12 @@ class PhysicsWorldUpdater: LaunchedEffect, DeltaUpdater(1 / 20F, Dispatchers.Def
     }
 
     override fun dispose() {
+        for ((_, data) in physicBodies) {
+            val body = data.getBody()
+            physicsWorld.world.removeRigidBody(body)
+            data.dispose()
+        }
+        physicBodies.clear()
         physicalEventBus.clear()
         physicsWorld.dispose()
     }

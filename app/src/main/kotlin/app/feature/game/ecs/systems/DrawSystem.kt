@@ -47,34 +47,19 @@ class DrawSystem: IteratingSystem() {
     }
 
     private val tmpVec = Vector3()
-    private val cameraForwardXZ = Vector3()
-    private val toObjectXZ = Vector3()
 
     override fun process(entityId: Int) {
         val meshComponent = meshMapper[entityId] ?: return
         val meshTextureData = meshComponent.meshTextureData ?: return
         val mesh = meshComponent.meshData?.mesh ?: return
 
-        val transform = transformMapper[entityId]?.transform?: return
+        val transform = transformMapper[entityId]?.transform ?: return
 
         val objectPosition = transform.getTranslation(tmpVec)
         val objectRadius = meshComponent.boundingRadius
         val toObject = tmpVec.set(objectPosition).sub(camera.position)
 
-        cameraForwardXZ.set(camera.direction).y = 0f
-        if (!cameraForwardXZ.isZero) cameraForwardXZ.nor()
-        toObjectXZ.set(toObject).y = 0f
-
-        if (toObject.dot(camera.direction) + objectRadius < 0f) {
-            if(!toObjectXZ.isZero) {
-                val dotProduct = cameraForwardXZ.dot(toObjectXZ)
-                val isBack = dotProduct + objectRadius < 0f
-                if (isBack) return
-            } else {
-                return
-            }
-        }
-
+        if (toObject.dot(camera.direction) + objectRadius < 0f) return
 
         simpleShader.setUniformMatrix("transform", transform)
         meshTextureData.bind(0)
