@@ -30,7 +30,7 @@ class ChunkManager : LaunchedEffect, DisposableEffect {
         const val CHUNK_HEIGHT = 16
     }
 
-    private val parallelismMesh = Semaphore(12 * 6 * 4)
+    private val parallelismMesh = Semaphore(DRAW_RADIUS_X * 6 * 4)
 
     private val chunkDataPositionToEntityId = ConcurrentHashMap<IntVector3, Int>()
     private val chunkMeshPositionToEntityId = ConcurrentHashMap<IntVector3, Int>()

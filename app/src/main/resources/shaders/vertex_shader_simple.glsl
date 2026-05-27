@@ -6,7 +6,8 @@ uniform mat4 modelViewProjection;
 uniform mat4 transform;
 uniform mat4 normalMatrix;
 uniform vec3 viewPosition;
-uniform float cameraFar;
+uniform float horizontalRadius;
+uniform float verticalRadius;
 
 varying vec3 varNormal;
 varying vec3 varViewPosition;
@@ -17,12 +18,18 @@ void main() {
     vec4 worldPosition = transform * vec4(a_Position, 1.0);
     varViewPosition = worldPosition.xyz;
 
-    float distance = length(viewPosition - worldPosition.xyz);
+    float fogStart = 0.9;
+    float fogEnd = 0.8;
 
-    float fogStart = cameraFar - 30;
-    float fogEnd = cameraFar;
+    vec3 diff = worldPosition - viewPosition;
 
-    v_FogFactor = clamp((fogEnd - distance) / (fogEnd - fogStart), 0.0, 1.0);
+    float ellipsoidDistance = sqrt(
+        (diff.x * diff.x) / (horizontalRadius * horizontalRadius) +
+        (diff.y * diff.y) / (verticalRadius * verticalRadius) +
+        (diff.z * diff.z) / (horizontalRadius * horizontalRadius)
+    );
+
+    v_FogFactor = clamp((ellipsoidDistance - fogStart) / (fogEnd - fogStart), 0.0, 1.0);
 
     varNormal = normalize((transform * vec4(a_Normal, 0.0)).xyz);
     v_TexCoord = a_TexCoord;

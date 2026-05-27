@@ -4,7 +4,6 @@ import com.gigapi.math.vector.IntVector3
 import core.chunk.ChunkData
 import core.chunk.ChunkManager
 import core.mesh.MeshData
-import kotlin.ranges.step
 
 object WorldDataHelper {
     fun chunkPositionFromBlockCoords(worldBlockPosition: IntVector3): IntVector3 {
@@ -26,32 +25,22 @@ object WorldDataHelper {
     fun getChunkPositionsAroundPlayer(
         playerPosition: IntVector3
     ): List<IntVector3> {
-        val chunkSize = ChunkManager.CHUNK_SIZE
-        val chunkHeight = ChunkManager.CHUNK_HEIGHT
         val chunkDrawingRangeX = ChunkManager.DRAW_RADIUS_X
         val chunkDrawingRangeY = ChunkManager.DRAW_RADIUS_Y
 
         val centerChunk = chunkPositionFromBlockCoords(playerPosition)
         val chunkPositionsToCreate = mutableListOf<IntVector3>()
 
-        // Определяем радиусы в чанках
-        val radiusXZ = chunkDrawingRangeX
-        val radiusY = chunkDrawingRangeY
-
-        // Центр сферы в координатах чанков
         val centerX = centerChunk.x
         val centerY = centerChunk.y
         val centerZ = centerChunk.z
 
-        for (dx in -radiusXZ..radiusXZ) {
-            for (dy in -radiusY..radiusY) {
-                for (dz in -radiusXZ..radiusXZ) {
-                    // Проверяем, попадает ли точка в сферу
-                    val distanceSquared = dx * dx + dy * dy + dz * dz
-                    val radiusSquaredXZ = radiusXZ * radiusXZ
-                    val radiusSquaredY = radiusY * radiusY
+        for (dx in -chunkDrawingRangeX..chunkDrawingRangeX) {
+            for (dy in -chunkDrawingRangeY..chunkDrawingRangeY) {
+                for (dz in -chunkDrawingRangeX..chunkDrawingRangeX) {
+                    val radiusSquaredXZ = chunkDrawingRangeX * chunkDrawingRangeX
+                    val radiusSquaredY = chunkDrawingRangeY * chunkDrawingRangeY
 
-                    // Эллипсоид (сфера с разными радиусами по Y)
                     if (dx * dx / radiusSquaredXZ.toDouble() +
                         dy * dy / radiusSquaredY.toDouble() +
                         dz * dz / radiusSquaredXZ.toDouble() <= 1.0) {
@@ -73,15 +62,12 @@ object WorldDataHelper {
     fun getDataPositionsAroundPlayer(
         playerPosition: IntVector3
     ): List<IntVector3> {
-        val chunkSize = ChunkManager.CHUNK_SIZE
-        val chunkHeight = ChunkManager.CHUNK_HEIGHT
         val chunkDrawingRangeX = ChunkManager.DRAW_RADIUS_X
         val chunkDrawingRangeY = ChunkManager.DRAW_RADIUS_Y
 
         val centerChunk = chunkPositionFromBlockCoords(playerPosition)
         val chunkPositionsToCreate = mutableListOf<IntVector3>()
 
-        // Для данных используем радиус на 1 больше (как в оригинале)
         val radiusXZ = chunkDrawingRangeX + 1
         val radiusY = chunkDrawingRangeY + 1
 
@@ -92,11 +78,9 @@ object WorldDataHelper {
         for (dx in -radiusXZ..radiusXZ) {
             for (dy in -radiusY..radiusY) {
                 for (dz in -radiusXZ..radiusXZ) {
-                    // Проверяем, попадает ли точка в сферу
                     val radiusSquaredXZ = radiusXZ * radiusXZ
                     val radiusSquaredY = radiusY * radiusY
 
-                    // Эллипсоид (сфера с разными радиусами по Y)
                     if (dx * dx / radiusSquaredXZ.toDouble() +
                         dy * dy / radiusSquaredY.toDouble() +
                         dz * dz / radiusSquaredXZ.toDouble() <= 1.0) {

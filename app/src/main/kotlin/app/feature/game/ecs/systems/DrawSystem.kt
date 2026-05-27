@@ -11,6 +11,7 @@ import com.badlogic.gdx.graphics.GL20
 import com.badlogic.gdx.graphics.PerspectiveCamera
 import com.badlogic.gdx.graphics.glutils.ShaderProgram
 import com.badlogic.gdx.math.Vector3
+import core.chunk.ChunkManager
 import core.defaults.CameraTypes
 import core.shaders.ShaderTypes
 
@@ -28,6 +29,7 @@ class DrawSystem: IteratingSystem() {
     private lateinit var simpleShader: ShaderProgram
 
     override fun begin() {
+        val fogVerticalRadius = ChunkManager.CHUNK_HEIGHT * ChunkManager.DRAW_RADIUS_Y - ChunkManager.CHUNK_HEIGHT * 2F
         Gdx.gl.glEnable(GL20.GL_CULL_FACE)
         Gdx.gl.glEnable(GL20.GL_DEPTH_TEST)
         Gdx.gl.glClearColor(135 / 255f, 206 / 255f, 235 / 255f, 1f)
@@ -42,7 +44,8 @@ class DrawSystem: IteratingSystem() {
         simpleShader.setUniformf("ambientLight", 0.04f, 0.04f, 0.06f)
         simpleShader.setUniformf("viewPosition", camera.position)
         simpleShader.setUniformf("objectColor", 1f, 1f, 1f)
-        simpleShader.setUniformf("cameraFar", camera.far)
+        simpleShader.setUniformf("horizontalRadius", camera.far)
+        simpleShader.setUniformf("verticalRadius", fogVerticalRadius)
         simpleShader.setUniformf("fogColor", 135 / 255f, 206 / 255f, 240 / 255f)
     }
 

@@ -79,12 +79,16 @@ class ChunkSystem: BaseSystem() {
         meshMapper.remove(event.chunkEntityId)
     }
 
+    private var lastCameraPosition = IntVector3()
     private var timeSinceLastUpdate = 0f
 
     override fun processSystem() {
         timeSinceLastUpdate += world.delta
-        if (timeSinceLastUpdate < 1f) return
+        if (timeSinceLastUpdate < 0.3f) return
         timeSinceLastUpdate = 0f
-        eventBus.sendEvent(GameEvent.LoadAdditionalChunksRequest(world, IntVector3.roundToInt(camera.position)))
+        val currentCameraPosition = IntVector3.roundToInt(camera.position)
+        if (currentCameraPosition == lastCameraPosition) return
+        lastCameraPosition = currentCameraPosition
+        eventBus.sendEvent(GameEvent.LoadAdditionalChunksRequest(world, currentCameraPosition))
     }
 }

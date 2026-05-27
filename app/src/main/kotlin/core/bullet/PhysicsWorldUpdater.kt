@@ -34,7 +34,11 @@ class PhysicsWorldUpdater: LaunchedEffect, DeltaUpdater(1 / 60F, Dispatchers.Def
     @BusEvent
     fun onMeshBodyCreated(event: GameEvent.OnCreateMeshRigidBody) {
         val entityId = event.entityId
-        val physicalData = PhysicsUtils.createTestBox(event.position)
+        val physicalData = PhysicsUtils.createMeshBody(
+            position = event.position,
+            rawMeshData = event.rawMeshData,
+            mass = event.mass
+        )
         physicBodies[entityId] = physicalData
         physicsWorld.world.addRigidBody(physicalData.getBody())
     }

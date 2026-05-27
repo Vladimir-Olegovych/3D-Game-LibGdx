@@ -8,15 +8,13 @@ import com.artemis.BaseSystem
 import com.artemis.ComponentMapper
 import com.artemis.annotations.Wire
 import com.badlogic.gdx.assets.AssetManager
-import com.badlogic.gdx.graphics.Pixmap
-import com.badlogic.gdx.graphics.Texture
-import com.badlogic.gdx.graphics.TextureData
 import com.badlogic.gdx.graphics.g2d.TextureAtlas
-import com.badlogic.gdx.graphics.g2d.TextureRegion
 import com.badlogic.gdx.math.Vector3
 import com.gigapi.eventbus.EventBus
 import com.gigapi.eventbus.annotation.BusEvent
 import core.assets.SkinID
+import core.blocks.BlockDataManager
+import core.blocks.BlockType
 import core.bullet.PhysicsWorldUpdater
 import core.mesh.MeshUtils
 
@@ -31,30 +29,32 @@ class PhysicSystem: BaseSystem() {
     private lateinit var transformMapper: ComponentMapper<TransformComponent>
 
     //Delete
+    @Wire
+    private lateinit var blockDataManager: BlockDataManager
     @Wire private lateinit var assetManager: AssetManager
     private lateinit var meshMapper: ComponentMapper<MeshComponent>
-    private lateinit var texture: Texture
 
     override fun initialize() {
         physicsWorldUpdater.start()
 
-        val meshTexture: TextureRegion = assetManager.get<TextureAtlas>(SkinID.BLOCK.atlas).findRegion("bl_wood")
-        texture = extractRegionAsTexture(meshTexture)
+        val meshTexture = assetManager.get<TextureAtlas>(SkinID.BLOCK.atlas).textures.first()
 
-        val rawBoxMesh = MeshUtils.createBoxMeshData()
+        val size = 4F
+        val m = size * 2.1F
+        val rawBoxMesh = MeshUtils.createBoxMeshData(blockDataManager, BlockType.STONE, size)
 
         for (x in 0 .. 5) {
-            for (y in 0 .. 5) {
+            for (y in -10 .. 0) {
                 for (z in 0 .. 5) {
                     val entityId = world.create()
                     transformMapper.create(entityId)
                     meshMapper.create(entityId).apply {
                         this@apply.meshData = rawBoxMesh.createMeshData()
-                        this@apply.meshTextureData = texture
+                        this@apply.meshTextureData = meshTexture
                     }
                     physicsEventBus.sendEvent(GameEvent.OnCreateMeshRigidBody(
                         entityId = entityId,
-                        position = Vector3(x * 2.2F + 10, y * 2.2F + 300, z * 2.2F + 10),
+                        position = Vector3(x * m + 10, y * m + 700, z * m + 10),
                         rawMeshData = rawBoxMesh
                     ))
                 }
@@ -71,36 +71,6 @@ class PhysicSystem: BaseSystem() {
     override fun processSystem() {}
 
     override fun dispose() {
-        texture.dispose()
         physicsWorldUpdater.stop()
-    }
-
-    //Delete
-    fun extractRegionAsTexture(region: TextureRegion): Texture {
-        val texture = region.getTexture()
-        val textureData: TextureData = texture.getTextureData()
-        if (!textureData.isPrepared()) {
-            textureData.prepare()
-        }
-        val fullPixmap: Pixmap = textureData.consumePixmap()
-        val regionPixmap = Pixmap(
-            region.getRegionWidth(),
-            region.getRegionHeight(),
-            fullPixmap.getFormat()
-        )
-        regionPixmap.drawPixmap(
-            fullPixmap,  // исходный Pixmap
-            0,  // x целевой координаты
-            0,  // y целевой координаты
-            region.getRegionX(),  // x исходной области (верхний левый угол)
-            region.getRegionY(),  // y исходной области
-            region.getRegionWidth(),
-            region.getRegionHeight()
-        )
-        val newTexture = Texture(regionPixmap)
-        fullPixmap.dispose()
-        regionPixmap.dispose()
-
-        return newTexture
     }
 }
