@@ -12,6 +12,7 @@ import com.badlogic.gdx.assets.AssetManager
 import com.badlogic.gdx.graphics.Texture
 import com.badlogic.gdx.math.Vector3
 import com.gigapi.eventbus.EventBus
+import com.gigapi.eventbus.annotation.BusEvent
 import com.gigapi.screens.mesh.ModelAssetManager
 import core.artemis.startTest100Box
 import core.assets.ModelID
@@ -35,7 +36,10 @@ class WorldSystem: BaseSystem() {
         super.setWorld(world)
     }
 
-    override fun initialize() {
+    override fun initialize() {}
+
+    @BusEvent
+    fun onWorldGenerated(event: GameEvent.GameWorldStarted) {
         val playerEntityId = WorldConstants.getPlayerEntityId()
 
         val playerMeshTexture = assetManager.get<Texture>(TextureID.PLAYER.filePath)

@@ -46,6 +46,8 @@ class ChunkManager : LaunchedEffect, DisposableEffect {
     private lateinit var defaultScope: CoroutineScope
     private lateinit var mainScope: CoroutineScope
 
+    private var isFirstGeneration = true
+
     override fun launch(context: Context) {
         mainEventBus = context.getObject(EventBusTypes.MAIN_EVENT_BUS)
         physicsEventBus = context.getObject(EventBusTypes.PHYSICS_EVENT_BUS)
@@ -69,6 +71,11 @@ class ChunkManager : LaunchedEffect, DisposableEffect {
     fun loadAdditionalChunks(event: GameEvent.LoadAdditionalChunksRequest) {
         defaultScope.launch {
             performWorldGeneration(event.world, event.playerPosition)
+            withContext(mainScope.coroutineContext) {
+                if (!isFirstGeneration) return@withContext
+                mainEventBus.sendEvent(GameEvent.GameWorldStarted)
+                isFirstGeneration = false
+            }
         }
     }
 
