@@ -9,10 +9,10 @@ import com.gigapi.eventbus.EventBus
 import com.gigapi.eventbus.annotation.BusEvent
 import com.gigapi.general.Context
 import com.gigapi.math.vector.IntVector3
+import com.gigapi.screens.mesh.MeshData
 import core.blocks.BlockType
 import core.chunk.world.WorldDataHelper
 import core.chunk.world.WorldGenerationData
-import core.mesh.MeshData
 import core.mesh.MeshHelper
 import core.scope.DispatcherTypes
 import core.terrain.TerrainGenerator

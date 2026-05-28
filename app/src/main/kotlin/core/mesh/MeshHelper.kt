@@ -3,6 +3,7 @@ package core.mesh
 import com.gigapi.core.effects.LaunchedEffect
 import com.gigapi.general.Context
 import com.gigapi.math.vector.IntVector3
+import com.gigapi.screens.mesh.RawMeshData
 import core.blocks.BlockDataManager
 import core.blocks.BlockType
 import core.chunk.ChunkData

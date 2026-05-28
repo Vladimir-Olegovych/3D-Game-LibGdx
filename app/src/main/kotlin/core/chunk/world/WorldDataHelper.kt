@@ -1,9 +1,9 @@
 package core.chunk.world
 
 import com.gigapi.math.vector.IntVector3
+import com.gigapi.screens.mesh.MeshData
 import core.chunk.ChunkData
 import core.chunk.ChunkManager
-import core.mesh.MeshData
 
 object WorldDataHelper {
     fun chunkPositionFromBlockCoords(worldBlockPosition: IntVector3): IntVector3 {

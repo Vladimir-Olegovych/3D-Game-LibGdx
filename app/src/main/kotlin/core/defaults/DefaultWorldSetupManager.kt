@@ -4,6 +4,7 @@ import app.feature.game.ecs.systems.CameraSystem
 import app.feature.game.ecs.systems.ChunkSystem
 import app.feature.game.ecs.systems.DrawSystem
 import app.feature.game.ecs.systems.PhysicSystem
+import app.feature.game.ecs.systems.WorldSystem
 import app.feature.game.event.EventBusTypes
 import com.gigapi.core.effects.LaunchedEffect
 import com.gigapi.eventbus.EventBus
@@ -27,6 +28,7 @@ object DefaultWorldSetupManager: LaunchedEffect {
         //---
         context.setObject(ChunkManager())
         //Systems
+        context.setObject(WorldSystem())
         context.setObject(CameraSystem())
         context.setObject(DrawSystem())
         context.setObject(ChunkSystem())

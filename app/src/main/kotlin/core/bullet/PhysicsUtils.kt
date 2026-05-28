@@ -6,10 +6,10 @@ import com.badlogic.gdx.physics.bullet.collision.*
 import com.badlogic.gdx.physics.bullet.collision.CollisionConstants.DISABLE_SIMULATION
 import com.badlogic.gdx.physics.bullet.dynamics.btRigidBody
 import com.badlogic.gdx.physics.bullet.linearmath.btDefaultMotionState
+import com.gigapi.screens.mesh.RawMeshData
 import core.blocks.BlockType
 import core.chunk.ChunkData
 import core.math.createMatrixForChunk
-import core.mesh.RawMeshData
 
 object PhysicsUtils {
 
@@ -18,7 +18,8 @@ object PhysicsUtils {
         rawMeshData: RawMeshData,
         mass: Float,
         friction: Float = 0.5f,
-        restitution: Float = 0.5f
+        restitution: Float = 0.5f,
+        fixedXZ: Boolean = false
     ): PhysicalData {
         val isStatic = mass == 0f
         val physicalData = PhysicalData(isStatic)
@@ -55,6 +56,7 @@ object PhysicsUtils {
             }
             convexHull.recalcLocalAabb()
             convexHull.optimizeConvexHull()
+            convexHull.margin = 0.0f
 
             convexHull
         }
@@ -71,6 +73,10 @@ object PhysicsUtils {
 
         val bodyInfo = btRigidBody.btRigidBodyConstructionInfo(mass, motionState, shape, localInertia)
         val body = btRigidBody(bodyInfo)
+        if (!isStatic && fixedXZ) {
+            //body.linearFactor = Vector3(0f, 1f, 0f)
+            body.angularFactor = Vector3(0f, 0f, 0f)
+        }
         bodyInfo.dispose()
 
         body.friction = friction
