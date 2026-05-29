@@ -10,6 +10,7 @@ uniform vec3 ambientLight;
 uniform vec3 viewPosition;
 uniform vec3 objectColor;
 uniform vec3 fogColor;
+uniform float u_useTexture;
 
 void main() {
     vec3 normal = normalize(varNormal);
@@ -29,9 +30,9 @@ void main() {
     result = pow(result, vec3(1.0/2.2));
 
     vec3 texColor = texture2D(u_texture, v_TexCoord).rgb;
-    result = result * texColor;
+    vec3 albedo = mix(objectColor, texColor, u_useTexture);
+    result = result * albedo;
 
     vec3 finalColor = mix(fogColor, result, v_FogFactor);
-
     gl_FragColor = vec4(finalColor, 1.0);
 }

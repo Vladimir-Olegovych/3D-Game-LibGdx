@@ -25,9 +25,9 @@ object AssetsSetupManager: LaunchedEffect {
         assetManager.finishLoading()
         context.setObject(assetManager)
 
-        val modelAssetManager = ModelAssetManager()
+        val modelAssetManager = ModelAssetManager("textures", assetManager)
         ModelID.entries.forEach {
-            modelAssetManager.loadObj(it, "$ASSETS_PATH/${it.filePath}")
+            modelAssetManager.loadObj(it, "$ASSETS_PATH/${it.filePathObj}", "$ASSETS_PATH/${it.filePathMlt}")
         }
         context.setObject(modelAssetManager)
         //---

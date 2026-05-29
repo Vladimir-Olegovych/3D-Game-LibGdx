@@ -1,5 +1,8 @@
 package core.mesh
 
+import com.badlogic.gdx.graphics.Mesh
+import com.badlogic.gdx.math.Vector3
+import com.badlogic.gdx.math.collision.BoundingBox
 import com.gigapi.screens.mesh.RawMeshData
 import core.blocks.BlockDataManager
 import core.blocks.BlockType
@@ -19,6 +22,62 @@ enum class DirectionType {
 }
 
 object MeshUtils {
+    fun getBoundRadius(mesh: Mesh?): Float {
+        mesh?: return 0F
+        val boundingBox = BoundingBox()
+        mesh.calculateBoundingBox(boundingBox)
+        return boundingBox.getDimensions(Vector3()).len()
+    }
+
+    fun createBoxBySize(width: Float, height: Float, depth: Float = width): RawMeshData {
+        val halfW = width / 2f
+        val halfH = height / 2f
+        val halfD = depth / 2f
+
+        val vertices = floatArrayOf(
+            -halfW, -halfH,  halfD,  0f, 0f, 1f,  0f, 0f,  // 0
+            halfW, -halfH,  halfD,  0f, 0f, 1f,  1f, 0f,  // 1
+            halfW,  halfH,  halfD,  0f, 0f, 1f,  1f, 1f,  // 2
+            -halfW,  halfH,  halfD,  0f, 0f, 1f,  0f, 1f,  // 3
+
+            -halfW, -halfH, -halfD,  0f, 0f, -1f,  0f, 0f, // 4
+            -halfW,  halfH, -halfD,  0f, 0f, -1f,  0f, 1f, // 5
+            halfW,  halfH, -halfD,  0f, 0f, -1f,  1f, 1f, // 6
+            halfW, -halfH, -halfD,  0f, 0f, -1f,  1f, 0f, // 7
+
+            -halfW, -halfH, -halfD,  -1f, 0f, 0f,  0f, 0f, // 8
+            -halfW, -halfH,  halfD,  -1f, 0f, 0f,  1f, 0f, // 9
+            -halfW,  halfH,  halfD,  -1f, 0f, 0f,  1f, 1f, // 10
+            -halfW,  halfH, -halfD,  -1f, 0f, 0f,  0f, 1f, // 11
+
+            halfW, -halfH,  halfD,   1f, 0f, 0f,  0f, 0f, // 12
+            halfW, -halfH, -halfD,   1f, 0f, 0f,  1f, 0f, // 13
+            halfW,  halfH, -halfD,   1f, 0f, 0f,  1f, 1f, // 14
+            halfW,  halfH,  halfD,   1f, 0f, 0f,  0f, 1f, // 15
+
+            -halfW,  halfH,  halfD,   0f, 1f, 0f,  0f, 0f, // 16
+            halfW,  halfH,  halfD,   0f, 1f, 0f,  1f, 0f, // 17
+            halfW,  halfH, -halfD,   0f, 1f, 0f,  1f, 1f, // 18
+            -halfW,  halfH, -halfD,   0f, 1f, 0f,  0f, 1f, // 19
+
+            -halfW, -halfH, -halfD,   0f, -1f, 0f,  0f, 0f, // 20
+            -halfW, -halfH,  halfD,   0f, -1f, 0f,  0f, 1f, // 21
+            halfW, -halfH,  halfD,   0f, -1f, 0f,  1f, 1f, // 22
+            halfW, -halfH, -halfD,   0f, -1f, 0f,  1f, 0f  // 23
+        )
+
+        val indices = shortArrayOf(
+            0, 1, 2,     0, 2, 3,      // передняя
+            4, 5, 6,     4, 6, 7,      // задняя
+            8, 9, 10,    8, 10, 11,    // левая
+            12, 13, 14,  12, 14, 15,   // правая
+            16, 17, 18,  16, 18, 19,   // верхняя
+            20, 22, 21,  20, 23, 22    // нижняя (исправлено)
+        )
+
+        return RawMeshData(vertices, indices)
+    }
+
     fun createBoxMeshData(
         blockDataManager: BlockDataManager,
         blockType: BlockType,

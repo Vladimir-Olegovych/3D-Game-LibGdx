@@ -2,10 +2,10 @@ package core.assets
 
 enum class ModelID {
 
-    CUBE,
-    COCK,
+    CAR,
     SPHERE,
-    CAPSULE;
+    FIREYARETZIRESP;
 
-    val filePath = "models/${name.lowercase()}.obj"
+    val filePathObj = "models/${name.lowercase()}.obj"
+    val filePathMlt = "models/${name.lowercase()}.mtl"
 }

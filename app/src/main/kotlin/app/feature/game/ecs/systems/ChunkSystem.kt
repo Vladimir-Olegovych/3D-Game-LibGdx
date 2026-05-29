@@ -1,5 +1,6 @@
 package app.feature.game.ecs.systems
 
+import app.feature.game.ecs.components.BoundRadiusComponent
 import app.feature.game.ecs.components.ChunkComponent
 import app.feature.game.ecs.components.MeshComponent
 import app.feature.game.ecs.components.TransformComponent
@@ -13,8 +14,6 @@ import com.badlogic.gdx.assets.AssetManager
 import com.badlogic.gdx.graphics.PerspectiveCamera
 import com.badlogic.gdx.graphics.Texture
 import com.badlogic.gdx.graphics.g2d.TextureAtlas
-import com.badlogic.gdx.math.Vector3
-import com.badlogic.gdx.math.collision.BoundingBox
 import com.gigapi.eventbus.EventBus
 import com.gigapi.eventbus.annotation.BusEvent
 import com.gigapi.math.vector.IntVector3
@@ -22,6 +21,7 @@ import core.assets.SkinID
 import core.chunk.ChunkManager
 import core.defaults.CameraTypes
 import core.math.createMatrixForChunk
+import core.mesh.MeshUtils
 
 @All(MeshComponent::class)
 class ChunkSystem: BaseSystem() {
@@ -35,6 +35,7 @@ class ChunkSystem: BaseSystem() {
     @Wire(name = EventBusTypes.MAIN_EVENT_BUS)
     private lateinit var eventBus: EventBus
 
+    private lateinit var boundMapper: ComponentMapper<BoundRadiusComponent>
     private lateinit var transformMapper: ComponentMapper<TransformComponent>
     private lateinit var chunkMapper: ComponentMapper<ChunkComponent>
     private lateinit var meshMapper: ComponentMapper<MeshComponent>
@@ -57,15 +58,10 @@ class ChunkSystem: BaseSystem() {
         val entityId = event.chunkEntityId
         val meshComp = meshMapper.create(entityId)
         val mesh = event.meshData.mesh ?: return
-
-        val boundingBox = BoundingBox()
-        mesh.calculateBoundingBox(boundingBox)
-
-        val radius = boundingBox.getDimensions(Vector3()).len()
-
+        val radius = MeshUtils.getBoundRadius(mesh)
         meshComp.meshData = event.meshData
         meshComp.meshTextureData = chunkMeshTextureData
-        meshComp.boundingRadius = radius
+        boundMapper.create(entityId).boundingRadius = radius
     }
 
     @BusEvent

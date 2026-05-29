@@ -1,5 +1,6 @@
 package core.artemis
 
+import app.feature.game.ecs.components.BoundRadiusComponent
 import app.feature.game.ecs.components.MeshComponent
 import app.feature.game.ecs.components.TransformComponent
 import app.feature.game.event.EventBusTypes
@@ -8,6 +9,7 @@ import com.artemis.World
 import com.badlogic.gdx.assets.AssetManager
 import com.badlogic.gdx.graphics.g2d.TextureAtlas
 import com.badlogic.gdx.math.Vector3
+import com.badlogic.gdx.math.collision.BoundingBox
 import com.gigapi.eventbus.EventBus
 import core.assets.SkinID
 import core.blocks.BlockDataManager
@@ -20,6 +22,7 @@ fun World.startTest100Box() {
     val assetManager = this.getRegistered(AssetManager::class.java)
     val transformMapper = this.getMapper(TransformComponent::class.java)
     val meshMapper = this.getMapper(MeshComponent::class.java)
+    val boundMapper = this.getMapper(BoundRadiusComponent::class.java)
 
     val meshTexture = assetManager.get<TextureAtlas>(SkinID.BLOCK.atlas).textures.first()
 
@@ -33,6 +36,10 @@ fun World.startTest100Box() {
         for (y in -5 .. 0) {
             for (z in 0 .. 5) {
                 val entityId = this.create()
+
+                val meshData = rawBoxMesh.createMeshData()
+                val radius = MeshUtils.getBoundRadius(meshData.mesh)
+                boundMapper.create(entityId).boundingRadius = radius
                 transformMapper.create(entityId)
                 meshMapper.create(entityId).apply {
                     this@apply.meshData = rawBoxMesh.createMeshData()
