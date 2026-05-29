@@ -24,17 +24,23 @@ object AssetsSetupManager: LaunchedEffect {
         }
         assetManager.finishLoading()
         context.setObject(assetManager)
-
+        //---
         val modelAssetManager = ModelAssetManager("textures", assetManager)
         ModelID.entries.forEach {
             modelAssetManager.loadObj(it, "$ASSETS_PATH/${it.filePathObj}", "$ASSETS_PATH/${it.filePathMlt}")
         }
         context.setObject(modelAssetManager)
         //---
+        ShaderProgram.pedantic = false
         val simpleShader = ShaderProgram(
             Gdx.files.local("$ASSETS_PATH/shaders/vertex_shader_simple.glsl").readString(),
             Gdx.files.local("$ASSETS_PATH/shaders/fragment_shader_simple.glsl").readString()
         )
         context.setObject(ShaderTypes.SIMPLE_SHADER, simpleShader)
+        val shadowShader = ShaderProgram(
+            Gdx.files.local("$ASSETS_PATH/shaders/vertex_shader_shadow.glsl").readString(),
+            Gdx.files.local("$ASSETS_PATH/shaders/fragment_shader_shadow.glsl").readString()
+        )
+        context.setObject(ShaderTypes.SHADOW_SHADER, shadowShader)
     }
 }

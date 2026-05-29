@@ -18,11 +18,10 @@ import com.gigapi.screens.texture.DefaultsTextures
 import core.chunk.ChunkManager
 import core.defaults.CameraTypes
 import core.shaders.ShaderTypes
+import core.shadows.ShadowRenderer
 
 @One(MeshComponent::class, BlenderModelComponent::class)
 class DrawSystem: IteratingSystem() {
-
-    private val lightDirection = Vector3(30f, 30f, 10f).nor()
 
     private lateinit var boundMapper: ComponentMapper<BoundRadiusComponent>
     private lateinit var blenderMapper: ComponentMapper<BlenderModelComponent>
@@ -33,8 +32,33 @@ class DrawSystem: IteratingSystem() {
     private lateinit var camera: PerspectiveCamera
     @Wire(name = ShaderTypes.SIMPLE_SHADER)
     private lateinit var simpleShader: ShaderProgram
+    @Wire
+    private lateinit var shadowRenderer: ShadowRenderer
 
     override fun begin() {
+        shadowRenderer.begin()
+        val shadowShader = shadowRenderer.shadowShader
+
+        val entities = subscription.getEntities()
+        for (i in 0 until entities.size()) {
+            val entityId = entities.get(i)
+            val transform = transformMapper[entityId]?.transform ?: continue
+            shadowShader.setUniformMatrix("u_worldTrans", transform)
+
+            val blenderRenderData = blenderMapper[entityId]?.blenderRenderData
+            if (blenderRenderData != null) {
+                for (subMesh in blenderRenderData.subMeshes) {
+                    subMesh.mesh.render(shadowShader, GL20.GL_TRIANGLES)
+                }
+            }
+
+            val meshComponent = meshMapper[entityId]
+            if (meshComponent?.meshData?.mesh != null) {
+                meshComponent.meshData?.mesh?.render(shadowShader, GL20.GL_TRIANGLES)
+            }
+        }
+        shadowRenderer.end()
+
         val fogVerticalRadius = ChunkManager.CHUNK_HEIGHT * ChunkManager.DRAW_RADIUS_Y - ChunkManager.CHUNK_HEIGHT * 2F
         Gdx.gl.glEnable(GL20.GL_CULL_FACE)
         Gdx.gl.glEnable(GL20.GL_DEPTH_TEST)
@@ -43,15 +67,21 @@ class DrawSystem: IteratingSystem() {
 
         simpleShader.bind()
         simpleShader.setUniformi("u_texture", 0)
-
+        simpleShader.setUniformi("u_shadowMap", 1)
         simpleShader.setUniformMatrix("modelViewProjection", camera.combined)
-        simpleShader.setUniformf("lightDirection", lightDirection)
-        simpleShader.setUniformf("lightColor", 1f, 1f, 1f)
-        simpleShader.setUniformf("ambientLight", 0.04f, 0.04f, 0.06f)
+        simpleShader.setUniformMatrix("u_lightViewProjection", shadowRenderer.lightViewProjectionMatrix)
         simpleShader.setUniformf("viewPosition", camera.position)
         simpleShader.setUniformf("horizontalRadius", camera.far)
         simpleShader.setUniformf("verticalRadius", fogVerticalRadius)
         simpleShader.setUniformf("fogColor", 135 / 255f, 206 / 255f, 240 / 255f)
+        simpleShader.setUniformf("u_lightDirection", ShadowRenderer.normalizedLightDirection)
+        simpleShader.setUniformf("u_shadowIntensity", 0.7f)
+
+        // Привязываем shadow texture
+        Gdx.gl.glActiveTexture(GL20.GL_TEXTURE1)
+        shadowRenderer.shadowTexture.bind(1)
+        simpleShader.setUniformi("u_shadowMap", 1)
+        Gdx.gl.glActiveTexture(GL20.GL_TEXTURE0)
     }
 
     private val tmpVec = Vector3()
@@ -70,6 +100,7 @@ class DrawSystem: IteratingSystem() {
         processModelMesh(entityId)
         processMesh(entityId)
     }
+
 
     private fun processModelMesh(entityId: Int) {
         val blenderRenderData = blenderMapper[entityId]?.blenderRenderData ?: return

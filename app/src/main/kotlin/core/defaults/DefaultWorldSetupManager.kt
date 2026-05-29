@@ -14,12 +14,15 @@ import core.chunk.ChunkManager
 import core.noice.models.NoiceTypes
 import core.noice.PerlinNoise
 import core.noice.RandomNoise
+import core.shadows.ShadowRenderer
 import core.terrain.TerrainGenerator
 import core.terrain.biome.ForestBiomeGenerator
 
 object DefaultWorldSetupManager: LaunchedEffect {
 
     override fun launch(context: Context) {
+        //---
+        context.setObject(ShadowRenderer())
         //---
         context.setObject(EventBusTypes.MAIN_EVENT_BUS, EventBus())
         context.setObject(EventBusTypes.PHYSICS_EVENT_BUS, EventBus())
