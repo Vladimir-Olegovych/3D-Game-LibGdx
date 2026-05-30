@@ -5,7 +5,6 @@ import app.feature.game.ecs.components.BoundRadiusComponent
 import app.feature.game.ecs.components.MeshComponent
 import app.feature.game.ecs.components.TransformComponent
 import com.artemis.ComponentMapper
-import com.artemis.annotations.All
 import com.artemis.annotations.One
 import com.artemis.annotations.Wire
 import com.artemis.systems.IteratingSystem
@@ -13,12 +12,15 @@ import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.graphics.GL20
 import com.badlogic.gdx.graphics.PerspectiveCamera
 import com.badlogic.gdx.graphics.glutils.ShaderProgram
+import com.badlogic.gdx.math.Matrix4
 import com.badlogic.gdx.math.Vector3
 import com.gigapi.screens.texture.DefaultsTextures
 import core.chunk.ChunkManager
 import core.defaults.CameraTypes
+import core.renderers.ShadowRenderer
+import core.renderers.SunRenderer
 import core.shaders.ShaderTypes
-import core.shadows.ShadowRenderer
+import core.terrain.TerrainGenerator
 
 @One(MeshComponent::class, BlenderModelComponent::class)
 class DrawSystem: IteratingSystem() {
@@ -33,9 +35,48 @@ class DrawSystem: IteratingSystem() {
     @Wire(name = ShaderTypes.SIMPLE_SHADER)
     private lateinit var simpleShader: ShaderProgram
     @Wire
+    private lateinit var sunRenderer: SunRenderer
+    @Wire
     private lateinit var shadowRenderer: ShadowRenderer
 
     override fun begin() {
+        updateShadows()
+        Gdx.gl.glClearColor(135 / 255f, 206 / 255f, 235 / 255f, 1f)
+        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT or GL20.GL_DEPTH_BUFFER_BIT)
+
+        Gdx.gl.glEnable(GL20.GL_CULL_FACE)
+        Gdx.gl.glEnable(GL20.GL_DEPTH_TEST)
+
+        val fogVerticalRadius = ChunkManager.CHUNK_HEIGHT * ChunkManager.DRAW_RADIUS_Y - ChunkManager.CHUNK_HEIGHT * 2F
+
+        simpleShader.bind()
+        //Shadows-Light
+        shadowRenderer.shadowTexture.bind(1)
+        simpleShader.setUniformi("u_shadowMap", 1)
+        simpleShader.setUniformMatrix("u_lightViewProjection", shadowRenderer.lightViewProjectionMatrix)
+        simpleShader.setUniformf("u_lightDirection", ShadowRenderer.normalizedLightDirection)
+        simpleShader.setUniformf("u_shadowIntensity", 0.7f)
+        simpleShader.setUniformf("u_shadowMapSize", ShadowRenderer.SHADOW_MAP_SIZE.toFloat())
+        //Mesh
+        simpleShader.setUniformi("u_texture", 0)
+        simpleShader.setUniformMatrix("modelViewProjection", camera.combined)
+        //Fog
+        simpleShader.setUniformf("viewPosition", camera.position)
+        simpleShader.setUniformf("horizontalRadius", camera.far)
+        simpleShader.setUniformf("verticalRadius", fogVerticalRadius)
+        simpleShader.setUniformf("fogColor", 135 / 255f, 206 / 255f, 240 / 255f)
+
+    }
+
+    override fun end() {
+        Gdx.gl.glDisable(GL20.GL_CULL_FACE)
+        Gdx.gl.glDisable(GL20.GL_DEPTH_TEST)
+        Gdx.gl.glDisable(GL20.GL_CULL_FACE)
+        val lightPosition = shadowRenderer.getLightCameraPosition()
+        sunRenderer.render(lightPosition)
+    }
+
+    private fun updateShadows() {
         shadowRenderer.begin()
         val shadowShader = shadowRenderer.shadowShader
 
@@ -58,30 +99,6 @@ class DrawSystem: IteratingSystem() {
             }
         }
         shadowRenderer.end()
-
-        val fogVerticalRadius = ChunkManager.CHUNK_HEIGHT * ChunkManager.DRAW_RADIUS_Y - ChunkManager.CHUNK_HEIGHT * 2F
-        Gdx.gl.glEnable(GL20.GL_CULL_FACE)
-        Gdx.gl.glEnable(GL20.GL_DEPTH_TEST)
-        Gdx.gl.glClearColor(135 / 255f, 206 / 255f, 235 / 255f, 1f)
-        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT or GL20.GL_DEPTH_BUFFER_BIT)
-
-        simpleShader.bind()
-        simpleShader.setUniformi("u_texture", 0)
-        simpleShader.setUniformi("u_shadowMap", 1)
-        simpleShader.setUniformMatrix("modelViewProjection", camera.combined)
-        simpleShader.setUniformMatrix("u_lightViewProjection", shadowRenderer.lightViewProjectionMatrix)
-        simpleShader.setUniformf("viewPosition", camera.position)
-        simpleShader.setUniformf("horizontalRadius", camera.far)
-        simpleShader.setUniformf("verticalRadius", fogVerticalRadius)
-        simpleShader.setUniformf("fogColor", 135 / 255f, 206 / 255f, 240 / 255f)
-        simpleShader.setUniformf("u_lightDirection", ShadowRenderer.normalizedLightDirection)
-        simpleShader.setUniformf("u_shadowIntensity", 0.7f)
-
-        // Привязываем shadow texture
-        Gdx.gl.glActiveTexture(GL20.GL_TEXTURE1)
-        shadowRenderer.shadowTexture.bind(1)
-        simpleShader.setUniformi("u_shadowMap", 1)
-        Gdx.gl.glActiveTexture(GL20.GL_TEXTURE0)
     }
 
     private val tmpVec = Vector3()

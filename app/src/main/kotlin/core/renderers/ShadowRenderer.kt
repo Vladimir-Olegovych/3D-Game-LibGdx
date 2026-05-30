@@ -1,7 +1,11 @@
-package core.shadows
+package core.renderers
 
 import com.badlogic.gdx.Gdx
-import com.badlogic.gdx.graphics.*
+import com.badlogic.gdx.graphics.GL20
+import com.badlogic.gdx.graphics.GL30
+import com.badlogic.gdx.graphics.OrthographicCamera
+import com.badlogic.gdx.graphics.PerspectiveCamera
+import com.badlogic.gdx.graphics.Texture
 import com.badlogic.gdx.graphics.glutils.FrameBuffer
 import com.badlogic.gdx.graphics.glutils.GLFrameBuffer
 import com.badlogic.gdx.graphics.glutils.ShaderProgram
@@ -14,20 +18,13 @@ import core.defaults.CameraTypes
 import core.shaders.ShaderTypes
 import kotlin.math.abs
 import kotlin.math.floor
+import kotlin.math.sin
 
 class ShadowRenderer : LaunchedEffect, DisposableEffect {
 
     companion object {
         const val SHADOW_MAP_SIZE = 2048 * 2
-
-        // Размер ортографической области теней вокруг камеры
-        // Увеличь если тени обрезаются по краям
-        const val SHADOW_ORTHO_SIZE = 400f
-
-        // Насколько далеко от камеры рендерить тени (вперёд/назад)
         const val SHADOW_DEPTH_RANGE = 400f
-
-        // Расстояние позиции световой камеры от цели
         const val LIGHT_DISTANCE = 4000f
 
         @JvmStatic
@@ -48,11 +45,6 @@ class ShadowRenderer : LaunchedEffect, DisposableEffect {
             lightDirection.set(direction).nor()
         }
 
-        // Вектор ОТ источника К сцене (для шейдера)
-        @JvmStatic
-        fun getLightDirForShader(): Vector3 = lightDirection.cpy().nor()
-
-        // Позиция световой камеры = противоположное направление
         @JvmStatic
         fun getOppositeLightDirection(): Vector3 = lightDirection.cpy().scl(-1f)
     }
@@ -73,7 +65,7 @@ class ShadowRenderer : LaunchedEffect, DisposableEffect {
         shadowShader = context.getObject(ShaderTypes.SHADOW_SHADER)
         mainCamera = context.getObject(CameraTypes.GL_3D)
 
-        lightCamera = OrthographicCamera(SHADOW_ORTHO_SIZE, SHADOW_ORTHO_SIZE).apply {
+        lightCamera = OrthographicCamera(SHADOW_DEPTH_RANGE, SHADOW_DEPTH_RANGE).apply {
             near = 1f
             far = LIGHT_DISTANCE + SHADOW_DEPTH_RANGE
         }
@@ -84,7 +76,7 @@ class ShadowRenderer : LaunchedEffect, DisposableEffect {
             .build()
 
         shadowTexture = shadowFbo.colorBufferTexture.apply {
-            setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear)
+            setFilter(Texture.TextureFilter.Nearest, Texture.TextureFilter.Nearest)
             setWrap(Texture.TextureWrap.ClampToEdge, Texture.TextureWrap.ClampToEdge)
         }
 
@@ -95,29 +87,31 @@ class ShadowRenderer : LaunchedEffect, DisposableEffect {
     fun begin() {
         updateLightCamera()
         shadowFbo.begin()
-
         Gdx.gl.glViewport(0, 0, SHADOW_MAP_SIZE, SHADOW_MAP_SIZE)
         Gdx.gl.glClearColor(1f, 1f, 1f, 1f)
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT or GL20.GL_DEPTH_BUFFER_BIT)
+
         Gdx.gl.glEnable(GL20.GL_DEPTH_TEST)
         Gdx.gl.glDepthFunc(GL20.GL_LEQUAL)
-
-        Gdx.gl.glDisable(GL20.GL_CULL_FACE)
 
         shadowShader.bind()
         shadowShader.setUniformMatrix("u_projViewWorldTrans", lightViewProjectionMatrix)
     }
 
     fun end() {
-        Gdx.gl.glEnable(GL20.GL_CULL_FACE)
-        Gdx.gl.glCullFace(GL20.GL_BACK)
-
         Gdx.gl.glDepthFunc(GL20.GL_LESS)
+        Gdx.gl.glDisable(GL20.GL_DEPTH_TEST)
+
         shadowFbo.end()
         Gdx.gl.glViewport(0, 0, Gdx.graphics.width, Gdx.graphics.height)
     }
-
+    //var x = 0.5F
+    //private var timeAccumulator = 0F
     fun updateLightCamera(snapToGrid: Boolean = true) {
+        //timeAccumulator += Gdx.graphics.deltaTime
+        //val newX = 0.5F + sin(timeAccumulator.toDouble()).toFloat() * 0.1F
+
+        //setLightDirection(1F, -newX, 0F)
         tmpTarget.set(mainCamera.position)
 
         tmpPosition.set(getOppositeLightDirection())
@@ -139,7 +133,7 @@ class ShadowRenderer : LaunchedEffect, DisposableEffect {
         lightCamera.update()
 
         if (snapToGrid) {
-            val texelSize = SHADOW_ORTHO_SIZE * 2f / SHADOW_MAP_SIZE.toFloat()
+            val texelSize = SHADOW_DEPTH_RANGE * 2f / SHADOW_MAP_SIZE.toFloat()
             val projRight = lightCamera.position.dot(right)
             val projUp = lightCamera.position.dot(up)
 
@@ -157,6 +151,9 @@ class ShadowRenderer : LaunchedEffect, DisposableEffect {
 
         lightViewProjectionMatrix.set(lightCamera.combined)
     }
+
+    fun getLightCameraPosition(): Vector3 = lightCamera.position
+
     override fun dispose() {
         shadowFbo.dispose()
     }

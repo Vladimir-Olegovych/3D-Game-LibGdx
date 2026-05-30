@@ -26,6 +26,7 @@ class TerrainGenerator: LaunchedEffect {
         const val CAVE_LEVEL = -120
         const val UNDERGROUND_HEIGHT = 80
         const val WORLD_HEIGHT = 300
+        const val DARKNESS_LEVEL = WORLD_HEIGHT / 4
     }
 
 }

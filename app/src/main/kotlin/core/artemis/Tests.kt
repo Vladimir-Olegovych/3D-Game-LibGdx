@@ -9,7 +9,6 @@ import com.artemis.World
 import com.badlogic.gdx.assets.AssetManager
 import com.badlogic.gdx.graphics.g2d.TextureAtlas
 import com.badlogic.gdx.math.Vector3
-import com.badlogic.gdx.math.collision.BoundingBox
 import com.gigapi.eventbus.EventBus
 import core.assets.SkinID
 import core.blocks.BlockDataManager

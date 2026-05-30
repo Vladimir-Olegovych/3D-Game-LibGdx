@@ -42,5 +42,10 @@ object AssetsSetupManager: LaunchedEffect {
             Gdx.files.local("$ASSETS_PATH/shaders/fragment_shader_shadow.glsl").readString()
         )
         context.setObject(ShaderTypes.SHADOW_SHADER, shadowShader)
+        val sunShader = ShaderProgram(
+            Gdx.files.local("$ASSETS_PATH/shaders/vertex_shader_sun.glsl").readString(),
+            Gdx.files.local("$ASSETS_PATH/shaders/fragment_shader_sun.glsl").readString()
+        )
+        context.setObject(ShaderTypes.SUN_SHADER, sunShader)
     }
 }

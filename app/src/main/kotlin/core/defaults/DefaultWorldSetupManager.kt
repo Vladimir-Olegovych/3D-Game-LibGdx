@@ -14,7 +14,8 @@ import core.chunk.ChunkManager
 import core.noice.models.NoiceTypes
 import core.noice.PerlinNoise
 import core.noice.RandomNoise
-import core.shadows.ShadowRenderer
+import core.renderers.ShadowRenderer
+import core.renderers.SunRenderer
 import core.terrain.TerrainGenerator
 import core.terrain.biome.ForestBiomeGenerator
 
@@ -22,6 +23,7 @@ object DefaultWorldSetupManager: LaunchedEffect {
 
     override fun launch(context: Context) {
         //---
+        context.setObject(SunRenderer())
         context.setObject(ShadowRenderer())
         //---
         context.setObject(EventBusTypes.MAIN_EVENT_BUS, EventBus())
