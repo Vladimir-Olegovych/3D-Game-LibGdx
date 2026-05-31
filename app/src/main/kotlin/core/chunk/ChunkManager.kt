@@ -169,7 +169,7 @@ class ChunkManager : LaunchedEffect, DisposableEffect {
         }
         withContext(mainScope.coroutineContext) {
             if (rawMeshData.isEmpty()) return@withContext
-            val meshData = rawMeshData.createMeshData()
+            val meshData = rawMeshData.createMeshData(withAO = true)
             meshDataMap[position] = meshData
             mainEventBus.sendEvent(GameEvent.OnCreateChunkMeshData(entityId, meshData))
             physicsEventBus.sendEvent(GameEvent.OnCreateChunkRigidBody(entityId, chunkDataMap[position]!!))

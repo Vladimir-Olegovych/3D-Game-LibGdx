@@ -30,9 +30,7 @@ class SunRenderer : LaunchedEffect, DisposableEffect {
         mesh = createFullscreenQuad()
     }
     fun render(lightPosition: Vector3) {
-        val sunPosition = lightPosition.cpy().add(
-            ShadowRenderer.normalizedLightDirection.cpy().scl(-(camera.far - 1f))
-        )
+        val sunPosition = lightPosition.cpy()
         val screenPos = camera.project(sunPosition)
 
         val screenX = (screenPos.x / Gdx.graphics.width) * 2f - 1f

@@ -31,17 +31,12 @@ object AssetsSetupManager: LaunchedEffect {
         }
         context.setObject(modelAssetManager)
         //---
-        ShaderProgram.pedantic = false
+        //ShaderProgram.pedantic = false
         val simpleShader = ShaderProgram(
             Gdx.files.local("$ASSETS_PATH/shaders/vertex_shader_simple.glsl").readString(),
             Gdx.files.local("$ASSETS_PATH/shaders/fragment_shader_simple.glsl").readString()
         )
         context.setObject(ShaderTypes.SIMPLE_SHADER, simpleShader)
-        val shadowShader = ShaderProgram(
-            Gdx.files.local("$ASSETS_PATH/shaders/vertex_shader_shadow.glsl").readString(),
-            Gdx.files.local("$ASSETS_PATH/shaders/fragment_shader_shadow.glsl").readString()
-        )
-        context.setObject(ShaderTypes.SHADOW_SHADER, shadowShader)
         val sunShader = ShaderProgram(
             Gdx.files.local("$ASSETS_PATH/shaders/vertex_shader_sun.glsl").readString(),
             Gdx.files.local("$ASSETS_PATH/shaders/fragment_shader_sun.glsl").readString()

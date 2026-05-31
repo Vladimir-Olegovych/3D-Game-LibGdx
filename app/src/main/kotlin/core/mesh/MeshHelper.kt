@@ -7,6 +7,7 @@ import com.gigapi.screens.mesh.RawMeshData
 import core.blocks.BlockDataManager
 import core.blocks.BlockType
 import core.chunk.ChunkData
+import core.terrain.TerrainGenerator
 
 class MeshHelper: LaunchedEffect {
 
@@ -49,6 +50,7 @@ class MeshHelper: LaunchedEffect {
                             nx, ny, nz, w, h
                         )
                         if (neighborBlock == BlockType.AIR) {
+                            val skyLight = computeSkyLight(chunkData, chunkMap, nx, ny, nz, w, h)
                             MeshUtils.addFace(
                                 blockDataManager = blockDataManager,
                                 verticesList = verticesList,
@@ -56,7 +58,11 @@ class MeshHelper: LaunchedEffect {
                                 x, y, z,
                                 normal = dir.normal,
                                 blockType = block,
-                                directionType = dir.directionType
+                                directionType = dir.directionType,
+                                skyLight = skyLight,
+                                blockExists = { wx, wy, wz ->
+                                    getNeighborBlock(chunkData, chunkMap, wx, wy, wz, w, h) != BlockType.AIR
+                                }
                             )
                         }
                     }
@@ -128,6 +134,26 @@ class MeshHelper: LaunchedEffect {
             neighborChunk.getBlockByLocal(localX, localY, localZ)
         } else {
             BlockType.NOTHING
+        }
+    }
+
+    private fun computeSkyLight(
+        chunkData: ChunkData,
+        chunkMap: Map<IntVector3, ChunkData>,
+        localX: Int, localY: Int, localZ: Int,
+        w: Int, h: Int
+    ): Float {
+        var checkY = localY + 1
+        while (true) {
+            val block = getNeighborBlock(chunkData, chunkMap, localX, checkY, localZ, w, h)
+            when (block) {
+                BlockType.NOTHING -> {
+                    val absoluteY = chunkData.position.y * h + checkY
+                    return if (absoluteY >= TerrainGenerator.CAVE_LEVEL) 1f else 0.5f
+                }
+                BlockType.AIR -> checkY++
+                else -> return 0f
+            }
         }
     }
 }

@@ -12,15 +12,12 @@ import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.graphics.GL20
 import com.badlogic.gdx.graphics.PerspectiveCamera
 import com.badlogic.gdx.graphics.glutils.ShaderProgram
-import com.badlogic.gdx.math.Matrix4
 import com.badlogic.gdx.math.Vector3
 import com.gigapi.screens.texture.DefaultsTextures
 import core.chunk.ChunkManager
 import core.defaults.CameraTypes
-import core.renderers.ShadowRenderer
 import core.renderers.SunRenderer
 import core.shaders.ShaderTypes
-import core.terrain.TerrainGenerator
 
 @One(MeshComponent::class, BlenderModelComponent::class)
 class DrawSystem: IteratingSystem() {
@@ -36,11 +33,8 @@ class DrawSystem: IteratingSystem() {
     private lateinit var simpleShader: ShaderProgram
     @Wire
     private lateinit var sunRenderer: SunRenderer
-    @Wire
-    private lateinit var shadowRenderer: ShadowRenderer
 
     override fun begin() {
-        updateShadows()
         Gdx.gl.glClearColor(135 / 255f, 206 / 255f, 235 / 255f, 1f)
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT or GL20.GL_DEPTH_BUFFER_BIT)
 
@@ -51,12 +45,7 @@ class DrawSystem: IteratingSystem() {
 
         simpleShader.bind()
         //Shadows-Light
-        shadowRenderer.shadowTexture.bind(1)
-        simpleShader.setUniformi("u_shadowMap", 1)
-        simpleShader.setUniformMatrix("u_lightViewProjection", shadowRenderer.lightViewProjectionMatrix)
-        simpleShader.setUniformf("u_lightDirection", ShadowRenderer.normalizedLightDirection)
-        simpleShader.setUniformf("u_shadowIntensity", 0.7f)
-        simpleShader.setUniformf("u_shadowMapSize", ShadowRenderer.SHADOW_MAP_SIZE.toFloat())
+        simpleShader.setUniformf("u_modelAO", 1f)
         //Mesh
         simpleShader.setUniformi("u_texture", 0)
         simpleShader.setUniformMatrix("modelViewProjection", camera.combined)
@@ -72,33 +61,6 @@ class DrawSystem: IteratingSystem() {
         Gdx.gl.glDisable(GL20.GL_CULL_FACE)
         Gdx.gl.glDisable(GL20.GL_DEPTH_TEST)
         Gdx.gl.glDisable(GL20.GL_CULL_FACE)
-        val lightPosition = shadowRenderer.getLightCameraPosition()
-        sunRenderer.render(lightPosition)
-    }
-
-    private fun updateShadows() {
-        shadowRenderer.begin()
-        val shadowShader = shadowRenderer.shadowShader
-
-        val entities = subscription.getEntities()
-        for (i in 0 until entities.size()) {
-            val entityId = entities.get(i)
-            val transform = transformMapper[entityId]?.transform ?: continue
-            shadowShader.setUniformMatrix("u_worldTrans", transform)
-
-            val blenderRenderData = blenderMapper[entityId]?.blenderRenderData
-            if (blenderRenderData != null) {
-                for (subMesh in blenderRenderData.subMeshes) {
-                    subMesh.mesh.render(shadowShader, GL20.GL_TRIANGLES)
-                }
-            }
-
-            val meshComponent = meshMapper[entityId]
-            if (meshComponent?.meshData?.mesh != null) {
-                meshComponent.meshData?.mesh?.render(shadowShader, GL20.GL_TRIANGLES)
-            }
-        }
-        shadowRenderer.end()
     }
 
     private val tmpVec = Vector3()

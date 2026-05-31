@@ -41,7 +41,7 @@ fun World.startTest100Box() {
                 boundMapper.create(entityId).boundingRadius = radius
                 transformMapper.create(entityId)
                 meshMapper.create(entityId).apply {
-                    this@apply.meshData = rawBoxMesh.createMeshData()
+                    this@apply.meshData = meshData
                     this@apply.meshTextureData = meshTexture
                 }
                 physicsEventBus.sendEvent(GameEvent.OnCreateMeshRigidBody(

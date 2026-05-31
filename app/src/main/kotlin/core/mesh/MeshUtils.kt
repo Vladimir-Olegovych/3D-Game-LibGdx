@@ -197,7 +197,9 @@ object MeshUtils {
         bx: Int, by: Int, bz: Int,
         normal: VertexAttribute.Normal,
         blockType: BlockType,
-        directionType: DirectionType
+        directionType: DirectionType,
+        skyLight: Float,
+        blockExists: (Int, Int, Int) -> Boolean
     ) {
         val x = bx.toFloat()
         val y = by.toFloat()
@@ -205,6 +207,7 @@ object MeshUtils {
         val nx = normal.x
         val ny = normal.y
         val nz = normal.z
+
         val quadVertices: Array<FloatArray> = when {
             nz == -1F -> arrayOf(
                 floatArrayOf(1F, 1F, 0f),
@@ -245,9 +248,13 @@ object MeshUtils {
             else -> error("Invalid normal")
         }
 
+        val ao = ShadowCompilerAO.computeFaceAO(bx, by, bz, nx, ny, nz, blockExists)
+
+        val flip = ao[0] + ao[2] < ao[1] + ao[3]
+
         val uvs = blockDataManager.faceUVs(directionType, blockType)
 
-        val baseIndex = (verticesList.size / 8).toShort()
+        val baseIndex = (verticesList.size / 10).toShort()
 
         for (i in quadVertices.indices) {
             val v = quadVertices[i]
@@ -260,13 +267,24 @@ object MeshUtils {
             verticesList.add(nz)
             verticesList.add(uv.x)
             verticesList.add(uv.y)
+            verticesList.add(ao[i])
+            verticesList.add(skyLight)
         }
 
-        indicesList.add(baseIndex)
-        indicesList.add((baseIndex + 1).toShort())
-        indicesList.add((baseIndex + 2).toShort())
-        indicesList.add(baseIndex)
-        indicesList.add((baseIndex + 2).toShort())
-        indicesList.add((baseIndex + 3).toShort())
+        if (flip) {
+            indicesList.add((baseIndex + 1).toShort())
+            indicesList.add((baseIndex + 2).toShort())
+            indicesList.add((baseIndex + 3).toShort())
+            indicesList.add((baseIndex + 1).toShort())
+            indicesList.add((baseIndex + 3).toShort())
+            indicesList.add(baseIndex)
+        } else {
+            indicesList.add(baseIndex)
+            indicesList.add((baseIndex + 1).toShort())
+            indicesList.add((baseIndex + 2).toShort())
+            indicesList.add(baseIndex)
+            indicesList.add((baseIndex + 2).toShort())
+            indicesList.add((baseIndex + 3).toShort())
+        }
     }
 }
