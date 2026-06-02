@@ -8,6 +8,7 @@ plugins {
 }
 
 dependencies {
+    implementation(kotlin("reflect"))
     api(files("/home/vladimir/Documents/Java/GdxUtils/build/libs/GdxUtils-1.0-SNAPSHOT.jar"))
     api(files("/home/vladimir/Documents/Java/GdxGraphicsUtils/build/libs/GdxGraphicsUtils-1.0-SNAPSHOT.jar"))
 

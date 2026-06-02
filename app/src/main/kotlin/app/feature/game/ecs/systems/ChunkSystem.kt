@@ -1,9 +1,6 @@
 package app.feature.game.ecs.systems
 
-import app.feature.game.ecs.components.BoundRadiusComponent
-import app.feature.game.ecs.components.ChunkComponent
-import app.feature.game.ecs.components.MeshComponent
-import app.feature.game.ecs.components.TransformComponent
+import app.feature.game.ecs.components.*
 import app.feature.game.event.EventBusTypes
 import app.feature.game.event.GameEvent
 import com.artemis.BaseSystem
@@ -20,7 +17,6 @@ import com.gigapi.math.vector.IntVector3
 import core.assets.SkinID
 import core.chunk.ChunkManager
 import core.defaults.CameraTypes
-import core.math.createMatrixForChunk
 import core.mesh.MeshUtils
 
 @All(MeshComponent::class)
@@ -39,6 +35,7 @@ class ChunkSystem: BaseSystem() {
     private lateinit var transformMapper: ComponentMapper<TransformComponent>
     private lateinit var chunkMapper: ComponentMapper<ChunkComponent>
     private lateinit var meshMapper: ComponentMapper<MeshComponent>
+    private lateinit var aoMapper: ComponentMapper<AOComponent>
 
     private lateinit var chunkMeshTextureData: Texture
 
@@ -47,10 +44,9 @@ class ChunkSystem: BaseSystem() {
     }
 
     @BusEvent
-    fun onChunkDataCreated(event: GameEvent.OnCreateChunkData) {
+    fun onChunkDataCreated(event: GameEvent.OnCreateChunkTransform) {
         val entityId = event.chunkEntityId
-        chunkMapper.create(entityId).chunkData = event.chunkData
-        transformMapper.create(entityId).transform = createMatrixForChunk(event.chunkData)
+        transformMapper.create(entityId).transform = event.transform
     }
 
     @BusEvent
@@ -61,18 +57,22 @@ class ChunkSystem: BaseSystem() {
         val radius = MeshUtils.getBoundRadius(mesh)
         meshComp.meshData = event.meshData
         meshComp.meshTextureData = chunkMeshTextureData
+        aoMapper.create(entityId)
         boundMapper.create(entityId).boundingRadius = radius
     }
 
     @BusEvent
     fun onChunkDataRemoved(event: GameEvent.OnRemoveChunkData) {
-        chunkMapper.remove(event.chunkEntityId)
+        //chunkMapper.remove(event.chunkEntityId)
+        transformMapper.remove(event.chunkEntityId)
     }
 
     @BusEvent
     fun onMeshDataRemoved(event: GameEvent.OnRemoveChunkMeshData) {
         meshMapper[event.chunkEntityId]?.dispose()
         meshMapper.remove(event.chunkEntityId)
+        boundMapper.remove(event.chunkEntityId)
+        aoMapper.remove(event.chunkEntityId)
     }
 
     private var lastCameraPosition = IntVector3()

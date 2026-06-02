@@ -29,41 +29,41 @@ object MeshUtils {
         return boundingBox.getDimensions(Vector3()).len()
     }
 
-    fun createBoxBySize(width: Float, height: Float, depth: Float = width): RawMeshData {
+    fun createBoxModel(width: Float, height: Float, depth: Float = width): RawMeshData {
         val halfW = width / 2f
         val halfH = height / 2f
         val halfD = depth / 2f
 
         val vertices = floatArrayOf(
-            -halfW, -halfH,  halfD,  0f, 0f, 1f,  0f, 0f,  // 0
-            halfW, -halfH,  halfD,  0f, 0f, 1f,  1f, 0f,  // 1
-            halfW,  halfH,  halfD,  0f, 0f, 1f,  1f, 1f,  // 2
-            -halfW,  halfH,  halfD,  0f, 0f, 1f,  0f, 1f,  // 3
+            -halfW, -halfH,  halfD,  0f, 0f, 1f,  // 0
+            halfW, -halfH,  halfD,  0f, 0f, 1f,  // 1
+            halfW,  halfH,  halfD,  0f, 0f, 1f,  // 2
+            -halfW,  halfH,  halfD,  0f, 0f, 1f,  // 3
 
-            -halfW, -halfH, -halfD,  0f, 0f, -1f,  0f, 0f, // 4
-            -halfW,  halfH, -halfD,  0f, 0f, -1f,  0f, 1f, // 5
-            halfW,  halfH, -halfD,  0f, 0f, -1f,  1f, 1f, // 6
-            halfW, -halfH, -halfD,  0f, 0f, -1f,  1f, 0f, // 7
+            -halfW, -halfH, -halfD,  0f, 0f, -1f, // 4
+            -halfW,  halfH, -halfD,  0f, 0f, -1f, // 5
+            halfW,  halfH, -halfD,  0f, 0f, -1f, // 6
+            halfW, -halfH, -halfD,  0f, 0f, -1f, // 7
 
-            -halfW, -halfH, -halfD,  -1f, 0f, 0f,  0f, 0f, // 8
-            -halfW, -halfH,  halfD,  -1f, 0f, 0f,  1f, 0f, // 9
-            -halfW,  halfH,  halfD,  -1f, 0f, 0f,  1f, 1f, // 10
-            -halfW,  halfH, -halfD,  -1f, 0f, 0f,  0f, 1f, // 11
+            -halfW, -halfH, -halfD,  -1f, 0f, 0f, // 8
+            -halfW, -halfH,  halfD,  -1f, 0f, 0f, // 9
+            -halfW,  halfH,  halfD,  -1f, 0f, 0f, // 10
+            -halfW,  halfH, -halfD,  -1f, 0f, 0f, // 11
 
-            halfW, -halfH,  halfD,   1f, 0f, 0f,  0f, 0f, // 12
-            halfW, -halfH, -halfD,   1f, 0f, 0f,  1f, 0f, // 13
-            halfW,  halfH, -halfD,   1f, 0f, 0f,  1f, 1f, // 14
-            halfW,  halfH,  halfD,   1f, 0f, 0f,  0f, 1f, // 15
+            halfW, -halfH,  halfD,   1f, 0f, 0f,  // 12
+            halfW, -halfH, -halfD,   1f, 0f, 0f,  // 13
+            halfW,  halfH, -halfD,   1f, 0f, 0f,  // 14
+            halfW,  halfH,  halfD,   1f, 0f, 0f,  // 15
 
-            -halfW,  halfH,  halfD,   0f, 1f, 0f,  0f, 0f, // 16
-            halfW,  halfH,  halfD,   0f, 1f, 0f,  1f, 0f, // 17
-            halfW,  halfH, -halfD,   0f, 1f, 0f,  1f, 1f, // 18
-            -halfW,  halfH, -halfD,   0f, 1f, 0f,  0f, 1f, // 19
+            -halfW,  halfH,  halfD,   0f, 1f, 0f,  // 16
+            halfW,  halfH,  halfD,   0f, 1f, 0f,  // 17
+            halfW,  halfH, -halfD,   0f, 1f, 0f,  // 18
+            -halfW,  halfH, -halfD,   0f, 1f, 0f,  // 19
 
-            -halfW, -halfH, -halfD,   0f, -1f, 0f,  0f, 0f, // 20
-            -halfW, -halfH,  halfD,   0f, -1f, 0f,  0f, 1f, // 21
-            halfW, -halfH,  halfD,   0f, -1f, 0f,  1f, 1f, // 22
-            halfW, -halfH, -halfD,   0f, -1f, 0f,  1f, 0f  // 23
+            -halfW, -halfH, -halfD,   0f, -1f, 0f, // 20
+            -halfW, -halfH,  halfD,   0f, -1f, 0f, // 21
+            halfW, -halfH,  halfD,   0f, -1f, 0f, // 22
+            halfW, -halfH, -halfD,   0f, -1f, 0f  // 23
         )
 
         val indices = shortArrayOf(
@@ -72,7 +72,7 @@ object MeshUtils {
             8, 9, 10,    8, 10, 11,    // левая
             12, 13, 14,  12, 14, 15,   // правая
             16, 17, 18,  16, 18, 19,   // верхняя
-            20, 22, 21,  20, 23, 22    // нижняя (исправлено)
+            20, 22, 21,  20, 23, 22    // нижняя
         )
 
         return RawMeshData(vertices, indices)
@@ -167,7 +167,7 @@ object MeshUtils {
         }
 
         val uvs = blockDataManager.faceUVs(directionType, blockType)
-        val baseIndex = (verticesList.size / 8).toShort()
+        val baseIndex = (verticesList.size / RawMeshData.STRIDE).toShort()
 
         for (i in quadVertices.indices) {
             val v = quadVertices[i]
@@ -180,6 +180,8 @@ object MeshUtils {
             verticesList.add(nz)
             verticesList.add(uv.x)     // u
             verticesList.add(uv.y)     // v
+            verticesList.add(0f)
+            verticesList.add(1f)
         }
 
         indicesList.add(baseIndex)
@@ -198,7 +200,7 @@ object MeshUtils {
         normal: VertexAttribute.Normal,
         blockType: BlockType,
         directionType: DirectionType,
-        skyLight: Float,
+        shadow: Float,
         blockExists: (Int, Int, Int) -> Boolean
     ) {
         val x = bx.toFloat()
@@ -254,7 +256,7 @@ object MeshUtils {
 
         val uvs = blockDataManager.faceUVs(directionType, blockType)
 
-        val baseIndex = (verticesList.size / 10).toShort()
+        val baseIndex = (verticesList.size / RawMeshData.STRIDE).toShort()
 
         for (i in quadVertices.indices) {
             val v = quadVertices[i]
@@ -268,7 +270,7 @@ object MeshUtils {
             verticesList.add(uv.x)
             verticesList.add(uv.y)
             verticesList.add(ao[i])
-            verticesList.add(skyLight)
+            verticesList.add(shadow)
         }
 
         if (flip) {

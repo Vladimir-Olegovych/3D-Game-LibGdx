@@ -44,7 +44,7 @@ object PhysicsUtils {
             physicalData.triangleMeshes.add(triangleMesh)
             btBvhTriangleMeshShape(triangleMesh, true, true)
         } else {
-            val stride = 8
+            val stride = RawMeshData.PHYSICAL_STRIDE
             val convexHull = btConvexHullShape()
             val vertices = rawMeshData.vertices
 

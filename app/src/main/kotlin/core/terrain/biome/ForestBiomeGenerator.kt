@@ -8,6 +8,7 @@ import core.noice.models.NoiseSettings
 import core.noice.PerlinNoise
 import core.noice.domain.DomainWarping3D
 import core.terrain.layers.CaveLayerHandler
+import core.terrain.layers.ShadowLayerHandler
 import core.terrain.layers.SurfaceLayerHandler
 import core.terrain.layers.UndergroundLayerHandler
 
@@ -39,6 +40,7 @@ class ForestBiomeGenerator: LaunchedEffect {
 
         val startLayerHandler = SurfaceLayerHandler()
         startLayerHandler
+            .setNext(ShadowLayerHandler())
             .setNext(UndergroundLayerHandler(perlinNoise.seed))
             .setNext(CaveLayerHandler())
 

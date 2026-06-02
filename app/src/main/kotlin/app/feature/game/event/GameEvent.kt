@@ -9,7 +9,7 @@ import com.gigapi.screens.mesh.RawMeshData
 import core.chunk.ChunkData
 
 sealed class GameEvent {
-    class OnCreateChunkData(val chunkEntityId: Int, val chunkData: ChunkData): GameEvent()
+    class OnCreateChunkTransform(val chunkEntityId: Int, val transform: Matrix4): GameEvent()
     class OnCreateChunkMeshData(val chunkEntityId: Int, val meshData: MeshData): GameEvent()
     class OnCreateChunkRigidBody(val chunkEntityId: Int, val chunkData: ChunkData): GameEvent()
     class OnCreateMeshRigidBody(

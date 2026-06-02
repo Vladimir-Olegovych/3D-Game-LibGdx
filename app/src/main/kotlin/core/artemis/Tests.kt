@@ -27,7 +27,7 @@ fun World.startTest100Box() {
 
     val size = 2F
     val m = size * 2.1F
-
+    val playerPhysicalModel = MeshUtils.createBoxModel(size, size)
 
     val rawBoxMesh = MeshUtils.createBoxMeshData(blockDataManager, BlockType.STONE, size)
 
@@ -47,7 +47,7 @@ fun World.startTest100Box() {
                 physicsEventBus.sendEvent(GameEvent.OnCreateMeshRigidBody(
                     entityId = entityId,
                     position = Vector3(x * m + 10, y * m + 700, z * m + 10),
-                    rawMeshData = rawBoxMesh
+                    rawMeshData = playerPhysicalModel
                 ))
             }
         }

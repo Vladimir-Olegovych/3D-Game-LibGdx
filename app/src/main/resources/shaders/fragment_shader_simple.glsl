@@ -7,7 +7,7 @@ varying vec3 v_Normal;
 varying vec3 v_WorldPos;
 varying float v_FogFactor;
 varying float v_AO;
-varying float v_SkyLight;
+varying float v_Shadow;
 
 uniform sampler2D u_texture;
 uniform vec3 objectColor;
@@ -20,20 +20,17 @@ void main() {
     vec3 albedo   = mix(objectColor, texColor, u_useTexture);
 
     float ambient  = 0.05;
-    float skyLight = v_SkyLight;
-    float ao       = v_AO * u_modelAO;
+    float shadow = v_Shadow;
+    float ao       = 1f;
+    if (u_modelAO > 0f) { ao = v_AO * u_modelAO; }
 
-    // Directional light только если есть skylight
     float dirLight;
     if      (v_Normal.y >  0.5) dirLight = 1.00;
     else if (v_Normal.y < -0.5) dirLight = 0.50;
     else if (abs(v_Normal.z) > 0.5) dirLight = 0.80;
     else                        dirLight = 0.65;
 
-    // Итоговое освещение:
-    // - под землёй: только ambient (темно)
-    // - на воздухе: ambient + skylight * ao * dirlight
-    float lit = ambient + (1.0 - ambient) * skyLight * ao * dirLight;
+    float lit = ambient + (1.0 - ambient) * shadow * ao * dirLight;
 
     vec3 litColor   = albedo * clamp(lit, 0.0, 1.5);
     vec3 finalColor = mix(fogColor, litColor, 1.0 - v_FogFactor);

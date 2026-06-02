@@ -3,8 +3,10 @@ package app.feature.game.ecs.systems
 import app.feature.game.ecs.components.BlenderModelComponent
 import app.feature.game.ecs.components.BoundRadiusComponent
 import app.feature.game.ecs.components.MeshComponent
+import app.feature.game.ecs.components.AOComponent
 import app.feature.game.ecs.components.TransformComponent
 import com.artemis.ComponentMapper
+import com.artemis.annotations.All
 import com.artemis.annotations.One
 import com.artemis.annotations.Wire
 import com.artemis.systems.IteratingSystem
@@ -12,6 +14,7 @@ import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.graphics.GL20
 import com.badlogic.gdx.graphics.PerspectiveCamera
 import com.badlogic.gdx.graphics.glutils.ShaderProgram
+import com.badlogic.gdx.math.Matrix4
 import com.badlogic.gdx.math.Vector3
 import com.gigapi.screens.texture.DefaultsTextures
 import core.chunk.ChunkManager
@@ -26,6 +29,7 @@ class DrawSystem: IteratingSystem() {
     private lateinit var blenderMapper: ComponentMapper<BlenderModelComponent>
     private lateinit var meshMapper: ComponentMapper<MeshComponent>
     private lateinit var transformMapper: ComponentMapper<TransformComponent>
+    private lateinit var aoMapper: ComponentMapper<AOComponent>
 
     @Wire(name = CameraTypes.GL_3D)
     private lateinit var camera: PerspectiveCamera
@@ -44,8 +48,6 @@ class DrawSystem: IteratingSystem() {
         val fogVerticalRadius = ChunkManager.CHUNK_HEIGHT * ChunkManager.DRAW_RADIUS_Y - ChunkManager.CHUNK_HEIGHT * 2F
 
         simpleShader.bind()
-        //Shadows-Light
-        simpleShader.setUniformf("u_modelAO", 1f)
         //Mesh
         simpleShader.setUniformi("u_texture", 0)
         simpleShader.setUniformMatrix("modelViewProjection", camera.combined)
@@ -67,6 +69,7 @@ class DrawSystem: IteratingSystem() {
 
     override fun process(entityId: Int) {
         val transform = transformMapper[entityId]?.transform ?: return
+        val aoCount = aoMapper[entityId]?.count
         val boundingRadius = boundMapper[entityId]?.boundingRadius
 
         if(boundingRadius != null) {
@@ -76,6 +79,13 @@ class DrawSystem: IteratingSystem() {
             if (toObject.dot(camera.direction) + boundingRadius < 0f) return
         }
 
+        simpleShader.setUniformMatrix("transform", transform)
+        if (aoCount != null) {
+            simpleShader.setUniformf("u_modelAO", aoCount)
+        } else {
+            simpleShader.setUniformf("u_modelAO", 0f)
+        }
+
         processModelMesh(entityId)
         processMesh(entityId)
     }
@@ -83,10 +93,8 @@ class DrawSystem: IteratingSystem() {
 
     private fun processModelMesh(entityId: Int) {
         val blenderRenderData = blenderMapper[entityId]?.blenderRenderData ?: return
-        val transform = transformMapper[entityId]?.transform ?: return
         if (blenderRenderData.subMeshes.isEmpty()) return
 
-        simpleShader.setUniformMatrix("transform", transform)
 
         for (subMesh in blenderRenderData.subMeshes) {
             val material = subMesh.material
@@ -109,10 +117,8 @@ class DrawSystem: IteratingSystem() {
         val meshComponent = meshMapper[entityId] ?: return
         val meshTextureData = meshComponent.meshTextureData ?: return
         val mesh = meshComponent.meshData?.mesh ?: return
-        val transform = transformMapper[entityId]?.transform ?: return
 
         simpleShader.setUniformf("objectColor", 1f, 1f, 1f)
-        simpleShader.setUniformMatrix("transform", transform)
         meshTextureData.bind(0)
         simpleShader.setUniformf("u_useTexture", 1f)
 

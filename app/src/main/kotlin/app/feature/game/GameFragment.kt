@@ -58,9 +58,13 @@ class GameFragment(
     }
 
     override fun onRender(deltaTime: Float) {
+        val d = System.currentTimeMillis()
         eventBus.process()
         artemisWorld.delta = deltaTime
         artemisWorld.process()
+        if (System.currentTimeMillis() - d > 5) {
+            println("Attention! ${System.currentTimeMillis() - d}")
+        }
     }
 
     override fun onResize(width: Int, height: Int) {
