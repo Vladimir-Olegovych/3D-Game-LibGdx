@@ -3,6 +3,7 @@ package core.assets
 enum class ModelID {
 
     CAR,
+    STONE,
     SPHERE,
     FIREYARETZIRESP;
 

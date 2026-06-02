@@ -7,7 +7,7 @@ class ChunkData(
     val position: IntVector3,
     val chunkWidth: Int,
     val chunkHeight: Int,
-    val blocksData: Array<BlockType>,
+    val blocks: ByteArray,
     val shadows: ByteArray
 ) {
     companion object {
@@ -30,16 +30,14 @@ class ChunkData(
             chunkWidth: Int,
             chunkHeight: Int
         ): ChunkData {
-            val blocksArray = Array(chunkWidth * chunkHeight * chunkWidth) {
-                BlockType.AIR
-            }
+            val blocks = ByteArray(chunkWidth * chunkHeight * chunkWidth) { BlockType.AIR.id }
             val shadows = ByteArray(chunkWidth * chunkHeight * chunkWidth) { SHADOW_MIN }
-            return ChunkData(position, chunkWidth, chunkHeight, blocksArray, shadows)
+            return ChunkData(position, chunkWidth, chunkHeight, blocks, shadows)
         }
     }
 
     fun isAllBlock(blockType: BlockType): Boolean {
-        blocksData.forEach { if (blockType != it) return false }
+        blocks.forEach { if (blockType != BlockType.fromByte(it)) return false }
         return true
     }
 
@@ -49,7 +47,7 @@ class ChunkData(
 
     fun setBlockByLocal(blockType: BlockType, x: Int, y: Int, z: Int){
         val index: Int = getIndex(x, y, z)
-        blocksData[index] = blockType
+        blocks[index] = blockType.id
     }
 
     fun getBlockByLocal(localPosition: IntVector3): BlockType {
@@ -58,7 +56,7 @@ class ChunkData(
 
     fun getBlockByLocal(x: Int, y: Int, z: Int): BlockType {
         val index = getIndex(x, y, z)
-        return blocksData[index]
+        return BlockType.fromByte(blocks[index])
     }
 
     fun setDefaultShadowValue(value: Float, localPosition: IntVector3) {

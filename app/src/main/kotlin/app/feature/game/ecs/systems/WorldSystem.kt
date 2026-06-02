@@ -44,7 +44,7 @@ class WorldSystem: BaseSystem() {
     fun onWorldGenerated(event: GameEvent.GameWorldStarted) {
         val playerEntityId = WorldConstants.getPlayerEntityId()
 
-        val playerBlenderModel = modelAssetManager.getRenderModel(ModelID.FIREYARETZIRESP)
+        val playerBlenderModel = modelAssetManager.getRenderModel(ModelID.STONE)
         playerBlenderModel.subMeshes.forEach {
             it.mesh.transform(Matrix4().translate(0F, -1F, 0F))
         }

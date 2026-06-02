@@ -11,7 +11,6 @@ import core.mesh.MeshHelper
 import core.scope.DispatcherTypes
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.asCoroutineDispatcher
-import java.io.File
 import java.util.concurrent.Executor
 
 object DefaultGameSetupManager: Executor, LaunchedEffect {

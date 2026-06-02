@@ -2,7 +2,6 @@ package core.bullet
 
 import app.feature.game.event.EventBusTypes
 import app.feature.game.event.GameEvent
-import com.badlogic.gdx.math.Vector3
 import com.badlogic.gdx.physics.bullet.Bullet
 import com.gigapi.core.effects.LaunchedEffect
 import com.gigapi.coruntines.DeltaUpdater

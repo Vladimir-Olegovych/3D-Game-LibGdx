@@ -1,12 +1,10 @@
 package app.feature.game.ecs.systems
 
 import app.feature.game.ecs.components.TransformComponent
-import app.feature.game.event.EventBusTypes
 import app.feature.game.event.GameEvent
 import com.artemis.BaseSystem
 import com.artemis.ComponentMapper
 import com.artemis.annotations.Wire
-import com.gigapi.eventbus.EventBus
 import com.gigapi.eventbus.annotation.BusEvent
 import core.bullet.PhysicsWorldUpdater
 

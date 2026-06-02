@@ -1,12 +1,7 @@
 package app.feature.game.ecs.systems
 
-import app.feature.game.ecs.components.BlenderModelComponent
-import app.feature.game.ecs.components.BoundRadiusComponent
-import app.feature.game.ecs.components.MeshComponent
-import app.feature.game.ecs.components.AOComponent
-import app.feature.game.ecs.components.TransformComponent
+import app.feature.game.ecs.components.*
 import com.artemis.ComponentMapper
-import com.artemis.annotations.All
 import com.artemis.annotations.One
 import com.artemis.annotations.Wire
 import com.artemis.systems.IteratingSystem
@@ -14,7 +9,6 @@ import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.graphics.GL20
 import com.badlogic.gdx.graphics.PerspectiveCamera
 import com.badlogic.gdx.graphics.glutils.ShaderProgram
-import com.badlogic.gdx.math.Matrix4
 import com.badlogic.gdx.math.Vector3
 import com.gigapi.screens.texture.DefaultsTextures
 import core.chunk.ChunkManager

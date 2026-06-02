@@ -2,8 +2,8 @@ package core.noice.domain
 
 import com.badlogic.gdx.math.Vector2
 import com.gigapi.math.vector.IntVector2
-import core.noice.models.NoiseSettings
 import core.noice.PerlinNoise
+import core.noice.models.NoiseSettings
 import kotlin.math.roundToInt
 
 class DomainWarping2D(
