@@ -18,7 +18,7 @@ object DefaultGameSetupManager: Executor, LaunchedEffect {
         val camera = PerspectiveCamera(67f, Gdx.graphics.width.toFloat(), Gdx.graphics.height.toFloat())
         camera.position.set(10f, 200f, 10f)
         camera.lookAt(-10f, 200f, -10f)
-        camera.near = 1f
+        camera.near = 0.2f
         camera.far = (ChunkManager.CHUNK_SIZE * ChunkManager.DRAW_RADIUS_X) - ChunkManager.CHUNK_SIZE * 1.5F
         camera.update()
         context.setObject(CameraTypes.GL_3D, camera)

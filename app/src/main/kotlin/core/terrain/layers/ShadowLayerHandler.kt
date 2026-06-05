@@ -13,7 +13,7 @@ class ShadowLayerHandler: BlockLayerHandler() {
         worldPosition: IntVector3,
         heightNoice: Pair<Float, Int>
     ) {
-        if (worldPosition.y <= TerrainGenerator.CAVE_LEVEL) return
+        if (worldPosition.y < TerrainGenerator.CAVE_LEVEL) return
         val heightNoice = heightNoice.second
         if (worldPosition.y <= heightNoice) return
         chunkData.setDefaultShadowValue(1f, localPosition)

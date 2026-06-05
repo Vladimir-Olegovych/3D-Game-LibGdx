@@ -86,11 +86,12 @@ class DrawSystem: IteratingSystem() {
 
 
     private fun processModelMesh(entityId: Int) {
-        val blenderRenderData = blenderMapper[entityId]?.blenderRenderData ?: return
+        val blenderModel = blenderMapper[entityId]?: return
+        val blenderRenderData = blenderModel.blenderRenderData ?: return
         if (blenderRenderData.subMeshes.isEmpty()) return
 
-
-        for (subMesh in blenderRenderData.subMeshes) {
+        for ((index, subMesh) in blenderRenderData.subMeshes.withIndex()) {
+            if(blenderModel.ignoreMeshDrawing.contains(index)) continue
             val material = subMesh.material
 
             simpleShader.setUniformf("objectColor", material.diffuseColor[0], material.diffuseColor[1], material.diffuseColor[2])
@@ -109,7 +110,7 @@ class DrawSystem: IteratingSystem() {
 
     private fun processMesh(entityId: Int) {
         val meshComponent = meshMapper[entityId] ?: return
-        val meshTextureData = meshComponent.meshTextureData ?: return
+        val meshTextureData = meshComponent.meshTextureData ?: DefaultsTextures.WHITE
         val mesh = meshComponent.meshData?.mesh ?: return
 
         simpleShader.setUniformf("objectColor", 1f, 1f, 1f)

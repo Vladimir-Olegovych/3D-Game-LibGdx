@@ -4,5 +4,6 @@ import com.artemis.Component
 import com.gigapi.screens.mesh.BlenderRenderData
 
 class BlenderModelComponent: Component() {
+    val ignoreMeshDrawing = ArrayList<Int>()
     var blenderRenderData: BlenderRenderData? = null
 }

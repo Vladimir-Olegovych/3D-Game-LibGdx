@@ -46,15 +46,16 @@ class WorldSystem: BaseSystem() {
 
         val playerBlenderModel = modelAssetManager.getRenderModel(ModelID.STONE)
         playerBlenderModel.subMeshes.forEach {
-            it.mesh.transform(Matrix4().translate(0F, -1F, 0F))
+            it.mesh.transform(Matrix4().translate(0F, -4.8F, 0F))
+            it.mesh.scale(0.2f, 0.2f, 0.2f)
         }
-        val playerPhysicalModel = MeshUtils.createBoxModel(1F, 2F)
+        val playerPhysicalModel = MeshUtils.createBoxModel(1F, 1.8F)
 
-        transformMapper.create(playerEntityId).transform = Matrix4().translate(10F, 200F, 10F)
+        transformMapper.create(playerEntityId)
         blenderMapper.create(playerEntityId).apply {
             this@apply.blenderRenderData = playerBlenderModel
+            //ignoreMeshDrawing.add(0)
         }
-
         physicsEventBus.sendEvent(
             GameEvent.OnCreateMeshRigidBody(
                 entityId = playerEntityId,
@@ -63,6 +64,7 @@ class WorldSystem: BaseSystem() {
                 fixedXZ = true
             )
         )
+
 
         world.startTest100Box()
     }

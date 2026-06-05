@@ -21,8 +21,8 @@ void main() {
 
     float ambient  = 0.05;
     float shadow = v_Shadow;
-    float ao       = 1f;
-    if (u_modelAO > 0f) { ao = v_AO * u_modelAO; }
+    float ao       = 1.0;
+    if (u_modelAO > 0.0) { ao = v_AO * u_modelAO; }
 
     float dirLight;
     if      (v_Normal.y >  0.5) dirLight = 1.00;

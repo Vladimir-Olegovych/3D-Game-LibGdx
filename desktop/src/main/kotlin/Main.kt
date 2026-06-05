@@ -12,7 +12,6 @@ fun main() {
 
 private fun startScreen(game: Game){
     val config = Lwjgl3ApplicationConfiguration()
-    config.setOpenGLEmulation(Lwjgl3ApplicationConfiguration.GLEmulation.GL30, 3, 0);
     config.useVsync(false)
     config.setForegroundFPS((Lwjgl3ApplicationConfiguration.getDisplayMode().refreshRate * 2))
     config.setIdleFPS(30)
