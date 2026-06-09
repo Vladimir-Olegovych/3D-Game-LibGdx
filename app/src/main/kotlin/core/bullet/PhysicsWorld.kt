@@ -17,9 +17,12 @@ class PhysicsWorld: LaunchedEffect, DisposableEffect {
     private val solver = btSequentialImpulseConstraintSolver()
     val world = btDiscreteDynamicsWorld(dispatcher, broadphase, solver, collisionConfig)
 
+    companion object {
+        const val GRAVITY = -98.0665f
+    }
 
     override fun launch(context: Context) {
-        world.gravity = Vector3(0f, -10f, 0f)
+        world.gravity = Vector3(0f, -GRAVITY, 0f)
         world.forceUpdateAllAabbs = false
     }
 

@@ -17,6 +17,9 @@ sealed class GameEvent {
         val position: Vector3,
         val rawMeshData: RawMeshData,
         val mass: Float = 1F,
+        val friction: Float = 0.5f,
+        val restitution: Float = 0.5f,
+        val activationState: Int? = null,
         val fixedXZ: Boolean = false
     ): GameEvent()
 
@@ -24,6 +27,7 @@ sealed class GameEvent {
     class OnRemoveChunkMeshData(val chunkEntityId: Int): GameEvent()
     class OnRemoveRigidBody(val entityId: Int): GameEvent()
     class OnRigidBodyTransformUpdate(val entityId: Int, val transform: Matrix4): GameEvent()
+    class OnApplyLinearForce(val entityId: Int, val ignoreYLinear: Boolean, val force: Vector3): GameEvent()
     class OnApplyForce(val entityId: Int, val force: Vector3): GameEvent()
 
     class LoadAdditionalChunksRequest(val world: World, val playerPosition: IntVector3): GameEvent()

@@ -4,13 +4,14 @@ import app.feature.game.event.EventBusTypes
 import com.artemis.BaseSystem
 import com.artemis.WorldConfiguration
 import com.badlogic.gdx.Gdx
+import com.badlogic.gdx.InputMultiplexer
 import com.badlogic.gdx.graphics.PerspectiveCamera
-import com.badlogic.gdx.graphics.g3d.utils.FirstPersonCameraController
 import com.gigapi.artemis.world.ArtemisWorld
 import com.gigapi.eventbus.EventBus
 import com.gigapi.general.Context
 import com.gigapi.screens.fragment.Fragment
 import core.artemis.disposeALL
+import core.controls.ProcessorIndex
 import core.defaults.CameraTypes
 import core.defaults.DefaultWorldSetupManager
 import core.navigation.Navigation
@@ -24,18 +25,19 @@ class GameFragment(
     private lateinit var eventBus: EventBus
     private lateinit var camera: PerspectiveCamera
     private lateinit var artemisWorld: ArtemisWorld
+    private lateinit var inputMultiplexer: InputMultiplexer
 
     override fun onCreate() {
         gameContext.addContext(context)
         DefaultWorldSetupManager.launch(gameContext)
         gameContext.launch()
 
-        val controller = gameContext.getObject<FirstPersonCameraController>()
+        inputMultiplexer = gameContext.getObject<InputMultiplexer>()
         camera = gameContext.getObject(CameraTypes.GL_3D)
         eventBus = gameContext.getObject(EventBusTypes.MAIN_EVENT_BUS)
 
         Gdx.input.isCursorCatched = true
-        Gdx.input.inputProcessor = controller
+        Gdx.input.inputProcessor = inputMultiplexer
 
         val configuration = WorldConfiguration()
         for ((key, value) in gameContext.objectMap) {
@@ -80,6 +82,8 @@ class GameFragment(
     override fun onDestroy() {
         Gdx.input.inputProcessor = null
         Gdx.input.isCursorCatched = false
+
+        inputMultiplexer.removeProcessor(ProcessorIndex.PLAYER_INPUT)
 
         artemisWorld.disposeALL()
         eventBus.clear()

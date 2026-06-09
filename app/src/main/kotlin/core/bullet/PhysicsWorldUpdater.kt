@@ -2,6 +2,7 @@ package core.bullet
 
 import app.feature.game.event.EventBusTypes
 import app.feature.game.event.GameEvent
+import com.badlogic.gdx.math.Vector3
 import com.badlogic.gdx.physics.bullet.Bullet
 import com.gigapi.core.effects.LaunchedEffect
 import com.gigapi.coruntines.DeltaUpdater
@@ -38,6 +39,9 @@ class PhysicsWorldUpdater: LaunchedEffect, DeltaUpdater(1 / 60F, Dispatchers.Def
             position = event.position,
             rawMeshData = event.rawMeshData,
             mass = event.mass,
+            activationState = event.activationState,
+            friction = event.friction,
+            restitution = event.restitution,
             fixedXZ = event.fixedXZ
         )
         physicBodies[entityId] = physicalData
@@ -58,6 +62,19 @@ class PhysicsWorldUpdater: LaunchedEffect, DeltaUpdater(1 / 60F, Dispatchers.Def
         val entityId = event.entityId
         val physicalData = physicBodies[entityId]?: return
         physicalData.getBody().applyCentralForce(event.force)
+    }
+
+    @BusEvent
+    fun onApplyLinearForce(event: GameEvent.OnApplyLinearForce) {
+        val entityId = event.entityId
+        val physicalData = physicBodies[entityId]?: return
+        val body = physicalData.getBody()
+        val currentLinearVelocity = body.linearVelocity
+        if (event.ignoreYLinear) {
+            body.linearVelocity = Vector3(event.force.x, currentLinearVelocity.y, event.force.z)
+        } else {
+            body.linearVelocity = Vector3(event.force.x, event.force.y, event.force.z)
+        }
     }
 
     override fun create() {

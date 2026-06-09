@@ -19,7 +19,8 @@ object PhysicsUtils {
         mass: Float,
         friction: Float = 0.5f,
         restitution: Float = 0.5f,
-        fixedXZ: Boolean = false
+        fixedXZ: Boolean = false,
+        activationState: Int? = null
     ): PhysicalData {
         val isStatic = mass == 0f
         val physicalData = PhysicalData(isStatic)
@@ -81,6 +82,7 @@ object PhysicsUtils {
 
         body.friction = friction
         body.restitution = restitution
+        activationState?.let {  body.activationState = it }
 
         physicalData.rigidBodies.add(body)
         physicalData.setBody(body)
@@ -149,6 +151,7 @@ object PhysicsUtils {
                     val shape = btBoxShape(
                         Vector3(sizeX / 2f, sizeY / 2f, sizeZ / 2f)
                     )
+                    shape.margin = 0.5f
                     physicalData.shapes.add(shape)
                     val transform = Matrix4().setToTranslation(
                         x + sizeX / 2f,

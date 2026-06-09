@@ -1,6 +1,7 @@
 package core.defaults
 
 import com.badlogic.gdx.Gdx
+import com.badlogic.gdx.InputMultiplexer
 import com.badlogic.gdx.graphics.PerspectiveCamera
 import com.badlogic.gdx.graphics.g3d.utils.FirstPersonCameraController
 import com.gigapi.core.effects.LaunchedEffect
@@ -23,9 +24,7 @@ object DefaultGameSetupManager: Executor, LaunchedEffect {
         camera.update()
         context.setObject(CameraTypes.GL_3D, camera)
         //---
-        val controller = FirstPersonCameraController(camera)
-        controller.setVelocity(40f)
-        context.setObject(controller)
+        context.setObject(InputMultiplexer())
         //---
         context.setObject(BlockDataManager())
         //---

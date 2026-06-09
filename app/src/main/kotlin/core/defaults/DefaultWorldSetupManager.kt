@@ -2,11 +2,14 @@ package core.defaults
 
 import app.feature.game.ecs.systems.*
 import app.feature.game.event.EventBusTypes
+import com.badlogic.gdx.InputMultiplexer
 import com.gigapi.core.effects.LaunchedEffect
 import com.gigapi.eventbus.EventBus
 import com.gigapi.general.Context
 import core.bullet.PhysicsWorldUpdater
 import core.chunk.ChunkManager
+import core.controls.PlayerInputProcessor
+import core.controls.ProcessorIndex
 import core.noice.PerlinNoise
 import core.noice.RandomNoise
 import core.noice.models.NoiceTypes
@@ -17,6 +20,10 @@ import core.terrain.biome.ForestBiomeGenerator
 object DefaultWorldSetupManager: LaunchedEffect {
 
     override fun launch(context: Context) {
+        val inputMultiplexer = context.getObject<InputMultiplexer>()
+        val playerInputProcessor = PlayerInputProcessor()
+        inputMultiplexer.addProcessor(ProcessorIndex.PLAYER_INPUT, playerInputProcessor)
+        context.setObject(playerInputProcessor)
         //---
         context.setObject(SunRenderer())
         //---
@@ -28,10 +35,11 @@ object DefaultWorldSetupManager: LaunchedEffect {
         context.setObject(ChunkManager())
         //Systems
         context.setObject(WorldSystem())
-        context.setObject(CameraSystem())
+        context.setObject(PlayerSystem())
         context.setObject(DrawSystem())
         context.setObject(ChunkSystem())
         context.setObject(PhysicSystem())
+        context.setObject(MoveSystem())
         //---
         context.setObject(NoiceTypes.PERLIN_WORLD, PerlinNoise(0))
         context.setObject(NoiceTypes.RANDOM_WORLD, RandomNoise(0))

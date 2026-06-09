@@ -1,0 +1,13 @@
+package app.feature.game.ecs.components
+
+import com.artemis.Component
+import com.badlogic.gdx.math.Vector3
+
+class ForceMoveComponent: Component() {
+    val direction: Vector3 = Vector3()
+
+    fun setDirection(vector3: Vector3) {
+        direction.set(vector3)
+    }
+
+}

@@ -23,6 +23,7 @@ class DrawSystem: IteratingSystem() {
     private lateinit var blenderMapper: ComponentMapper<BlenderModelComponent>
     private lateinit var meshMapper: ComponentMapper<MeshComponent>
     private lateinit var transformMapper: ComponentMapper<TransformComponent>
+    private lateinit var staticMapper: ComponentMapper<StaticComponent>
     private lateinit var aoMapper: ComponentMapper<AOComponent>
 
     @Wire(name = CameraTypes.GL_3D)
@@ -62,7 +63,8 @@ class DrawSystem: IteratingSystem() {
     private val tmpVec = Vector3()
 
     override fun process(entityId: Int) {
-        val transform = transformMapper[entityId]?.transform ?: return
+        val transformComponent = transformMapper[entityId]?: return
+        val transform = transformComponent.transform ?: return
         val aoCount = aoMapper[entityId]?.count
         val boundingRadius = boundMapper[entityId]?.boundingRadius
 
@@ -73,7 +75,17 @@ class DrawSystem: IteratingSystem() {
             if (toObject.dot(camera.direction) + boundingRadius < 0f) return
         }
 
+        /*
+        if (staticMapper[entityId] != null) {
+            val interpolated = transformComponent.getInterpolated()?: return
+            simpleShader.setUniformMatrix("transform", interpolated)
+        } else {
+            simpleShader.setUniformMatrix("transform", transform)
+        }
+         */
         simpleShader.setUniformMatrix("transform", transform)
+
+
         if (aoCount != null) {
             simpleShader.setUniformf("u_modelAO", aoCount)
         } else {
