@@ -73,20 +73,34 @@ class ChunkDataManager : LaunchedEffect, DisposableEffect {
     @BusEvent
     fun onRayCastResult(event: GameEvent.OnRayCastResult) {
         if (event.requestId != RayCastTypes.CHUNK_RAY_CAST || !event.hasHit) return
-
         val offset = event.direction.nor().scl(0.5f)
         val hitPoint = event.hitPoint.add(offset)
-        val chunk = WorldDataHelper.getChunkPositionFromWorldPosition(hitPoint)
-        val chunkData = chunkDataMap[chunk] ?: return
+
+        val chunkPosition = WorldDataHelper.getChunkPositionFromWorldPosition(hitPoint)
+        val chunkData = chunkDataMap[chunkPosition] ?: return
         val blockPosition = ChunkHelper.getBlockPositionFromWorldPosition(hitPoint)
-
         if (chunkData.getBlockByLocal(blockPosition) == BlockType.AIR) return
+        setBlock(BlockType.AIR, chunkData, blockPosition)
+    }
 
-        chunkData.setBlockByLocal(BlockType.AIR, blockPosition)
+    @BusEvent
+    fun loadAdditionalChunks(event: GameEvent.LoadAdditionalChunksRequest) {
+        if (pendingChunks.size > 4) return
+        defaultScope.launch {
+            performWorldGeneration(event.world, event.playerPosition)
+            mainScope.async {
+                if (!isFirstGeneration) return@async
+                mainEventBus.sendEvent(GameEvent.GameWorldStarted)
+                isFirstGeneration = false
+            }.await()
+        }
+    }
 
+    fun setBlock(blockType: BlockType, chunkData: ChunkData, blockPosition: IntVector3) {
+        chunkData.setBlockByLocal(blockType, blockPosition)
         val fullDataMap = chunkDataMap.toMap()
         val neighboursToUpdate = WorldDataHelper.getEdgeNeighbourChunks(chunkData, blockPosition, fullDataMap)
-        val chunksToUpdate = (listOf(chunk) + neighboursToUpdate.map { it.position }).toSet()
+        val chunksToUpdate = (listOf(chunkData.position) + neighboursToUpdate.map { it.position }).toSet()
 
         defaultScope.launch {
             val meshDates = chunksToUpdate.mapNotNull { updateChunkPos ->
@@ -103,25 +117,12 @@ class ChunkDataManager : LaunchedEffect, DisposableEffect {
                 meshDataMap[pos] = meshData
                 entityId to (meshData to chunkData)
             }
-
-            meshDates.forEach { (chunkEntityId, pair) ->
-                mainEventBus.sendEvent(GameEvent.OnUpdateChunkMeshData(chunkEntityId, pair.first))
-                physicsEventBus.sendEvent(GameEvent.OnUpdateChunkData(chunkEntityId, pair.second))
+            withContext(mainScope.coroutineContext) {
+                meshDates.forEach { (chunkEntityId, pair) ->
+                    mainEventBus.sendEvent(GameEvent.OnUpdateChunkMeshData(chunkEntityId, pair.first))
+                    physicsEventBus.sendEvent(GameEvent.OnUpdateChunkData(chunkEntityId, pair.second))
+                }
             }
-        }
-    }
-
-
-    @BusEvent
-    fun loadAdditionalChunks(event: GameEvent.LoadAdditionalChunksRequest) {
-        if (pendingChunks.size > 4) return
-        defaultScope.launch {
-            performWorldGeneration(event.world, event.playerPosition)
-            mainScope.async {
-                if (!isFirstGeneration) return@async
-                mainEventBus.sendEvent(GameEvent.GameWorldStarted)
-                isFirstGeneration = false
-            }.await()
         }
     }
 
