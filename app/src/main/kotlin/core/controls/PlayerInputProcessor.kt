@@ -22,7 +22,7 @@ class PlayerInputProcessor: LaunchedEffect, InputProcessor {
         const val JUMP_FORCE = 10f
         const val JUMP_FORCE_REVERSE = -10f
         const val CAMERA_SENSITIVITY = 0.03f
-        const val MAX_VERTICAL_ANGLE = 85f
+        const val MAX_VERTICAL_ANGLE = 89f
     }
 
     private lateinit var mainEventBus: EventBus

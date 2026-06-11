@@ -20,10 +20,10 @@ class ForestBiomeGenerator: LaunchedEffect {
         val perlinNoise = context.getObject<PerlinNoise>(NoiceTypes.PERLIN_WORLD)
 
         val biomeNoiseSettings = NoiseSettings(
-            noiseZoom = 0.01f,
+            noiseZoom = 0.001f,
             octaves = 5,
             persistance = 0.5f,
-            redistributionModifier = 1.6f,
+            redistributionModifier = 2.6f,
             exponent = 1.6f
         )
 

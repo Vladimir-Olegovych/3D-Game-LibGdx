@@ -95,12 +95,18 @@ class ChunkDataManager : LaunchedEffect, DisposableEffect {
             }.await()
         }
     }
-
     fun setBlock(blockType: BlockType, chunkData: ChunkData, blockPosition: IntVector3) {
         chunkData.setBlockByLocal(blockType, blockPosition)
+
         val fullDataMap = chunkDataMap.toMap()
         val neighboursToUpdate = WorldDataHelper.getEdgeNeighbourChunks(chunkData, blockPosition, fullDataMap)
         val chunksToUpdate = (listOf(chunkData.position) + neighboursToUpdate.map { it.position }).toSet()
+
+        chunksToUpdate.forEach { chunkPos ->
+            val chunkDataToUpdate = chunkDataMap[chunkPos] ?: return@forEach
+            val entityId = chunkDataPositionToEntityId[chunkPos] ?: return@forEach
+            physicsEventBus.sendEvent(GameEvent.OnUpdateChunkData(entityId, chunkDataToUpdate))
+        }
 
         defaultScope.launch {
             val meshDates = chunksToUpdate.mapNotNull { updateChunkPos ->
@@ -120,7 +126,6 @@ class ChunkDataManager : LaunchedEffect, DisposableEffect {
             withContext(mainScope.coroutineContext) {
                 meshDates.forEach { (chunkEntityId, pair) ->
                     mainEventBus.sendEvent(GameEvent.OnUpdateChunkMeshData(chunkEntityId, pair.first))
-                    physicsEventBus.sendEvent(GameEvent.OnUpdateChunkData(chunkEntityId, pair.second))
                 }
             }
         }

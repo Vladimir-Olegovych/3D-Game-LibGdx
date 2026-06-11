@@ -25,7 +25,7 @@ class PlayerSystem: BaseSystem() {
     private lateinit var linearMoveMapper: ComponentMapper<LinearMoveComponent>
     private lateinit var forceMoveMapper: ComponentMapper<ForceMoveComponent>
 
-    private val cameraOffset = Vector3(0f, 0.8f, 0f)
+    private val cameraOffset = Vector3(0f, 0f, 0f)
 
     override fun begin() {
         val playerEntityId = WorldConstants.getPlayerEntityId()
