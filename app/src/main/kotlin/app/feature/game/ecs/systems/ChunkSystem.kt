@@ -15,7 +15,7 @@ import com.gigapi.eventbus.EventBus
 import com.gigapi.eventbus.annotation.BusEvent
 import com.gigapi.math.vector.IntVector3
 import core.assets.SkinID
-import core.chunk.ChunkManager
+import core.chunk.ChunkDataManager
 import core.defaults.CameraTypes
 import core.mesh.MeshUtils
 
@@ -23,7 +23,7 @@ import core.mesh.MeshUtils
 class ChunkSystem: BaseSystem() {
 
     @Wire
-    private lateinit var chunkManager: ChunkManager
+    private lateinit var chunkDataManager: ChunkDataManager
     @Wire
     private lateinit var assetManager: AssetManager
     @Wire(name = CameraTypes.GL_3D)
@@ -50,13 +50,26 @@ class ChunkSystem: BaseSystem() {
     }
 
     @BusEvent
+    fun onUpdateChunkMeshData(event: GameEvent.OnUpdateChunkMeshData) {
+        val entityId = event.chunkEntityId
+        val meshComponent = meshMapper[entityId]?: meshMapper.create(entityId)
+        meshComponent.dispose()
+        meshComponent.meshData = event.meshData
+        meshComponent.meshTextureData = chunkMeshTextureData
+        val radius = MeshUtils.getBoundRadius(event.meshData.mesh)
+        aoMapper[entityId]?: aoMapper.create(entityId)
+        val boundComponent = boundMapper[entityId]?: boundMapper.create(entityId)
+        boundComponent.boundingRadius = radius
+    }
+
+    @BusEvent
     fun onMeshDataCreated(event: GameEvent.OnCreateChunkMeshData) {
         val entityId = event.chunkEntityId
-        val meshComp = meshMapper.create(entityId)
+        val meshComponent = meshMapper.create(entityId)
         val mesh = event.meshData.mesh ?: return
         val radius = MeshUtils.getBoundRadius(mesh)
-        meshComp.meshData = event.meshData
-        meshComp.meshTextureData = chunkMeshTextureData
+        meshComponent.meshData = event.meshData
+        meshComponent.meshTextureData = chunkMeshTextureData
         aoMapper.create(entityId)
         boundMapper.create(entityId).boundingRadius = radius
     }

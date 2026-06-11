@@ -81,7 +81,7 @@ class WorldSystem: BaseSystem() {
         )
 
 
-        world.startTest100Box()
+        //world.startTest100Box()
     }
 
     override fun processSystem() {

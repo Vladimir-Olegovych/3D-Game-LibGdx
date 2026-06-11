@@ -18,6 +18,7 @@ class PhysicalData(val isStatic: Boolean) : Disposable {
 
     private var body: btRigidBody? = null
 
+    fun getBodyNullable() = body
     fun getBody() = body!!
 
     fun setBody(body: btRigidBody) {

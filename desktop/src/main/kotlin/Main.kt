@@ -12,7 +12,7 @@ fun main() {
 
 private fun startScreen(game: Game){
     val config = Lwjgl3ApplicationConfiguration()
-    config.useVsync(false)
+    config.useVsync(true)
     config.setForegroundFPS((Lwjgl3ApplicationConfiguration.getDisplayMode().refreshRate * 2))
     config.setIdleFPS(30)
     config.setTitle("Amogus Craft")

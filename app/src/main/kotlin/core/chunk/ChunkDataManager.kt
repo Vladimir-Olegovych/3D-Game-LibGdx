@@ -11,6 +11,8 @@ import com.gigapi.general.Context
 import com.gigapi.math.vector.IntVector3
 import com.gigapi.screens.mesh.MeshData
 import core.blocks.BlockType
+import core.bullet.raycast.RayCastTypes
+import core.chunk.world.ChunkHelper
 import core.chunk.world.WorldDataHelper
 import core.chunk.world.WorldGenerationData
 import core.math.createMatrixForChunk
@@ -22,7 +24,7 @@ import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
 import java.util.concurrent.ConcurrentHashMap
 
-class ChunkManager : LaunchedEffect, DisposableEffect {
+class ChunkDataManager : LaunchedEffect, DisposableEffect {
 
     companion object {
         const val DRAW_RADIUS_X = 16
@@ -67,6 +69,48 @@ class ChunkManager : LaunchedEffect, DisposableEffect {
         chunkDataMap.clear()
         pendingChunks.clear()
     }
+
+    @BusEvent
+    fun onRayCastResult(event: GameEvent.OnRayCastResult) {
+        if (event.requestId != RayCastTypes.CHUNK_RAY_CAST || !event.hasHit) return
+
+        val offset = event.direction.nor().scl(0.5f)
+        val hitPoint = event.hitPoint.add(offset)
+        val chunk = WorldDataHelper.getChunkPositionFromWorldPosition(hitPoint)
+        val chunkData = chunkDataMap[chunk] ?: return
+        val blockPosition = ChunkHelper.getBlockPositionFromWorldPosition(hitPoint)
+
+        if (chunkData.getBlockByLocal(blockPosition) == BlockType.AIR) return
+
+        chunkData.setBlockByLocal(BlockType.AIR, blockPosition)
+
+        val fullDataMap = chunkDataMap.toMap()
+        val neighboursToUpdate = WorldDataHelper.getEdgeNeighbourChunks(chunkData, blockPosition, fullDataMap)
+        val chunksToUpdate = (listOf(chunk) + neighboursToUpdate.map { it.position }).toSet()
+
+        defaultScope.launch {
+            val meshDates = chunksToUpdate.mapNotNull { updateChunkPos ->
+                val updateChunkData = chunkDataMap[updateChunkPos] ?: return@mapNotNull null
+                val updateChunkEntityId = chunkDataPositionToEntityId[updateChunkPos] ?: return@mapNotNull null
+                Triple(updateChunkPos, updateChunkData, updateChunkEntityId)
+            }.associate { (pos, chunkData, entityId) ->
+                val rawMeshData = withContext(Dispatchers.Default) {
+                    meshHelper.createMesh(fullDataMap, chunkData)
+                }
+                val meshData = withContext(mainScope.coroutineContext) {
+                    rawMeshData.createMeshData()
+                }
+                meshDataMap[pos] = meshData
+                entityId to (meshData to chunkData)
+            }
+
+            meshDates.forEach { (chunkEntityId, pair) ->
+                mainEventBus.sendEvent(GameEvent.OnUpdateChunkMeshData(chunkEntityId, pair.first))
+                physicsEventBus.sendEvent(GameEvent.OnUpdateChunkData(chunkEntityId, pair.second))
+            }
+        }
+    }
+
 
     @BusEvent
     fun loadAdditionalChunks(event: GameEvent.LoadAdditionalChunksRequest) {

@@ -25,7 +25,9 @@ object MeshUtils {
     fun getBoundRadius(mesh: Mesh?): Float {
         mesh?: return 0F
         val boundingBox = BoundingBox()
-        mesh.calculateBoundingBox(boundingBox)
+        runCatching { mesh.calculateBoundingBox(boundingBox) }.onFailure {
+            return@getBoundRadius 0f
+        }
         return boundingBox.getDimensions(Vector3()).len()
     }
 

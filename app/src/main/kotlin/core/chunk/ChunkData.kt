@@ -12,7 +12,7 @@ class ChunkData(
 ) {
     companion object {
         const val SHADOW_MIN = 0x0F.toByte()
-        const val SHADOW_MAX = 0x1F.toByte()
+        const val SHADOW_MAX = 0x6F.toByte()
 
         private fun floatToShadowByte(value: Float): Byte {
             val clamped = value.coerceIn(0f, 1f)
@@ -31,7 +31,7 @@ class ChunkData(
             chunkHeight: Int
         ): ChunkData {
             val blocks = ByteArray(chunkWidth * chunkHeight * chunkWidth) { BlockType.AIR.id }
-            val shadows = ByteArray(chunkWidth * chunkHeight * chunkWidth) { SHADOW_MIN }
+            val shadows = ByteArray(chunkWidth * chunkHeight * chunkWidth) { 0x3f }
             return ChunkData(position, chunkWidth, chunkHeight, blocks, shadows)
         }
     }

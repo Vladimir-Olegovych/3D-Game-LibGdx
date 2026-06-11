@@ -9,6 +9,9 @@ import com.gigapi.screens.mesh.RawMeshData
 import core.chunk.ChunkData
 
 sealed class GameEvent {
+
+    class OnUpdateChunkData(val chunkEntityId: Int, val chunkData: ChunkData): GameEvent()
+    class OnUpdateChunkMeshData(val chunkEntityId: Int, val meshData: MeshData): GameEvent()
     class OnCreateChunkTransform(val chunkEntityId: Int, val transform: Matrix4): GameEvent()
     class OnCreateChunkMeshData(val chunkEntityId: Int, val meshData: MeshData): GameEvent()
     class OnCreateChunkRigidBody(val chunkEntityId: Int, val chunkData: ChunkData): GameEvent()
@@ -29,6 +32,22 @@ sealed class GameEvent {
     class OnRigidBodyTransformUpdate(val entityId: Int, val transform: Matrix4): GameEvent()
     class OnApplyLinearForce(val entityId: Int, val ignoreYLinear: Boolean, val force: Vector3): GameEvent()
     class OnApplyForce(val entityId: Int, val force: Vector3): GameEvent()
+
+    class OnRayCastRequest(
+        val requestId: Long,
+        val from: Vector3,
+        val direction: Vector3,
+        val maxDistance: Float = 10f
+    ) : GameEvent()
+
+    class OnRayCastResult(
+        val requestId: Long,
+        val hasHit: Boolean,
+        val direction: Vector3,
+        val hitPoint: Vector3,
+        val hitNormal: Vector3,
+        val hitEntityId: Int? = null
+    ) : GameEvent()
 
     class LoadAdditionalChunksRequest(val world: World, val playerPosition: IntVector3): GameEvent()
     object GameWorldStarted: GameEvent()

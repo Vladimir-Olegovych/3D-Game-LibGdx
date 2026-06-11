@@ -1,4 +1,4 @@
-package core.bullet
+package core.bullet.world
 
 import com.badlogic.gdx.math.Vector3
 import com.badlogic.gdx.physics.bullet.collision.btCollisionDispatcher

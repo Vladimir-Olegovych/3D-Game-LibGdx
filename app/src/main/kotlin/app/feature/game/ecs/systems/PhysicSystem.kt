@@ -6,7 +6,7 @@ import com.artemis.BaseSystem
 import com.artemis.ComponentMapper
 import com.artemis.annotations.Wire
 import com.gigapi.eventbus.annotation.BusEvent
-import core.bullet.PhysicsWorldUpdater
+import core.bullet.world.PhysicsWorldUpdater
 
 
 class PhysicSystem: BaseSystem() {

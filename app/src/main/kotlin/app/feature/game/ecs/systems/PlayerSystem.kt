@@ -27,6 +27,13 @@ class PlayerSystem: BaseSystem() {
 
     private val cameraOffset = Vector3(0f, 0.8f, 0f)
 
+    override fun begin() {
+        val playerEntityId = WorldConstants.getPlayerEntityId()
+        val linearMoveComponent = linearMoveMapper[playerEntityId]?: return
+        val isJumped = playerInputProcessor.isJumped()
+        linearMoveComponent.ignoreYLinear = !isJumped
+    }
+
     override fun processSystem() {
         val playerEntityId = WorldConstants.getPlayerEntityId()
         playerInputProcessor.update(world.delta)
@@ -41,13 +48,13 @@ class PlayerSystem: BaseSystem() {
         val direction = playerInputProcessor.getMoveDirectionByCamera()
 
         if (isJumped) {
-            linearMoveComponent.ignoreYLinear = false
             direction.y = PlayerInputProcessor.JUMP_FORCE
+            forceMoveComponent.setDirection(Vector3.Zero)
         } else {
             direction.y = 0f
-            forceMoveComponent.setDirection(Vector3(0f, -PlayerInputProcessor.JUMP_FORCE, 0f))
-            linearMoveComponent.ignoreYLinear = true
+            forceMoveComponent.setDirection(Vector3(0f, PlayerInputProcessor.JUMP_FORCE_REVERSE, 0f))
         }
+
         linearMoveComponent.setDirection(direction)
     }
 
@@ -66,7 +73,7 @@ class PlayerSystem: BaseSystem() {
 
         val direction = Vector3(dirX.toFloat(), dirY.toFloat(), dirZ.toFloat()).nor()
 
-        camera.position.set(playerPosition)
+        camera.position.lerp(playerPosition, 0.6f)
         camera.direction.set(direction)
         camera.up.set(Vector3.Y)
         camera.update()

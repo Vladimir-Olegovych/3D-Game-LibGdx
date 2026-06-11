@@ -1,21 +1,41 @@
 package core.controls
 
+import app.feature.game.event.EventBusTypes
+import app.feature.game.event.GameEvent
+import app.feature.game.event.PlayerEvent
 import com.badlogic.gdx.Input.Keys
 import com.badlogic.gdx.InputProcessor
+import com.badlogic.gdx.graphics.PerspectiveCamera
 import com.badlogic.gdx.math.Vector3
-import core.bullet.PhysicsWorld
+import com.gigapi.core.effects.LaunchedEffect
+import com.gigapi.eventbus.EventBus
+import com.gigapi.general.Context
+import core.bullet.raycast.RayCastTypes
+import core.defaults.CameraTypes
 import kotlin.math.cos
 import kotlin.math.sin
 
-class PlayerInputProcessor: InputProcessor {
+class PlayerInputProcessor: LaunchedEffect, InputProcessor {
 
     companion object {
-        const val PLAYER_SPEED = 5f
+        const val PLAYER_SPEED = 15f
         const val JUMP_FORCE = 10f
+        const val JUMP_FORCE_REVERSE = -10f
         const val CAMERA_SENSITIVITY = 0.03f
         const val MAX_VERTICAL_ANGLE = 85f
     }
 
+    private lateinit var mainEventBus: EventBus
+    private lateinit var physicsEventBus: EventBus
+    private lateinit var camera: PerspectiveCamera
+
+    override fun launch(context: Context) {
+        camera = context.getObject(CameraTypes.GL_3D)
+        mainEventBus = context.getObject(EventBusTypes.MAIN_EVENT_BUS)
+        physicsEventBus = context.getObject(EventBusTypes.PHYSICS_EVENT_BUS)
+    }
+
+    private var isMouseHold = false
     private var jump = false
     private var lastMouseX = -1
     private var lastMouseY = -1
@@ -24,6 +44,7 @@ class PlayerInputProcessor: InputProcessor {
     private var pitch = 0f
     private var yaw = 0f
     private val moveDirection = Vector3()
+    private val moveDirectionByCamera = Vector3()
 
     fun isJumped() = jump
     fun getPitch() = pitch
@@ -31,8 +52,22 @@ class PlayerInputProcessor: InputProcessor {
 
     fun getMoveDirection(): Vector3 = moveDirection
 
-    fun getMoveDirectionByCamera(): Vector3 {
-        if (moveDirection.isZero) return Vector3.Zero
+    fun getMoveDirectionByCamera(): Vector3 = moveDirectionByCamera
+
+    fun update(deltaTime: Float) {
+        if (isMouseHold) {
+            onLeftButtonClick()
+        }
+        yaw -= deltaMouseX * CAMERA_SENSITIVITY
+        pitch = (pitch - deltaMouseY * CAMERA_SENSITIVITY).coerceIn(-MAX_VERTICAL_ANGLE, MAX_VERTICAL_ANGLE)
+
+        deltaMouseX = 0f
+        deltaMouseY = 0f
+
+        if (moveDirection.isZero) {
+            moveDirectionByCamera.set(Vector3.Zero)
+            return
+        }
 
         val yawRad = Math.toRadians(yaw.toDouble())
 
@@ -45,15 +80,18 @@ class PlayerInputProcessor: InputProcessor {
         val resultX = forwardX * moveDirection.z + rightX * moveDirection.x
         val resultZ = forwardZ * moveDirection.z + rightZ * moveDirection.x
 
-        return Vector3(resultX, 0f, resultZ).nor().scl(PLAYER_SPEED)
+        moveDirectionByCamera.set(resultX, 0f, resultZ).nor().scl(PLAYER_SPEED)
     }
 
-    fun update(deltaTime: Float) {
-        yaw -= deltaMouseX * CAMERA_SENSITIVITY
-        pitch = (pitch - deltaMouseY * CAMERA_SENSITIVITY).coerceIn(-MAX_VERTICAL_ANGLE, MAX_VERTICAL_ANGLE)
-
-        deltaMouseX = 0f
-        deltaMouseY = 0f
+    private fun onLeftButtonClick() {
+        physicsEventBus.sendEvent(
+            GameEvent.OnRayCastRequest(
+                requestId = RayCastTypes.CHUNK_RAY_CAST,
+                from = camera.position.cpy(),
+                direction = camera.direction.cpy(),
+                maxDistance = 10f
+            )
+        )
     }
 
     private fun updateMoveDirection(x: Float = moveDirection.x, z: Float = moveDirection.z) {
@@ -115,7 +153,8 @@ class PlayerInputProcessor: InputProcessor {
         pointer: Int,
         button: Int
     ): Boolean {
-        return false
+        isMouseHold = true
+        return true
     }
 
     override fun touchUp(
@@ -124,7 +163,8 @@ class PlayerInputProcessor: InputProcessor {
         pointer: Int,
         button: Int
     ): Boolean {
-        return false
+        isMouseHold = false
+        return true
     }
 
     override fun touchCancelled(

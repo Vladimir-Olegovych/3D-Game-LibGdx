@@ -1,15 +1,19 @@
-package core.bullet
+package core.bullet.world
 
 import app.feature.game.event.EventBusTypes
 import app.feature.game.event.GameEvent
 import com.badlogic.gdx.math.Vector3
 import com.badlogic.gdx.physics.bullet.Bullet
+import com.badlogic.gdx.physics.bullet.collision.ClosestRayResultCallback
 import com.gigapi.core.effects.LaunchedEffect
 import com.gigapi.coruntines.DeltaUpdater
 import com.gigapi.eventbus.EventBus
 import com.gigapi.eventbus.annotation.BusEvent
 import com.gigapi.general.Context
+import core.bullet.PhysicalData
+import core.bullet.PhysicsUtils
 import kotlinx.coroutines.Dispatchers
+import kotlin.collections.iterator
 
 class PhysicsWorldUpdater: LaunchedEffect, DeltaUpdater(1 / 60F, Dispatchers.Default) {
 
@@ -22,6 +26,53 @@ class PhysicsWorldUpdater: LaunchedEffect, DeltaUpdater(1 / 60F, Dispatchers.Def
         physicalEventBus = context.getObject(EventBusTypes.PHYSICS_EVENT_BUS)
         mainEventBus = context.getObject(EventBusTypes.MAIN_EVENT_BUS)
         physicalEventBus.registerHandler(this)
+    }
+
+    @BusEvent
+    fun onRayCastRequest(event: GameEvent.OnRayCastRequest) {
+        val rayFrom = event.from
+        val rayTo = Vector3(event.direction).scl(event.maxDistance).add(rayFrom)
+        val callback = ClosestRayResultCallback(rayFrom, rayTo)
+        physicsWorld.world.rayTest(rayFrom, rayTo, callback)
+
+        var hitEntityId: Int? = null
+        val hitPoint = Vector3()
+        val hitNormal = Vector3()
+
+        if (callback.hasHit()) {
+            callback.getHitPointWorld(hitPoint)
+            callback.getHitNormalWorld(hitNormal)
+
+            val hitCollisionObject = callback.collisionObject
+            hitEntityId = physicBodies.entries.find {
+                it.value.getBody() == hitCollisionObject
+            }?.key
+        }
+
+        mainEventBus.sendEvent(
+            GameEvent.OnRayCastResult(
+                requestId = event.requestId,
+                direction = event.direction,
+                hasHit = callback.hasHit(),
+                hitPoint = hitPoint.cpy(),
+                hitNormal = hitNormal.cpy(),
+                hitEntityId = hitEntityId
+            )
+        )
+
+        callback.dispose()
+    }
+
+    @BusEvent
+    fun onUpdateChunkData(event: GameEvent.OnUpdateChunkData) {
+        val entityId = event.chunkEntityId
+        val physicalData = PhysicsUtils.createChunkBody(event.chunkData)
+        physicBodies[entityId]?.let {
+            it.getBodyNullable()?.let { body -> physicsWorld.world.removeRigidBody(body) }
+            it.dispose()
+        }
+        physicBodies[entityId] = physicalData
+        physicsWorld.world.addRigidBody(physicalData.getBody())
     }
 
     @BusEvent

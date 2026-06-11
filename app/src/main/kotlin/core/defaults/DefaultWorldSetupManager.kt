@@ -6,8 +6,8 @@ import com.badlogic.gdx.InputMultiplexer
 import com.gigapi.core.effects.LaunchedEffect
 import com.gigapi.eventbus.EventBus
 import com.gigapi.general.Context
-import core.bullet.PhysicsWorldUpdater
-import core.chunk.ChunkManager
+import core.bullet.world.PhysicsWorldUpdater
+import core.chunk.ChunkDataManager
 import core.controls.PlayerInputProcessor
 import core.controls.ProcessorIndex
 import core.noice.PerlinNoise
@@ -32,7 +32,7 @@ object DefaultWorldSetupManager: LaunchedEffect {
         //---
         context.setObject(PhysicsWorldUpdater())
         //---
-        context.setObject(ChunkManager())
+        context.setObject(ChunkDataManager())
         //Systems
         context.setObject(WorldSystem())
         context.setObject(PlayerSystem())

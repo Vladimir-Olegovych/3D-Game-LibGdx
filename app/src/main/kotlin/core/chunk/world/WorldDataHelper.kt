@@ -1,14 +1,16 @@
 package core.chunk.world
 
+import com.badlogic.gdx.math.Vector3
 import com.gigapi.math.vector.IntVector3
 import com.gigapi.screens.mesh.MeshData
 import core.chunk.ChunkData
-import core.chunk.ChunkManager
+import core.chunk.ChunkDataManager
+import kotlin.math.floor
 
 object WorldDataHelper {
     fun chunkPositionFromBlockCoords(worldBlockPosition: IntVector3): IntVector3 {
-        val chunkSize = ChunkManager.CHUNK_SIZE
-        val chunkHeight = ChunkManager.CHUNK_HEIGHT
+        val chunkSize = ChunkDataManager.CHUNK_SIZE
+        val chunkHeight = ChunkDataManager.CHUNK_HEIGHT
 
         return IntVector3(
             x = floorDiv(worldBlockPosition.x, chunkSize),
@@ -17,16 +19,39 @@ object WorldDataHelper {
         )
     }
 
-    fun floorDiv(a: Int, b: Int): Int = when {
-        a >= 0 -> a / b
-        else -> (a - b + 1) / b
+    fun getChunkPositionFromWorldPosition(position: Vector3): IntVector3 {
+        val blockPos = IntVector3(
+            floor(position.x).toInt(),
+            floor(position.y).toInt(),
+            floor(position.z).toInt()
+        )
+        return getChunkPositionFromBlockCoords(blockPos)
+    }
+
+    fun getChunkPositionFromBlockCoords(blockPos: IntVector3): IntVector3 {
+        val chunkSize = ChunkDataManager.CHUNK_SIZE
+        val chunkHeight = ChunkDataManager.CHUNK_HEIGHT
+
+        return IntVector3(
+            x = floorDiv(blockPos.x, chunkSize),
+            y = floorDiv(blockPos.y, chunkHeight),
+            z = floorDiv(blockPos.z, chunkSize)
+        )
+    }
+
+    fun floorDiv(a: Int, b: Int): Int {
+        return when {
+            b < 0 -> floorDiv(a, -b)
+            a >= 0 -> a / b
+            else -> (a + 1) / b - 1
+        }
     }
 
     fun getChunkPositionsAroundPlayer(
         playerPosition: IntVector3
     ): List<IntVector3> {
-        val chunkDrawingRangeX = ChunkManager.DRAW_RADIUS_X
-        val chunkDrawingRangeY = ChunkManager.DRAW_RADIUS_Y
+        val chunkDrawingRangeX = ChunkDataManager.DRAW_RADIUS_X
+        val chunkDrawingRangeY = ChunkDataManager.DRAW_RADIUS_Y
 
         val centerChunk = chunkPositionFromBlockCoords(playerPosition)
         val chunkPositionsToCreate = mutableListOf<IntVector3>()
@@ -62,8 +87,8 @@ object WorldDataHelper {
     fun getDataPositionsAroundPlayer(
         playerPosition: IntVector3
     ): List<IntVector3> {
-        val chunkDrawingRangeX = ChunkManager.DRAW_RADIUS_X
-        val chunkDrawingRangeY = ChunkManager.DRAW_RADIUS_Y
+        val chunkDrawingRangeX = ChunkDataManager.DRAW_RADIUS_X
+        val chunkDrawingRangeY = ChunkDataManager.DRAW_RADIUS_Y
 
         val centerChunk = chunkPositionFromBlockCoords(playerPosition)
         val chunkPositionsToCreate = mutableListOf<IntVector3>()
@@ -139,5 +164,73 @@ object WorldDataHelper {
             .filter { pos -> pos !in chunkDataMap }
             .sortedBy { pos -> IntVector3.dst(playerPosition, pos) }
             .toList()
+    }
+
+    fun getEdgeNeighbourChunks(
+        chunkData: ChunkData,
+        localBlockPosition: IntVector3,
+        chunkDataMap: Map<IntVector3, ChunkData>
+    ): List<ChunkData> {
+        val neighboursToUpdate = mutableListOf<ChunkData>()
+
+        if (localBlockPosition.x == 0) {
+            val neighbourPos = IntVector3(
+                chunkData.position.x - 1,
+                chunkData.position.y,
+                chunkData.position.z
+            )
+            chunkDataMap[neighbourPos]?.let { neighboursToUpdate.add(it) }
+        }
+        if (localBlockPosition.x == ChunkDataManager.CHUNK_SIZE - 1) {
+            val neighbourPos = IntVector3(
+                chunkData.position.x + 1,
+                chunkData.position.y,
+                chunkData.position.z
+            )
+            chunkDataMap[neighbourPos]?.let { neighboursToUpdate.add(it) }
+        }
+        if (localBlockPosition.y == 0) {
+            val neighbourPos = IntVector3(
+                chunkData.position.x,
+                chunkData.position.y - 1,
+                chunkData.position.z
+            )
+            chunkDataMap[neighbourPos]?.let { neighboursToUpdate.add(it) }
+        }
+        if (localBlockPosition.y == ChunkDataManager.CHUNK_HEIGHT - 1) {
+            val neighbourPos = IntVector3(
+                chunkData.position.x,
+                chunkData.position.y + 1,
+                chunkData.position.z
+            )
+            chunkDataMap[neighbourPos]?.let { neighboursToUpdate.add(it) }
+        }
+        if (localBlockPosition.z == 0) {
+            val neighbourPos = IntVector3(
+                chunkData.position.x,
+                chunkData.position.y,
+                chunkData.position.z - 1
+            )
+            chunkDataMap[neighbourPos]?.let { neighboursToUpdate.add(it) }
+        }
+        if (localBlockPosition.z == ChunkDataManager.CHUNK_SIZE - 1) {
+            val neighbourPos = IntVector3(
+                chunkData.position.x,
+                chunkData.position.y,
+                chunkData.position.z + 1
+            )
+            chunkDataMap[neighbourPos]?.let { neighboursToUpdate.add(it) }
+        }
+
+        return neighboursToUpdate
+    }
+
+    fun isOnEdge(localBlockPosition: IntVector3): Boolean {
+        return localBlockPosition.x == 0 ||
+                localBlockPosition.x == ChunkDataManager.CHUNK_SIZE - 1 ||
+                localBlockPosition.y == 0 ||
+                localBlockPosition.y == ChunkDataManager.CHUNK_HEIGHT - 1 ||
+                localBlockPosition.z == 0 ||
+                localBlockPosition.z == ChunkDataManager.CHUNK_SIZE - 1
     }
 }

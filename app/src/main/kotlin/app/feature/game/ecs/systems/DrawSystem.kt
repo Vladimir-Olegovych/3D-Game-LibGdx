@@ -11,7 +11,7 @@ import com.badlogic.gdx.graphics.PerspectiveCamera
 import com.badlogic.gdx.graphics.glutils.ShaderProgram
 import com.badlogic.gdx.math.Vector3
 import com.gigapi.screens.texture.DefaultsTextures
-import core.chunk.ChunkManager
+import core.chunk.ChunkDataManager
 import core.defaults.CameraTypes
 import core.renderers.SunRenderer
 import core.shaders.ShaderTypes
@@ -40,7 +40,7 @@ class DrawSystem: IteratingSystem() {
         Gdx.gl.glEnable(GL20.GL_CULL_FACE)
         Gdx.gl.glEnable(GL20.GL_DEPTH_TEST)
 
-        val fogVerticalRadius = ChunkManager.CHUNK_HEIGHT * ChunkManager.DRAW_RADIUS_Y - ChunkManager.CHUNK_HEIGHT * 2F
+        val fogVerticalRadius = ChunkDataManager.CHUNK_HEIGHT * ChunkDataManager.DRAW_RADIUS_Y - ChunkDataManager.CHUNK_HEIGHT * 2F
 
         simpleShader.bind()
         //Mesh
