@@ -13,7 +13,6 @@ import com.gigapi.general.Context
 import core.bullet.PhysicalData
 import core.bullet.PhysicsUtils
 import kotlinx.coroutines.Dispatchers
-import kotlin.collections.iterator
 
 class PhysicsWorldUpdater: LaunchedEffect, DeltaUpdater(1 / 60F, Dispatchers.Default) {
 
@@ -81,7 +80,6 @@ class PhysicsWorldUpdater: LaunchedEffect, DeltaUpdater(1 / 60F, Dispatchers.Def
         val physicalData = PhysicsUtils.createChunkBody(entityId = entityId, event.chunkData)
         physicBodies[entityId] = physicalData
         physicsWorld.world.addRigidBody(physicalData.getBody())
-        mainEventBus.sendEvent(GameEvent.OnChunkUpdatedResponse(entityId, event.chunkData))
     }
 
     @BusEvent

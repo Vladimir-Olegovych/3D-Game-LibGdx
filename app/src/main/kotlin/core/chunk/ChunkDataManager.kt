@@ -22,7 +22,6 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
 import java.util.concurrent.ConcurrentHashMap
-import java.util.concurrent.ConcurrentLinkedQueue
 
 class ChunkDataManager : LaunchedEffect, DisposableEffect {
 
@@ -74,6 +73,7 @@ class ChunkDataManager : LaunchedEffect, DisposableEffect {
     @BusEvent
     fun loadAdditionalChunksRequest(event: GameEvent.LoadAdditionalChunksRequest) {
         if (pendingChunks.size > 4) return
+        if (pendingChunks.isEmpty()) pendingSetBlocksChunks.clear()
         defaultScope.launch { requestWorldGenerationData(event.playerPosition) }
     }
 
@@ -102,6 +102,7 @@ class ChunkDataManager : LaunchedEffect, DisposableEffect {
                 physicsEventBus.sendEvent(GameEvent.OnRemoveRigidBody(entityId))
                 meshDataMap.remove(pos)
                 chunkMeshPositionToEntityId.remove(pos)
+                pendingSetBlocksChunks.remove(pos)
             }
         }
         generationData.chunkDataToRemove.forEach { pos ->
@@ -143,10 +144,9 @@ class ChunkDataManager : LaunchedEffect, DisposableEffect {
         val renderablePositions = meshIdMap.filter { (pos, _) ->
             val chunk = fullDataMap[pos] ?: return@filter false
             val isAir = chunk.isAllBlock(BlockType.AIR)
-            val isUpdating = pendingSetBlocksChunks.contains(pos)
             if (isAir) {
                 meshDataMap[pos] = MeshData(null)
-            }; !isAir || !isUpdating
+            }; !isAir
         }
         val meshJobs = coroutineScope {
             renderablePositions.map { (pos, entityId) ->
@@ -233,11 +233,6 @@ class ChunkDataManager : LaunchedEffect, DisposableEffect {
 
         if (currentBlock == BlockType.AIR) return
         setBlock(BlockType.AIR, chunkData, blockPosition)
-    }
-
-    @BusEvent
-    fun onChunkUpdated(event: GameEvent.OnChunkUpdatedResponse) {
-        pendingSetBlocksChunks.remove(event.chunkData.position)
     }
 
     fun setBlock(blockType: BlockType, chunkData: ChunkData, blockPosition: IntVector3) {

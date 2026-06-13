@@ -11,7 +11,6 @@ import core.chunk.world.WorldGenerationData
 
 sealed class GameEvent {
 
-    class OnChunkUpdatedResponse(val chunkEntityId: Int, val chunkData: ChunkData): GameEvent()
     class OnUpdateChunkData(val chunkEntityId: Int, val chunkData: ChunkData): GameEvent()
     class OnUpdateChunkMeshData(val chunkEntityId: Int, val meshData: MeshData): GameEvent()
     class OnCreateChunkTransform(val chunkEntityId: Int, val transform: Matrix4): GameEvent()
