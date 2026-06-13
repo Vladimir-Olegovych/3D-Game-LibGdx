@@ -44,9 +44,8 @@ class PhysicsWorldUpdater: LaunchedEffect, DeltaUpdater(1 / 60F, Dispatchers.Def
             callback.getHitNormalWorld(hitNormal)
 
             val hitCollisionObject = callback.collisionObject
-            hitEntityId = physicBodies.entries.find {
-                it.value.getBody() == hitCollisionObject
-            }?.key
+            hitEntityId = hitCollisionObject.userData as? Int
+            if (hitEntityId == 0) hitEntityId = null
         }
 
         mainEventBus.sendEvent(
@@ -63,22 +62,32 @@ class PhysicsWorldUpdater: LaunchedEffect, DeltaUpdater(1 / 60F, Dispatchers.Def
         callback.dispose()
     }
 
+    private val lastUpdate = HashMap<Int, GameEvent.OnUpdateChunkData>()
+
     @BusEvent
     fun onUpdateChunkData(event: GameEvent.OnUpdateChunkData) {
         val entityId = event.chunkEntityId
-        val physicalData = PhysicsUtils.createChunkBody(event.chunkData)
-        physicBodies[entityId]?.let {
-            it.getBodyNullable()?.let { body -> physicsWorld.world.removeRigidBody(body) }
-            it.dispose()
-        }
+        lastUpdate[entityId] = event
+        val physicalData = physicBodies[entityId]?: return
+        val body = physicalData.getBody()
+
+        physicBodies.remove(entityId)
+        physicsWorld.world.removeRigidBody(body)
+        physicalData.dispose()
+    }
+
+    fun updateChunkImmediately(event: GameEvent.OnUpdateChunkData) {
+        val entityId = event.chunkEntityId
+        val physicalData = PhysicsUtils.createChunkBody(entityId = entityId, event.chunkData)
         physicBodies[entityId] = physicalData
         physicsWorld.world.addRigidBody(physicalData.getBody())
+        mainEventBus.sendEvent(GameEvent.OnChunkUpdatedResponse(entityId, event.chunkData))
     }
 
     @BusEvent
     fun onChunkBodyCreated(event: GameEvent.OnCreateChunkRigidBody) {
         val entityId = event.chunkEntityId
-        val physicalData = PhysicsUtils.createChunkBody(event.chunkData)
+        val physicalData = PhysicsUtils.createChunkBody(entityId = entityId,event.chunkData)
         physicBodies[entityId] = physicalData
         physicsWorld.world.addRigidBody(physicalData.getBody())
     }
@@ -87,6 +96,7 @@ class PhysicsWorldUpdater: LaunchedEffect, DeltaUpdater(1 / 60F, Dispatchers.Def
     fun onMeshBodyCreated(event: GameEvent.OnCreateMeshRigidBody) {
         val entityId = event.entityId
         val physicalData = PhysicsUtils.createMeshBody(
+            entityId = entityId,
             position = event.position,
             rawMeshData = event.rawMeshData,
             mass = event.mass,
@@ -136,6 +146,8 @@ class PhysicsWorldUpdater: LaunchedEffect, DeltaUpdater(1 / 60F, Dispatchers.Def
     override fun update(deltaTime: Float) {
         physicsWorld.update(deltaTime)
         physicalEventBus.process()
+        lastUpdate.forEach { (_, data) -> updateChunkImmediately(data) }
+        lastUpdate.clear()
         for ((entityId, data) in physicBodies) {
             if (data.isStatic) continue
             val body = data.getBody()

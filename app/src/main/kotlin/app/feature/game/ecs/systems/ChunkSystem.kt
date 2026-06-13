@@ -44,6 +44,21 @@ class ChunkSystem: BaseSystem() {
     }
 
     @BusEvent
+    fun onChunkEntitiesRequest(event: GameEvent.ChunkEntitiesRequest) {
+        val generationData = event.generationData
+        val entities = HashMap<IntVector3, Int>()
+
+        for (pos in generationData.chunkDataPositionsToCreate) {
+            val entityId = world.create()
+            entities[pos] = entityId
+        }
+
+        eventBus.sendEvent(GameEvent.ChunkEntitiesResponse(
+            generationData = generationData,
+            entities = entities
+        ))
+    }
+    @BusEvent
     fun onChunkDataCreated(event: GameEvent.OnCreateChunkTransform) {
         val entityId = event.chunkEntityId
         transformMapper.create(entityId).transform = event.transform
@@ -78,6 +93,7 @@ class ChunkSystem: BaseSystem() {
     fun onChunkDataRemoved(event: GameEvent.OnRemoveChunkData) {
         //chunkMapper.remove(event.chunkEntityId)
         transformMapper.remove(event.chunkEntityId)
+        world.delete(event.chunkEntityId)
     }
 
     @BusEvent
@@ -98,6 +114,6 @@ class ChunkSystem: BaseSystem() {
         val currentCameraPosition = IntVector3.roundToInt(camera.position)
         if (currentCameraPosition == lastCameraPosition) return
         lastCameraPosition = currentCameraPosition
-        eventBus.sendEvent(GameEvent.LoadAdditionalChunksRequest(world, currentCameraPosition))
+        eventBus.sendEvent(GameEvent.LoadAdditionalChunksRequest(currentCameraPosition))
     }
 }

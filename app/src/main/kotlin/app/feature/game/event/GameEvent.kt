@@ -1,15 +1,17 @@
 package app.feature.game.event
 
-import com.artemis.World
+import com.artemis.utils.IntBag
 import com.badlogic.gdx.math.Matrix4
 import com.badlogic.gdx.math.Vector3
 import com.gigapi.math.vector.IntVector3
 import com.gigapi.screens.mesh.MeshData
 import com.gigapi.screens.mesh.RawMeshData
 import core.chunk.ChunkData
+import core.chunk.world.WorldGenerationData
 
 sealed class GameEvent {
 
+    class OnChunkUpdatedResponse(val chunkEntityId: Int, val chunkData: ChunkData): GameEvent()
     class OnUpdateChunkData(val chunkEntityId: Int, val chunkData: ChunkData): GameEvent()
     class OnUpdateChunkMeshData(val chunkEntityId: Int, val meshData: MeshData): GameEvent()
     class OnCreateChunkTransform(val chunkEntityId: Int, val transform: Matrix4): GameEvent()
@@ -49,6 +51,9 @@ sealed class GameEvent {
         val hitEntityId: Int? = null
     ) : GameEvent()
 
-    class LoadAdditionalChunksRequest(val world: World, val playerPosition: IntVector3): GameEvent()
+    class LoadAdditionalChunksRequest(val playerPosition: IntVector3): GameEvent()
+    class ChunkEntitiesRequest(val generationData: WorldGenerationData): GameEvent()
+    class ChunkEntitiesResponse(val generationData: WorldGenerationData,
+                                val entities: Map<IntVector3, Int>): GameEvent()
     object GameWorldStarted: GameEvent()
 }

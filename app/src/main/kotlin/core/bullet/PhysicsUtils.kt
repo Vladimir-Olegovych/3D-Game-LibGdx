@@ -14,6 +14,7 @@ import core.math.createMatrixForChunk
 object PhysicsUtils {
 
     fun createMeshBody(
+        entityId: Int,
         position: Vector3,
         rawMeshData: RawMeshData,
         mass: Float,
@@ -79,7 +80,7 @@ object PhysicsUtils {
             body.angularFactor = Vector3(0f, 0f, 0f)
         }
         bodyInfo.dispose()
-
+        body.userData = entityId
         body.friction = friction
         body.restitution = restitution
         activationState?.let {  body.activationState = it }
@@ -90,7 +91,7 @@ object PhysicsUtils {
         return physicalData
     }
 
-    fun createChunkBody(chunk: ChunkData): PhysicalData {
+    fun createChunkBody(entityId: Int, chunk: ChunkData): PhysicalData {
         val physicalData = PhysicalData(true)
         val compound = btCompoundShape()
         physicalData.compounds.add(compound)
@@ -174,6 +175,7 @@ object PhysicsUtils {
         )
 
         val body = btRigidBody(info)
+        body.userData = entityId
         info.dispose()
 
         body.activationState = DISABLE_SIMULATION

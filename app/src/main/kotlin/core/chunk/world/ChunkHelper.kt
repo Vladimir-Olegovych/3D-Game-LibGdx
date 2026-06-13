@@ -22,7 +22,6 @@ object ChunkHelper {
         val chunkSize = ChunkDataManager.CHUNK_SIZE
         val chunkHeight = ChunkDataManager.CHUNK_HEIGHT
 
-        // floor вместо toInt() — корректно для отрицательных координат
         val wx = floor(position.x).toInt()
         val wy = floor(position.y).toInt()
         val wz = floor(position.z).toInt()
