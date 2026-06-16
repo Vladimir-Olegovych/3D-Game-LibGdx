@@ -10,12 +10,8 @@ import core.bullet.world.PhysicsWorldUpdater
 import core.chunk.ChunkDataManager
 import core.controls.PlayerInputProcessor
 import core.controls.ProcessorIndex
-import core.noice.PerlinNoise
-import core.noice.RandomNoise
-import core.noice.models.NoiceTypes
 import core.renderers.SunRenderer
 import core.terrain.TerrainGenerator
-import core.terrain.biome.ForestBiomeGenerator
 
 object DefaultWorldSetupManager: LaunchedEffect {
 
@@ -40,11 +36,6 @@ object DefaultWorldSetupManager: LaunchedEffect {
         context.setObject(ChunkSystem())
         context.setObject(PhysicSystem())
         context.setObject(MoveSystem())
-        //---
-        context.setObject(NoiceTypes.PERLIN_WORLD, PerlinNoise(0))
-        context.setObject(NoiceTypes.RANDOM_WORLD, RandomNoise(0))
-        //---
-        context.setObject(ForestBiomeGenerator())
         //---
         context.setObject(TerrainGenerator())
     }

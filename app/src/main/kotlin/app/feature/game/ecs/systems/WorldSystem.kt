@@ -45,6 +45,7 @@ class WorldSystem: BaseSystem() {
 
     @BusEvent
     fun onWorldGenerated(event: GameEvent.GameWorldStarted) {
+        println("spawn")
         val playerEntityId = WorldConstants.getPlayerEntityId()
 
         /*

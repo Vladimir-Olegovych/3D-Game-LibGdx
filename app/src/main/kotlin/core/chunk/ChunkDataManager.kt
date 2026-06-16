@@ -26,13 +26,13 @@ import java.util.concurrent.ConcurrentHashMap
 class ChunkDataManager : LaunchedEffect, DisposableEffect {
 
     companion object {
-        const val DRAW_RADIUS_X = 16
-        const val DRAW_RADIUS_Y = 12
+        const val DRAW_RADIUS_X = 64
+        const val DRAW_RADIUS_Y = 8
         const val CHUNK_SIZE = 16
         const val CHUNK_HEIGHT = 16
     }
 
-    private val parallelismMesh = Semaphore(64)
+    private val parallelismMesh = Semaphore(6400)
 
     private val chunkDataPositionToEntityId = ConcurrentHashMap<IntVector3, Int>()
     private val chunkMeshPositionToEntityId = ConcurrentHashMap<IntVector3, Int>()
@@ -80,7 +80,7 @@ class ChunkDataManager : LaunchedEffect, DisposableEffect {
     @BusEvent
     fun chunkEntitiesResponse(event: GameEvent.ChunkEntitiesResponse) {
         defaultScope.launch {
-            performWorldGeneration(event.generationData, event.entities)
+            performWorldGeneration(event.generationData, event.entities, event.position)
             mainScope.async {
                 if (!isFirstGeneration) return@async
                 mainEventBus.sendEvent(GameEvent.GameWorldStarted)
@@ -91,11 +91,13 @@ class ChunkDataManager : LaunchedEffect, DisposableEffect {
 
     private suspend fun requestWorldGenerationData(playerPosition: IntVector3) {
         val generationData = getWorldGenerationData(playerPosition) ?: return
-        mainEventBus.sendEvent(GameEvent.ChunkEntitiesRequest(generationData))
+        mainEventBus.sendEvent(GameEvent.ChunkEntitiesRequest(generationData, playerPosition))
     }
 
     private suspend fun performWorldGeneration(generationData: WorldGenerationData,
-                                               entities: Map<IntVector3, Int>) {
+                                               entities: Map<IntVector3, Int>,
+                                               position: IntVector3) {
+
         generationData.chunkPositionsToRemove.forEach { pos ->
             chunkMeshPositionToEntityId[pos]?.let { entityId ->
                 mainEventBus.sendEvent(GameEvent.OnRemoveChunkMeshData(entityId))
@@ -162,7 +164,8 @@ class ChunkDataManager : LaunchedEffect, DisposableEffect {
         pendingChunks.removeAll(dataIdMap.keys)
     }
 
-    private suspend fun generateChunkData(position: IntVector3, entityId: Int) {
+    private suspend fun generateChunkData(position: IntVector3,
+                                          entityId: Int,) {
         val chunkData = ChunkData.create(position, CHUNK_SIZE, CHUNK_HEIGHT).also {
             terrainGenerator.generateChunkData(it)
         }

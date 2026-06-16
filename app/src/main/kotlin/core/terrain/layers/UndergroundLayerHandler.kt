@@ -8,7 +8,6 @@ import core.terrain.TerrainGenerator.Companion.UNDERGROUND_HEIGHT
 import kotlin.random.Random
 
 class UndergroundLayerHandler(
-    private val seed: Int,
     private val undergroundBlockType: BlockType = BlockType.STONE
 ): BlockLayerHandler() {
     override fun handling(
@@ -20,12 +19,7 @@ class UndergroundLayerHandler(
         val heightNoice = heightNoice.second
         if(worldPosition.y > heightNoice) return
 
-        val random = Random(seed + worldPosition.x.toLong() * 31L + worldPosition.z.toLong() * 71L)
-        val undergroundHeight = random.nextInt(
-            UNDERGROUND_HEIGHT, (UNDERGROUND_HEIGHT + UNDERGROUND_HEIGHT / 1.5).toInt()
-        )
-
-        if (worldPosition.y <= undergroundHeight) {
+        if (worldPosition.y <= UNDERGROUND_HEIGHT) {
             chunkData.setBlockByLocal(undergroundBlockType, localPosition)
         }
     }

@@ -49,5 +49,21 @@
     },
     "solid" : true,
     "generatesCollider" : true
+  }, {
+    "blockType" : "SAND",
+    "up" : {
+      "x" : 3,
+      "y" : 6
+    },
+    "down" : {
+      "x" : 3,
+      "y" : 6
+    },
+    "side" : {
+      "x" : 3,
+      "y" : 6
+    },
+    "solid" : true,
+    "generatesCollider" : true
   } ]
 }

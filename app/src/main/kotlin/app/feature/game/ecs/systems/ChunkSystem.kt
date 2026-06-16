@@ -55,7 +55,8 @@ class ChunkSystem: BaseSystem() {
 
         eventBus.sendEvent(GameEvent.ChunkEntitiesResponse(
             generationData = generationData,
-            entities = entities
+            entities = entities,
+            position = event.position
         ))
     }
     @BusEvent

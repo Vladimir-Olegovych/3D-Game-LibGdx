@@ -18,9 +18,9 @@ class SurfaceLayerHandler(
         heightNoice: Pair<Float, Int>
     ) {
         val heightNoice = heightNoice.second
-        val block = when (worldPosition.y) {
-            in TerrainGenerator.UNDERGROUND_HEIGHT ..< heightNoice -> underSurfaceBlockType
-            heightNoice -> surfaceBlockType
+        val block = when {
+            worldPosition.y < heightNoice -> underSurfaceBlockType
+            worldPosition.y == heightNoice -> surfaceBlockType
             else -> return
         }
         chunkData.setBlockByLocal(block, localPosition)

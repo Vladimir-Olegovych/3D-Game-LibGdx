@@ -31,7 +31,7 @@ object AssetsSetupManager: LaunchedEffect {
         }
         context.setObject(modelAssetManager)
         //---
-        ShaderProgram.pedantic = false
+        //ShaderProgram.pedantic = false
         val simpleShader = ShaderProgram(
             Gdx.files.local("$ASSETS_PATH/shaders/vertex_shader_simple.glsl").readString(),
             Gdx.files.local("$ASSETS_PATH/shaders/fragment_shader_simple.glsl").readString()
