@@ -2,10 +2,14 @@ package core.terrain
 
 import com.gigapi.core.effects.LaunchedEffect
 import com.gigapi.general.Context
+import com.gigapi.math.noice.NoiceGenerator
 import com.gigapi.math.noice.PerlinNoise
 import com.gigapi.math.noice.RandomNoise
+import com.gigapi.math.noice.domain.DomainWarping2D
+import com.gigapi.math.noice.models.NoiseSettings
 import core.chunk.ChunkData
 import core.noice.NoiceTypes
+import core.noice.asGenerator
 import core.terrain.biome.BiomeGenerator
 import core.terrain.biome.BiomeSelector
 import core.terrain.biome.biomes.DesertBiomeGenerator
@@ -18,6 +22,7 @@ import kotlin.to
 
 class TerrainGenerator: LaunchedEffect {
 
+    private lateinit var noiseWarp: DomainWarping2D
     private lateinit var biomeSelector: BiomeSelector
     private lateinit var biomeGenerators: Map<BiomeType, BiomeGenerator>
 
@@ -40,6 +45,8 @@ class TerrainGenerator: LaunchedEffect {
         )
 
         biomeSelector = context.getObject()
+        val noise = context.getObject<PerlinNoise>(NoiceTypes.PERLIN_WORLD)
+        noiseWarp = getNoiseDomainWarping(noise.asGenerator())
     }
 
     fun generateChunkData(chunkData: ChunkData) {
@@ -54,16 +61,45 @@ class TerrainGenerator: LaunchedEffect {
         val worldX = chunkData.position.x * chunkData.chunkWidth + localX
         val worldZ = chunkData.position.z * chunkData.chunkWidth + localZ
 
-        val biome = biomeSelector.getBiomeAt(worldX, worldZ)
+        val offset = noiseWarp.generateDomainOffset(worldX, worldZ)
 
-        val generator = biomeGenerators[biome]
+        val warpX = worldX + offset.x * 8.0f
+        val warpZ = worldZ + offset.y * 8.0f
 
-        val (terrain, surface) = generator?.computeSurfaceNoise(worldX, worldZ)
-            ?: return
+        val biome = biomeSelector.getBiomeAt(warpX.toInt(), warpZ.toInt())
+        val generator = biomeGenerators[biome] ?: return
 
-        val surfaceNoise = Pair(terrain, surface)
+        val (terrain, surface) = generator.computeSurfaceNoise(
+            warpX.toInt(),
+            warpZ.toInt()
+        )
 
-        generator.process(chunkData, localX, localZ, surfaceNoise)
+        generator.process(chunkData, localX, localZ, Pair(terrain, surface))
+    }
+
+    private fun getNoiseDomainWarping(noiceGenerator: NoiceGenerator): DomainWarping2D {
+        val domainXNoiseSettings= NoiseSettings(
+            noiseZoom = 0.005f,
+            octaves = 1,
+            persistance = 0.5f,
+            redistributionModifier = 1.0f,
+            exponent = 1f
+        )
+        val domainZNoiseSettings = NoiseSettings(
+            noiseZoom = 0.004f,
+            octaves = 1,
+            persistance = 0.5f,
+            redistributionModifier = 1.0f,
+            exponent = 1f
+        )
+
+        return DomainWarping2D(
+            noiceGenerator = noiceGenerator,
+            noiseDomainX = domainXNoiseSettings,
+            noiseDomainY = domainZNoiseSettings,
+            amplitudeX = 20,
+            amplitudeY = 20
+        )
     }
 
     companion object {

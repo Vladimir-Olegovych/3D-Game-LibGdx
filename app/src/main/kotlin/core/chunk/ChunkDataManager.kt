@@ -26,13 +26,13 @@ import java.util.concurrent.ConcurrentHashMap
 class ChunkDataManager : LaunchedEffect, DisposableEffect {
 
     companion object {
-        const val DRAW_RADIUS_X = 64
-        const val DRAW_RADIUS_Y = 8
+        const val DRAW_RADIUS_X = 16
+        const val DRAW_RADIUS_Y = 12
         const val CHUNK_SIZE = 16
         const val CHUNK_HEIGHT = 16
     }
 
-    private val parallelismMesh = Semaphore(6400)
+    private val parallelismMesh = Semaphore(64)
 
     private val chunkDataPositionToEntityId = ConcurrentHashMap<IntVector3, Int>()
     private val chunkMeshPositionToEntityId = ConcurrentHashMap<IntVector3, Int>()
