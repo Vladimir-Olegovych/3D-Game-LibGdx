@@ -2,7 +2,6 @@ package core.controls
 
 import app.feature.game.event.EventBusTypes
 import app.feature.game.event.GameEvent
-import app.feature.game.event.PlayerEvent
 import com.badlogic.gdx.Input.Keys
 import com.badlogic.gdx.InputProcessor
 import com.badlogic.gdx.graphics.PerspectiveCamera

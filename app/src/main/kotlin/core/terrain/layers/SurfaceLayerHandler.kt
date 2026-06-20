@@ -4,7 +4,6 @@ import com.gigapi.math.vector.IntVector3
 import core.blocks.BlockType
 import core.chunk.ChunkData
 import core.terrain.BlockLayerHandler
-import core.terrain.TerrainGenerator
 
 class SurfaceLayerHandler(
     private val surfaceBlockType: BlockType = BlockType.GRASS,

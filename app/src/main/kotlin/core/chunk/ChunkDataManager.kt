@@ -97,7 +97,6 @@ class ChunkDataManager : LaunchedEffect, DisposableEffect {
     private suspend fun performWorldGeneration(generationData: WorldGenerationData,
                                                entities: Map<IntVector3, Int>,
                                                position: IntVector3) {
-
         generationData.chunkPositionsToRemove.forEach { pos ->
             chunkMeshPositionToEntityId[pos]?.let { entityId ->
                 mainEventBus.sendEvent(GameEvent.OnRemoveChunkMeshData(entityId))
@@ -142,6 +141,7 @@ class ChunkDataManager : LaunchedEffect, DisposableEffect {
             }
         }
         dataJobs.awaitAll()
+
         val fullDataMap = chunkDataMap.toMap()
         val renderablePositions = meshIdMap.filter { (pos, _) ->
             val chunk = fullDataMap[pos] ?: return@filter false
@@ -160,12 +160,10 @@ class ChunkDataManager : LaunchedEffect, DisposableEffect {
             }
         }
         meshJobs.awaitAll()
-
         pendingChunks.removeAll(dataIdMap.keys)
     }
 
-    private suspend fun generateChunkData(position: IntVector3,
-                                          entityId: Int,) {
+    private suspend fun generateChunkData(position: IntVector3, entityId: Int,) {
         val chunkData = ChunkData.create(position, CHUNK_SIZE, CHUNK_HEIGHT).also {
             terrainGenerator.generateChunkData(it)
         }

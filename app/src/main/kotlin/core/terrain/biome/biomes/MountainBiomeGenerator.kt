@@ -17,8 +17,11 @@ import core.terrain.biome.BiomeGenerator
 import core.terrain.layers.ShadowLayerHandler
 import core.terrain.layers.SurfaceLayerHandler
 import core.terrain.layers.UndergroundLayerHandler
+import core.terrain.level.StructureType
 
-class MountainBiomeGenerator : LaunchedEffect, BiomeGenerator() {
+class MountainBiomeGenerator(
+    structures: Array<StructureType> = arrayOf()
+) : LaunchedEffect, BiomeGenerator(structures) {
 
     private val baseNoiseSettings = NoiseSettings(
         noiseZoom = 0.03f,

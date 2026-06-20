@@ -1,10 +1,6 @@
 package app.feature.game.ecs.systems
 
-import app.feature.game.ecs.components.BlenderModelComponent
-import app.feature.game.ecs.components.ForceMoveComponent
-import app.feature.game.ecs.components.MeshComponent
-import app.feature.game.ecs.components.LinearMoveComponent
-import app.feature.game.ecs.components.TransformComponent
+import app.feature.game.ecs.components.*
 import app.feature.game.event.EventBusTypes
 import app.feature.game.event.GameEvent
 import com.artemis.BaseSystem
@@ -17,7 +13,6 @@ import com.badlogic.gdx.physics.bullet.collision.CollisionConstants.DISABLE_DEAC
 import com.gigapi.eventbus.EventBus
 import com.gigapi.eventbus.annotation.BusEvent
 import com.gigapi.screens.mesh.ModelAssetManager
-import core.artemis.startTest100Box
 import core.defaults.WorldConstants
 import core.mesh.MeshUtils
 

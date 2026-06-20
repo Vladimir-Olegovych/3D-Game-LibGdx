@@ -8,7 +8,7 @@ class ChunkData(
     val chunkWidth: Int,
     val chunkHeight: Int,
     val blocks: ByteArray,
-    val shadows: ByteArray
+    val shadows: ByteArray,
 ) {
     companion object {
         const val SHADOW_MIN = 0x0F.toByte()
@@ -39,6 +39,10 @@ class ChunkData(
     fun isAllBlock(blockType: BlockType): Boolean {
         blocks.forEach { if (blockType != BlockType.fromByte(it)) return false }
         return true
+    }
+
+    fun setBlockByIndex(blockType: BlockType, index: Int){
+        blocks[index] = blockType.id
     }
 
     fun setBlockByLocal(blockType: BlockType, localPosition: IntVector3){

@@ -1,6 +1,5 @@
 package app.feature.game.event
 
-import com.artemis.utils.IntBag
 import com.badlogic.gdx.math.Matrix4
 import com.badlogic.gdx.math.Vector3
 import com.gigapi.math.vector.IntVector3

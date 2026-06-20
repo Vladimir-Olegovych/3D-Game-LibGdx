@@ -5,7 +5,6 @@ import core.blocks.BlockType
 import core.chunk.ChunkData
 import core.terrain.BlockLayerHandler
 import core.terrain.TerrainGenerator.Companion.UNDERGROUND_HEIGHT
-import kotlin.random.Random
 
 class UndergroundLayerHandler(
     private val undergroundBlockType: BlockType = BlockType.STONE

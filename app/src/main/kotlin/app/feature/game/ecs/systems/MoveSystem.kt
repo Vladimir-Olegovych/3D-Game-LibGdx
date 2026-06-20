@@ -5,7 +5,6 @@ import app.feature.game.ecs.components.LinearMoveComponent
 import app.feature.game.event.EventBusTypes
 import app.feature.game.event.GameEvent
 import com.artemis.ComponentMapper
-import com.artemis.annotations.All
 import com.artemis.annotations.One
 import com.artemis.annotations.Wire
 import com.artemis.systems.IteratingSystem

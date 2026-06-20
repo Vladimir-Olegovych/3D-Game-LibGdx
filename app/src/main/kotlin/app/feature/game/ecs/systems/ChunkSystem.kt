@@ -81,6 +81,7 @@ class ChunkSystem: BaseSystem() {
     @BusEvent
     fun onMeshDataCreated(event: GameEvent.OnCreateChunkMeshData) {
         val entityId = event.chunkEntityId
+        if (meshMapper[entityId] != null) return
         val meshComponent = meshMapper.create(entityId)
         val mesh = event.meshData.mesh ?: return
         val radius = MeshUtils.getBoundRadius(mesh)

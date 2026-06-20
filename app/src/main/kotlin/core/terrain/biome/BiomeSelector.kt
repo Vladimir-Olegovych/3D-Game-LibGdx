@@ -26,9 +26,9 @@ class BiomeSelector(val seed: Int) {
         val z = worldZ.toFloat()
 
         return BiomeType.entries.minByOrNull { biome ->
-            biome.configs.indices.sumOf { i ->
+            biome.config.indices.sumOf { i ->
                 val sample = noises[i].GetPerlinFractal(x, z).toDouble()
-                val center = ((biome.configs[i].start + biome.configs[i].end) / 2f).toDouble()
+                val center = ((biome.config[i].start + biome.config[i].end) / 2f).toDouble()
                 (sample - center).pow(2)
             }
         } ?: BiomeType.FOREST

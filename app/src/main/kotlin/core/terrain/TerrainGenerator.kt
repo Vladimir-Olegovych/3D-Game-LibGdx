@@ -7,6 +7,7 @@ import com.gigapi.math.noice.PerlinNoise
 import com.gigapi.math.noice.RandomNoise
 import com.gigapi.math.noice.domain.DomainWarping2D
 import com.gigapi.math.noice.models.NoiseSettings
+import com.gigapi.math.vector.IntVector3
 import core.chunk.ChunkData
 import core.noice.NoiceTypes
 import core.noice.asGenerator
@@ -16,14 +17,17 @@ import core.terrain.biome.biomes.DesertBiomeGenerator
 import core.terrain.biome.biomes.ForestBiomeGenerator
 import core.terrain.biome.biomes.MountainBiomeGenerator
 import core.terrain.biome.models.BiomeType
+import core.terrain.level.StructureSelector
+import core.terrain.level.StructureType
+import core.terrain.structures.TreeStructure
 import math.noice.FastNoise
 import kotlin.random.Random
-import kotlin.to
 
 class TerrainGenerator: LaunchedEffect {
 
     private lateinit var noiseWarp: DomainWarping2D
     private lateinit var biomeSelector: BiomeSelector
+    private lateinit var structureSelector: StructureSelector
     private lateinit var biomeGenerators: Map<BiomeType, BiomeGenerator>
 
     override fun launch(context: Context) {
@@ -43,6 +47,13 @@ class TerrainGenerator: LaunchedEffect {
             BiomeType.DESERT    to context.getObject<DesertBiomeGenerator>(),
             BiomeType.MOUNTAINS to context.getObject<MountainBiomeGenerator>()
         )
+
+        val structureGenerators = mapOf(
+            StructureType.TREE to TreeStructure()
+        )
+
+        structureSelector = StructureSelector(biomeGenerators, structureGenerators)
+
 
         biomeSelector = context.getObject()
         val noise = context.getObject<PerlinNoise>(NoiceTypes.PERLIN_WORLD)
