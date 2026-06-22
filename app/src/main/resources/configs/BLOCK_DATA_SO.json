@@ -65,5 +65,37 @@
     },
     "solid" : true,
     "generatesCollider" : true
+  }, {
+    "blockType" : "WOOD",
+    "up" : {
+      "x" : 0,
+      "y" : 9
+    },
+    "down" : {
+      "x" : 0,
+      "y" : 9
+    },
+    "side" : {
+      "x" : 1,
+      "y" : 0
+    },
+    "solid" : true,
+    "generatesCollider" : true
+  }, {
+    "blockType" : "LEAVES",
+    "up" : {
+      "x" : 8,
+      "y" : 0
+    },
+    "down" : {
+      "x" : 8,
+      "y" : 0
+    },
+    "side" : {
+      "x" : 8,
+      "y" : 0
+    },
+    "solid" : true,
+    "generatesCollider" : true
   } ]
 }

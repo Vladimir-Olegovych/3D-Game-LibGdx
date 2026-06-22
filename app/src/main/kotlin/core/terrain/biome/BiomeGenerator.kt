@@ -2,9 +2,8 @@ package core.terrain.biome
 
 import core.chunk.ChunkData
 import core.terrain.BlockLayerHandler
-import core.terrain.level.StructureType
 
-abstract class BiomeGenerator(val structures: Array<StructureType>) {
+abstract class BiomeGenerator {
 
     protected abstract val startLayerHandler: BlockLayerHandler
 

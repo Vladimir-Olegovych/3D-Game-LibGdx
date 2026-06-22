@@ -2,14 +2,29 @@ package core.chunk.world
 
 import com.badlogic.gdx.math.Vector3
 import com.gigapi.math.vector.IntVector3
-import core.chunk.ChunkDataManager
+import core.chunk.ChunkData
+import core.chunk.ChunkWorldUpdater
 import kotlin.math.floor
 
 object ChunkHelper {
 
+    fun inRange(rangeWidth: Int, rangeHeight: Int, chunkData: ChunkData, localPos: IntVector3): Boolean {
+        val centerX = chunkData.chunkWidth / 2f
+        val centerZ = chunkData.chunkWidth / 2f
+        val centerY = chunkData.chunkHeight / 2f
+
+        val dx = localPos.x - centerX
+        val dy = localPos.y - centerY
+        val dz = localPos.z - centerZ
+
+        val horizontalDistSq = dx*dx + dz*dz
+        val verticalDistSq = dy*dy
+        return horizontalDistSq / (rangeWidth * rangeWidth) + verticalDistSq / (rangeHeight * rangeHeight) <= 1.0
+    }
+
     fun getLocalPosition(worldPos: IntVector3, chunkPos: IntVector3): IntVector3 {
-        val chunkSize = ChunkDataManager.CHUNK_SIZE
-        val chunkHeight = ChunkDataManager.CHUNK_HEIGHT
+        val chunkSize = ChunkWorldUpdater.CHUNK_SIZE
+        val chunkHeight = ChunkWorldUpdater.CHUNK_HEIGHT
 
         return IntVector3(
             x = worldPos.x - chunkPos.x * chunkSize,
@@ -19,8 +34,8 @@ object ChunkHelper {
     }
 
     fun getBlockPositionFromWorldPosition(position: Vector3): IntVector3 {
-        val chunkSize = ChunkDataManager.CHUNK_SIZE
-        val chunkHeight = ChunkDataManager.CHUNK_HEIGHT
+        val chunkSize = ChunkWorldUpdater.CHUNK_SIZE
+        val chunkHeight = ChunkWorldUpdater.CHUNK_HEIGHT
 
         val wx = floor(position.x).toInt()
         val wy = floor(position.y).toInt()

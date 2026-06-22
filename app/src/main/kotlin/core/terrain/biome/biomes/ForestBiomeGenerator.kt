@@ -14,13 +14,12 @@ import core.noice.asGenerator
 import core.terrain.TerrainGenerator
 import core.terrain.biome.BiomeGenerator
 import core.terrain.layers.ShadowLayerHandler
+import core.terrain.layers.StructureLayerHandler
 import core.terrain.layers.SurfaceLayerHandler
 import core.terrain.layers.UndergroundLayerHandler
-import core.terrain.level.StructureType
+import core.terrain.structures.TreeStructure
 
-class ForestBiomeGenerator(
-    structures: Array<StructureType> = arrayOf(StructureType.TREE)
-) : LaunchedEffect, BiomeGenerator(structures) {
+class ForestBiomeGenerator : LaunchedEffect, BiomeGenerator() {
 
     private val baseNoiseSettings = NoiseSettings(
         noiseZoom = 0.01f,
@@ -42,6 +41,7 @@ class ForestBiomeGenerator(
         startLayerHandler
             .setNext(ShadowLayerHandler())
             .setNext(UndergroundLayerHandler())
+            .setNext(StructureLayerHandler(listOf(TreeStructure(perlinNoise.seed))))
     }
 
     override fun computeSurfaceNoise(worldX: Int, worldZ: Int): Pair<Float, Int> {

@@ -1,6 +1,7 @@
 package app.feature.game.ecs.systems
 
 import app.feature.game.ecs.components.*
+import app.feature.game.event.ChunkEvent
 import app.feature.game.event.EventBusTypes
 import app.feature.game.event.GameEvent
 import com.artemis.BaseSystem
@@ -15,7 +16,7 @@ import com.gigapi.eventbus.EventBus
 import com.gigapi.eventbus.annotation.BusEvent
 import com.gigapi.math.vector.IntVector3
 import core.assets.SkinID
-import core.chunk.ChunkDataManager
+import core.chunk.ChunkWorldUpdater
 import core.defaults.CameraTypes
 import core.mesh.MeshUtils
 
@@ -23,13 +24,15 @@ import core.mesh.MeshUtils
 class ChunkSystem: BaseSystem() {
 
     @Wire
-    private lateinit var chunkDataManager: ChunkDataManager
+    private lateinit var chunkWorldUpdater: ChunkWorldUpdater
     @Wire
     private lateinit var assetManager: AssetManager
     @Wire(name = CameraTypes.GL_3D)
     private lateinit var camera: PerspectiveCamera
     @Wire(name = EventBusTypes.MAIN_EVENT_BUS)
-    private lateinit var eventBus: EventBus
+    private lateinit var mainEventBus: EventBus
+    @Wire(name = EventBusTypes.CHUNK_EVENT_BUS)
+    private lateinit var chunkEventBus: EventBus
 
     private lateinit var boundMapper: ComponentMapper<BoundRadiusComponent>
     private lateinit var transformMapper: ComponentMapper<TransformComponent>
@@ -40,11 +43,30 @@ class ChunkSystem: BaseSystem() {
     private lateinit var chunkMeshTextureData: Texture
 
     override fun initialize() {
+        chunkWorldUpdater.start()
         chunkMeshTextureData = assetManager.get<TextureAtlas>(SkinID.BLOCK.atlas).textures.first()
     }
 
+    private var lastCameraPosition = IntVector3()
+    private var timeSinceLastUpdate = 0f
+
+    override fun processSystem() {
+        timeSinceLastUpdate += world.delta
+        if (timeSinceLastUpdate < 0.3f) return
+        timeSinceLastUpdate = 0f
+        val currentCameraPosition = IntVector3.roundToInt(camera.position)
+        if (currentCameraPosition == lastCameraPosition) return
+        lastCameraPosition = currentCameraPosition
+        chunkEventBus.sendEvent(ChunkEvent.LoadAdditionalChunksRequest(currentCameraPosition))
+    }
+
+    override fun dispose() {
+        chunkWorldUpdater.stop(false)
+    }
+
+
     @BusEvent
-    fun onChunkEntitiesRequest(event: GameEvent.ChunkEntitiesRequest) {
+    fun onChunkEntitiesRequest(event: ChunkEvent.ChunkEntitiesRequest) {
         val generationData = event.generationData
         val entities = HashMap<IntVector3, Int>()
 
@@ -53,10 +75,9 @@ class ChunkSystem: BaseSystem() {
             entities[pos] = entityId
         }
 
-        eventBus.sendEvent(GameEvent.ChunkEntitiesResponse(
+        chunkEventBus.sendEvent(ChunkEvent.ChunkEntitiesResponse(
             generationData = generationData,
-            entities = entities,
-            position = event.position
+            entities = entities
         ))
     }
     @BusEvent
@@ -106,16 +127,4 @@ class ChunkSystem: BaseSystem() {
         aoMapper.remove(event.chunkEntityId)
     }
 
-    private var lastCameraPosition = IntVector3()
-    private var timeSinceLastUpdate = 0f
-
-    override fun processSystem() {
-        timeSinceLastUpdate += world.delta
-        if (timeSinceLastUpdate < 0.3f) return
-        timeSinceLastUpdate = 0f
-        val currentCameraPosition = IntVector3.roundToInt(camera.position)
-        if (currentCameraPosition == lastCameraPosition) return
-        lastCameraPosition = currentCameraPosition
-        eventBus.sendEvent(GameEvent.LoadAdditionalChunksRequest(currentCameraPosition))
-    }
 }

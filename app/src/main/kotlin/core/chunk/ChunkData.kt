@@ -10,6 +10,10 @@ class ChunkData(
     val blocks: ByteArray,
     val shadows: ByteArray,
 ) {
+    var status = ChunkStatus.GENERATION
+
+    val pendingBlocks = HashMap<IntVector3, BlockType>()
+
     companion object {
         const val SHADOW_MIN = 0x0F.toByte()
         const val SHADOW_MAX = 0x6F.toByte()
@@ -36,6 +40,10 @@ class ChunkData(
         }
     }
 
+    fun addPending(worldPosition: IntVector3, blockType: BlockType) {
+        pendingBlocks[worldPosition] = blockType
+    }
+
     fun isAllBlock(blockType: BlockType): Boolean {
         blocks.forEach { if (blockType != BlockType.fromByte(it)) return false }
         return true
@@ -45,13 +53,38 @@ class ChunkData(
         blocks[index] = blockType.id
     }
 
-    fun setBlockByLocal(blockType: BlockType, localPosition: IntVector3){
-        setBlockByLocal(blockType, localPosition.x, localPosition.y, localPosition.z)
+    fun setBlockByLocal(blockType: BlockType, localPosition: IntVector3): Boolean {
+        return setBlockByLocal(blockType, localPosition.x, localPosition.y, localPosition.z)
     }
 
-    fun setBlockByLocal(blockType: BlockType, x: Int, y: Int, z: Int){
+    fun setBlockPending(
+        blockType: BlockType,
+        offset: IntVector3,
+        localPosition: IntVector3,
+        worldPosition: IntVector3
+    ) {
+        val localOffset = IntVector3(
+            x = localPosition.x + offset.x,
+            y = localPosition.y + offset.y,
+            z = localPosition.z + offset.z,
+        )
+        if (setBlockByLocal(blockType, localOffset)) return
+
+        val worldOffset = IntVector3(
+            x = worldPosition.x + offset.x,
+            y = worldPosition.y + offset.y,
+            z = worldPosition.z + offset.z,
+        )
+        addPending(worldOffset, blockType)
+
+    }
+
+    fun setBlockByLocal(blockType: BlockType, x: Int, y: Int, z: Int): Boolean {
+        if (x < 0 || y < 0 || z < 0 || x > chunkWidth - 1 || z > chunkWidth - 1 || y > chunkHeight - 1) return false
         val index: Int = getIndex(x, y, z)
+        if (index < 0 || index >= blocks.size) return false
         blocks[index] = blockType.id
+        return true
     }
 
     fun getBlockByLocal(localPosition: IntVector3): BlockType {
@@ -63,22 +96,26 @@ class ChunkData(
         return BlockType.fromByte(blocks[index])
     }
 
-    fun setDefaultShadowValue(value: Float, localPosition: IntVector3) {
-        setDefaultShadowValue(value, localPosition.x, localPosition.y, localPosition.z)
+    fun setDefaultShadowValue(value: Float, localPosition: IntVector3): Boolean {
+        return setDefaultShadowValue(value, localPosition.x, localPosition.y, localPosition.z)
     }
 
-    fun setDefaultShadowValue(value: Float, x: Int, y: Int, z: Int) {
+    fun setDefaultShadowValue(value: Float, x: Int, y: Int, z: Int): Boolean {
+        if (x > chunkWidth - 1 || z > chunkWidth - 1 || y > chunkHeight - 1) return false
         val index = getIndex(x, y, z)
+        if (index < 0 || index >= blocks.size) return false
         shadows[index] = floatToShadowByte(value)
+        return true
     }
 
-    fun setDefaultShadowValueRaw(value: Byte, localPosition: IntVector3) {
-        setDefaultShadowValueRaw(value, localPosition.x, localPosition.y, localPosition.z)
+    fun setDefaultShadowValueRaw(value: Byte, localPosition: IntVector3): Boolean {
+        return setDefaultShadowValueRaw(value, localPosition.x, localPosition.y, localPosition.z)
     }
 
-    fun setDefaultShadowValueRaw(value: Byte, x: Int, y: Int, z: Int) {
+    fun setDefaultShadowValueRaw(value: Byte, x: Int, y: Int, z: Int): Boolean {
         val index = getIndex(x, y, z)
         shadows[index] = value.coerceIn(SHADOW_MIN, SHADOW_MAX)
+        return true
     }
 
     fun getDefaultShadowValue(localPosition: IntVector3): Float {

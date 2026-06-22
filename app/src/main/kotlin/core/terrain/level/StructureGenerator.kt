@@ -1,6 +1,16 @@
 package core.terrain.level
 
+import com.gigapi.math.vector.IntVector3
+import core.chunk.ChunkData
 
-abstract class StructureGenerator() {
-    abstract fun onGetStructure(): ByteArray
+
+abstract class StructureGenerator {
+
+    abstract fun handling(
+        chunkData: ChunkData,
+        localPosition: IntVector3,
+        worldPosition: IntVector3,
+        heightNoice: Pair<Float, Int>
+    )
+
 }

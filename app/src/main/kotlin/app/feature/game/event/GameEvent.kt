@@ -48,11 +48,4 @@ sealed class GameEvent {
         val hitNormal: Vector3,
         val hitEntityId: Int? = null
     ) : GameEvent()
-
-    class LoadAdditionalChunksRequest(val playerPosition: IntVector3): GameEvent()
-    class ChunkEntitiesRequest(val generationData: WorldGenerationData, val position: IntVector3): GameEvent()
-    class ChunkEntitiesResponse(val generationData: WorldGenerationData,
-                                val entities: Map<IntVector3, Int>,
-                                val position: IntVector3): GameEvent()
-    object GameWorldStarted: GameEvent()
 }

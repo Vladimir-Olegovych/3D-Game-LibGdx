@@ -1,6 +1,7 @@
 package app.feature.game.ecs.systems
 
 import app.feature.game.ecs.components.*
+import app.feature.game.event.ChunkEvent
 import app.feature.game.event.EventBusTypes
 import app.feature.game.event.GameEvent
 import com.artemis.BaseSystem
@@ -39,7 +40,7 @@ class WorldSystem: BaseSystem() {
     override fun initialize() {}
 
     @BusEvent
-    fun onWorldGenerated(event: GameEvent.GameWorldStarted) {
+    fun onWorldGenerated(event: ChunkEvent.GameWorldStarted) {
         println("spawn")
         val playerEntityId = WorldConstants.getPlayerEntityId()
 

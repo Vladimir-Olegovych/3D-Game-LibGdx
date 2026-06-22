@@ -4,13 +4,13 @@ import com.badlogic.gdx.math.Vector3
 import com.gigapi.math.vector.IntVector3
 import com.gigapi.screens.mesh.MeshData
 import core.chunk.ChunkData
-import core.chunk.ChunkDataManager
+import core.chunk.ChunkWorldUpdater
 import kotlin.math.floor
 
 object WorldDataHelper {
     fun chunkPositionFromBlockCoords(worldBlockPosition: IntVector3): IntVector3 {
-        val chunkSize = ChunkDataManager.CHUNK_SIZE
-        val chunkHeight = ChunkDataManager.CHUNK_HEIGHT
+        val chunkSize = ChunkWorldUpdater.CHUNK_SIZE
+        val chunkHeight = ChunkWorldUpdater.CHUNK_HEIGHT
 
         return IntVector3(
             x = floorDiv(worldBlockPosition.x, chunkSize),
@@ -29,8 +29,8 @@ object WorldDataHelper {
     }
 
     fun getChunkPositionFromBlockCoords(blockPos: IntVector3): IntVector3 {
-        val chunkSize = ChunkDataManager.CHUNK_SIZE
-        val chunkHeight = ChunkDataManager.CHUNK_HEIGHT
+        val chunkSize = ChunkWorldUpdater.CHUNK_SIZE
+        val chunkHeight = ChunkWorldUpdater.CHUNK_HEIGHT
 
         return IntVector3(
             x = floorDiv(blockPos.x, chunkSize),
@@ -50,8 +50,8 @@ object WorldDataHelper {
     fun getChunkPositionsAroundPlayer(
         playerPosition: IntVector3
     ): List<IntVector3> {
-        val chunkDrawingRangeX = ChunkDataManager.DRAW_RADIUS_X
-        val chunkDrawingRangeY = ChunkDataManager.DRAW_RADIUS_Y
+        val chunkDrawingRangeX = ChunkWorldUpdater.DRAW_RADIUS_X
+        val chunkDrawingRangeY = ChunkWorldUpdater.DRAW_RADIUS_Y
 
         val centerChunk = chunkPositionFromBlockCoords(playerPosition)
         val chunkPositionsToCreate = mutableListOf<IntVector3>()
@@ -87,8 +87,8 @@ object WorldDataHelper {
     fun getDataPositionsAroundPlayer(
         playerPosition: IntVector3
     ): List<IntVector3> {
-        val chunkDrawingRangeX = ChunkDataManager.DRAW_RADIUS_X
-        val chunkDrawingRangeY = ChunkDataManager.DRAW_RADIUS_Y
+        val chunkDrawingRangeX = ChunkWorldUpdater.DRAW_RADIUS_X
+        val chunkDrawingRangeY = ChunkWorldUpdater.DRAW_RADIUS_Y
 
         val centerChunk = chunkPositionFromBlockCoords(playerPosition)
         val chunkPositionsToCreate = mutableListOf<IntVector3>()
@@ -181,7 +181,7 @@ object WorldDataHelper {
             )
             chunkDataMap[neighbourPos]?.let { neighboursToUpdate.add(it) }
         }
-        if (localBlockPosition.x == ChunkDataManager.CHUNK_SIZE - 1) {
+        if (localBlockPosition.x == ChunkWorldUpdater.CHUNK_SIZE - 1) {
             val neighbourPos = IntVector3(
                 chunkData.position.x + 1,
                 chunkData.position.y,
@@ -197,7 +197,7 @@ object WorldDataHelper {
             )
             chunkDataMap[neighbourPos]?.let { neighboursToUpdate.add(it) }
         }
-        if (localBlockPosition.y == ChunkDataManager.CHUNK_HEIGHT - 1) {
+        if (localBlockPosition.y == ChunkWorldUpdater.CHUNK_HEIGHT - 1) {
             val neighbourPos = IntVector3(
                 chunkData.position.x,
                 chunkData.position.y + 1,
@@ -213,7 +213,7 @@ object WorldDataHelper {
             )
             chunkDataMap[neighbourPos]?.let { neighboursToUpdate.add(it) }
         }
-        if (localBlockPosition.z == ChunkDataManager.CHUNK_SIZE - 1) {
+        if (localBlockPosition.z == ChunkWorldUpdater.CHUNK_SIZE - 1) {
             val neighbourPos = IntVector3(
                 chunkData.position.x,
                 chunkData.position.y,
@@ -227,10 +227,10 @@ object WorldDataHelper {
 
     fun isOnEdge(localBlockPosition: IntVector3): Boolean {
         return localBlockPosition.x == 0 ||
-                localBlockPosition.x == ChunkDataManager.CHUNK_SIZE - 1 ||
+                localBlockPosition.x == ChunkWorldUpdater.CHUNK_SIZE - 1 ||
                 localBlockPosition.y == 0 ||
-                localBlockPosition.y == ChunkDataManager.CHUNK_HEIGHT - 1 ||
+                localBlockPosition.y == ChunkWorldUpdater.CHUNK_HEIGHT - 1 ||
                 localBlockPosition.z == 0 ||
-                localBlockPosition.z == ChunkDataManager.CHUNK_SIZE - 1
+                localBlockPosition.z == ChunkWorldUpdater.CHUNK_SIZE - 1
     }
 }

@@ -7,7 +7,7 @@ import com.gigapi.core.effects.LaunchedEffect
 import com.gigapi.eventbus.EventBus
 import com.gigapi.general.Context
 import core.bullet.world.PhysicsWorldUpdater
-import core.chunk.ChunkDataManager
+import core.chunk.ChunkWorldUpdater
 import core.controls.PlayerInputProcessor
 import core.controls.ProcessorIndex
 import core.renderers.SunRenderer
@@ -24,11 +24,12 @@ object DefaultWorldSetupManager: LaunchedEffect {
         context.setObject(SunRenderer())
         //---
         context.setObject(EventBusTypes.MAIN_EVENT_BUS, EventBus())
+        context.setObject(EventBusTypes.CHUNK_EVENT_BUS, EventBus())
         context.setObject(EventBusTypes.PHYSICS_EVENT_BUS, EventBus())
         //---
         context.setObject(PhysicsWorldUpdater())
         //---
-        context.setObject(ChunkDataManager())
+        context.setObject(ChunkWorldUpdater())
         //Systems
         context.setObject(WorldSystem())
         context.setObject(PlayerSystem())
