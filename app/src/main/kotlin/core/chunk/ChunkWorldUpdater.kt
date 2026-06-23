@@ -3,6 +3,7 @@ package core.chunk
 import app.feature.game.event.ChunkEvent
 import app.feature.game.event.EventBusTypes
 import app.feature.game.event.GameEvent
+import com.badlogic.gdx.math.Vector3
 import com.gigapi.core.effects.DisposableEffect
 import com.gigapi.core.effects.LaunchedEffect
 import com.gigapi.coruntines.DeltaUpdater
@@ -10,6 +11,7 @@ import com.gigapi.eventbus.EventBus
 import com.gigapi.eventbus.annotation.BusEvent
 import com.gigapi.general.Context
 import com.gigapi.math.vector.IntVector3
+import com.gigapi.math.vector.roundToFloat
 import com.gigapi.screens.mesh.MeshData
 import core.blocks.BlockType
 import core.bullet.raycast.RayCastTypes
@@ -35,13 +37,13 @@ class ChunkWorldUpdater : LaunchedEffect, DisposableEffect, DeltaUpdater(1 / 60F
         const val CHUNK_HEIGHT = 16
     }
 
-    private val maxTasks = 2
     private val parallelismMesh = Semaphore(64)
 
     private val chunkDataPositionToEntityId = ConcurrentHashMap<IntVector3, Int>()
     private val chunkMeshPositionToEntityId = ConcurrentHashMap<IntVector3, Int>()
     private val chunkDataMap = ConcurrentHashMap<IntVector3, ChunkData>()
     private val meshDataMap = ConcurrentHashMap<IntVector3, MeshData>()
+    private val generateRequests = ConcurrentLinkedQueue<IntVector3>()
     private val removedChunkDates = ConcurrentHashMap.newKeySet<IntVector3>()
     private val removedChunkMeshes = ConcurrentHashMap.newKeySet<IntVector3>()
 
@@ -53,8 +55,6 @@ class ChunkWorldUpdater : LaunchedEffect, DisposableEffect, DeltaUpdater(1 / 60F
     private lateinit var mainScope: CoroutineScope
 
     private var isFirstGeneration = true
-
-    private val generateRequests = ConcurrentLinkedQueue<IntVector3>()
 
     override fun launch(context: Context) {
         mainEventBus = context.getObject(EventBusTypes.MAIN_EVENT_BUS)
@@ -72,14 +72,7 @@ class ChunkWorldUpdater : LaunchedEffect, DisposableEffect, DeltaUpdater(1 / 60F
     }
 
     override fun update(deltaTime: Float) {
-        val swap = chunkEventBus.getEventsSwap()
-        chunkEventBus.processSwap(swap, ChunkEvent.LoadAdditionalChunksRequest::class.java)
-        chunkEventBus.processSwap(swap, ChunkEvent.ChunkEntitiesResponse::class.java)
-        chunkEventBus.processSwap(swap, ChunkEvent.OnGenerateResponse::class.java)
-        chunkEventBus.processSwap(swap, ChunkEvent.OnAcceptPendingResponse::class.java)
-        chunkEventBus.processSwap(swap, ChunkEvent.OnDrawResponse::class.java)
-        chunkEventBus.processSwap(swap, ChunkEvent.OnFinalizeResponse::class.java)
-        chunkEventBus.processSwap(swap, ChunkEvent.OnSetBlock::class.java)
+        chunkEventBus.process()
     }
 
     override fun dispose() {
@@ -178,8 +171,9 @@ class ChunkWorldUpdater : LaunchedEffect, DisposableEffect, DeltaUpdater(1 / 60F
                         iterator.remove()
                         if (pendingChunkData.status != ChunkStatus.GENERATION &&
                             pendingChunkPosition !in event.generationData.chunkPositionsToCreate &&
-                            meshDataMap[pendingChunkPosition] != null
+                            meshDataMap[pendingChunkPosition]?.mesh != null
                         ) {
+                            removedChunkMeshes.add(pendingChunkPosition)
                             affectedExistingChunks.add(pendingChunkPosition)
                         }
                     }
@@ -222,7 +216,9 @@ class ChunkWorldUpdater : LaunchedEffect, DisposableEffect, DeltaUpdater(1 / 60F
     @BusEvent
     fun chunkFinalizeResponse(event: ChunkEvent.OnFinalizeResponse) {
         if (isFirstGeneration) {
-            mainEventBus.sendEvent(ChunkEvent.GameWorldStarted)
+            val searchPosition = event.generationData.playerPosition.roundToFloat()
+            val position = findSpawnPosition(searchPosition)?: searchPosition
+            mainEventBus.sendEvent(ChunkEvent.GameWorldStarted(position))
             isFirstGeneration = false
         }
         generateRequests.remove(event.generationData.playerPosition)
@@ -271,9 +267,60 @@ class ChunkWorldUpdater : LaunchedEffect, DisposableEffect, DeltaUpdater(1 / 60F
         val currentBlock = chunkData.getBlockByLocal(blockPosition)
 
         if (currentBlock == BlockType.AIR) return
-        chunkEventBus.sendEvent(ChunkEvent.OnSetBlock(
+        chunkEventBus.sendEventNow(ChunkEvent.OnSetBlock(
             chunkData, BlockType.AIR, blockPosition
         ))
+    }
+
+    private fun findSpawnPosition(centerPosition: Vector3): Vector3? {
+        val startChunkPos = WorldDataHelper.getChunkPositionFromWorldPosition(centerPosition)
+        for (y in -4 + startChunkPos.y .. 4 + startChunkPos.y) {
+            val chunkPosition = IntVector3(
+                startChunkPos.x,
+                y,
+                startChunkPos.z
+            )
+            val chunkData = chunkDataMap[chunkPosition] ?: continue
+
+            for (localX in 0 until chunkData.chunkWidth) {
+                for (localZ in 0 until chunkData.chunkWidth) {
+                    for (localY in 0 until chunkData.chunkHeight) {
+                        val block = chunkData.getBlockByLocal(localX, localY, localZ)
+                        if (block != BlockType.AIR) {
+                            val aboveBlock = if (localY < chunkData.chunkHeight - 1) {
+                                chunkData.getBlockByLocal(localX, localY + 1, localZ)
+                            } else {
+                                val aboveChunkPos = IntVector3(chunkPosition.x, chunkPosition.y + 1, chunkPosition.z)
+                                val aboveChunk = chunkDataMap[aboveChunkPos]
+                                aboveChunk?.getBlockByLocal(localX, 0, localZ)
+                            }
+
+                            val aboveAboveBlock = if (localY < chunkData.chunkHeight - 2) {
+                                chunkData.getBlockByLocal(localX, localY + 2, localZ)
+                            } else if (localY == chunkData.chunkHeight - 2) {
+                                val aboveChunkPos = IntVector3(chunkPosition.x, chunkPosition.y + 1, chunkPosition.z)
+                                val aboveChunk = chunkDataMap[aboveChunkPos]
+                                aboveChunk?.getBlockByLocal(localX, 0, localZ)
+                            } else {
+                                val aboveChunkPos = IntVector3(chunkPosition.x, chunkPosition.y + 1, chunkPosition.z)
+                                val aboveChunk = chunkDataMap[aboveChunkPos]
+                                aboveChunk?.getBlockByLocal(localX, 1, localZ)
+                            }
+
+                            if (aboveBlock == BlockType.AIR && aboveAboveBlock == BlockType.AIR) {
+                                val worldX = chunkPosition.x * chunkData.chunkWidth + localX
+                                val worldY = chunkPosition.y * chunkData.chunkHeight + localY + 2
+                                val worldZ = chunkPosition.z * chunkData.chunkWidth + localZ
+
+                                return Vector3(worldX.toFloat(), worldY.toFloat(), worldZ.toFloat())
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        return null
     }
 
     private suspend fun generateChunkData(position: IntVector3) {

@@ -16,9 +16,19 @@ class BiomeSelector(val seed: Int) {
 
     private val noises: Array<FastNoise> = arrayOf(
         // [TEMPERATURE_INDEX]
-        FastNoise(serviceSeeds[TEMPERATURE_INDEX]).apply { SetFrequency(0.001f) },
+        FastNoise(serviceSeeds[TEMPERATURE_INDEX]).apply {
+            SetFrequency(0.005f)
+            SetFractalOctaves(1)
+            SetFractalLacunarity(2.0f)
+            SetFractalGain(0.5f)
+        },
         // [WETNESS_INDEX]
-        FastNoise(serviceSeeds[WETNESS_INDEX]).apply { SetFrequency(0.0008f) }
+        FastNoise(serviceSeeds[WETNESS_INDEX]).apply {
+            SetFrequency(0.004f)
+            SetFractalOctaves(1)
+            SetFractalLacunarity(2.0f)
+            SetFractalGain(0.5f)
+        }
     )
 
     fun getBiomeAt(worldX: Int, worldZ: Int): BiomeType {

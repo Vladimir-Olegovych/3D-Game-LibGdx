@@ -68,7 +68,7 @@ class WorldSystem: BaseSystem() {
         physicsEventBus.sendEvent(
             GameEvent.OnCreateMeshRigidBody(
                 entityId = playerEntityId,
-                position = Vector3(10F, 200F, 10F),
+                position = event.position,
                 rawMeshData = playerPhysicalModel,
                 restitution = 0f,
                 friction = 0f,

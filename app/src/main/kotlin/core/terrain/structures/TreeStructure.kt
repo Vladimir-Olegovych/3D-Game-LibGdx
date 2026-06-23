@@ -7,25 +7,25 @@ import core.terrain.level.StructureGenerator
 import kotlin.math.sqrt
 import kotlin.random.Random
 
-class TreeStructure(
-    private val seed: Int
-): StructureGenerator() {
+class TreeStructure: StructureGenerator() {
 
     override fun handling(
+        seed: Int,
         chunkData: ChunkData,
         localPosition: IntVector3,
         worldPosition: IntVector3,
         heightNoice: Pair<Float, Int>
-    ) {
+    ): Boolean {
         val heightNoice = heightNoice.second
         val blockType = chunkData.getBlockByLocal(localPosition)
-        if (heightNoice != worldPosition.y || blockType != BlockType.GRASS) return
+        if (heightNoice != worldPosition.y || blockType != BlockType.GRASS) return false
         val random = Random(
             seed + worldPosition.x * 31 + worldPosition.y * 7919 + worldPosition.z * 104729
         )
 
-        if (random.nextFloat() > 0.008f) return
+        if (random.nextFloat() > 0.008f) return false
         generateTree(chunkData, localPosition, worldPosition, random)
+        return true
     }
 
     private fun generateTree(
@@ -43,7 +43,7 @@ class TreeStructure(
 
             chunkData.setBlockPending(
                 BlockType.WOOD,
-                offset = IntVector3(offsetX, y, offsetZ),
+                offset = IntVector3(offsetX, y + 1, offsetZ),
                 localPosition = localPosition,
                 worldPosition = worldPosition
             )
@@ -81,7 +81,7 @@ class TreeStructure(
                     leafType?.let {
                         chunkData.setBlockPending(
                             it,
-                            offset = IntVector3(x, y, z),
+                            offset = IntVector3(x, y + 1, z),
                             localPosition = localPosition,
                             worldPosition = worldPosition
                         )

@@ -2,6 +2,7 @@ package core.chunk
 
 import com.gigapi.math.vector.IntVector3
 import core.blocks.BlockType
+import java.util.concurrent.ConcurrentHashMap
 
 class ChunkData(
     val position: IntVector3,
@@ -12,7 +13,7 @@ class ChunkData(
 ) {
     var status = ChunkStatus.GENERATION
 
-    val pendingBlocks = HashMap<IntVector3, BlockType>()
+    val pendingBlocks = ConcurrentHashMap<IntVector3, BlockType>()
 
     companion object {
         const val SHADOW_MIN = 0x0F.toByte()

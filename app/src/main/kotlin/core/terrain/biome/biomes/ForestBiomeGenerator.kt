@@ -17,6 +17,8 @@ import core.terrain.layers.ShadowLayerHandler
 import core.terrain.layers.StructureLayerHandler
 import core.terrain.layers.SurfaceLayerHandler
 import core.terrain.layers.UndergroundLayerHandler
+import core.terrain.structures.RockStructure
+import core.terrain.structures.TestStructure
 import core.terrain.structures.TreeStructure
 
 class ForestBiomeGenerator : LaunchedEffect, BiomeGenerator() {
@@ -41,7 +43,12 @@ class ForestBiomeGenerator : LaunchedEffect, BiomeGenerator() {
         startLayerHandler
             .setNext(ShadowLayerHandler())
             .setNext(UndergroundLayerHandler())
-            .setNext(StructureLayerHandler(listOf(TreeStructure(perlinNoise.seed))))
+            .setNext(StructureLayerHandler(
+                seed = perlinNoise.seed,
+                structureList = listOf(
+                    TreeStructure(), RockStructure(),// TestStructure()
+                )
+            ))
     }
 
     override fun computeSurfaceNoise(worldX: Int, worldZ: Int): Pair<Float, Int> {

@@ -1,5 +1,6 @@
 package app.feature.game.event
 
+import com.badlogic.gdx.math.Vector3
 import com.gigapi.math.vector.IntVector3
 import core.blocks.BlockType
 import core.chunk.ChunkData
@@ -14,5 +15,5 @@ sealed class ChunkEvent {
     class OnDrawResponse(val generationData: WorldGenerationData)
     class OnAcceptPendingResponse(val generationData: WorldGenerationData)
     class OnFinalizeResponse(val generationData: WorldGenerationData)
-    object GameWorldStarted: GameEvent()
+    class GameWorldStarted(val position: Vector3): GameEvent()
 }

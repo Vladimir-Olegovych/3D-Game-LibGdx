@@ -8,6 +8,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Skin
 import com.gigapi.core.effects.LaunchedEffect
 import com.gigapi.general.Context
 import com.gigapi.screens.mesh.ModelAssetManager
+import com.gigapi.screens.sounds.MusicAssetManager
 import core.shaders.ShaderTypes
 
 object AssetsSetupManager: LaunchedEffect {
@@ -30,6 +31,12 @@ object AssetsSetupManager: LaunchedEffect {
             modelAssetManager.loadObj(it, "$ASSETS_PATH/${it.filePathObj}", "$ASSETS_PATH/${it.filePathMlt}")
         }
         context.setObject(modelAssetManager)
+        //---
+        val musicAssetManager = MusicAssetManager()
+        MusicID.entries.forEach {
+            musicAssetManager.load(it, "$ASSETS_PATH/${it.filePath}")
+        }
+        context.setObject(musicAssetManager)
         //---
         //ShaderProgram.pedantic = false
         val simpleShader = ShaderProgram(

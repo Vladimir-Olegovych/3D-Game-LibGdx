@@ -8,6 +8,7 @@ import core.chunk.ChunkWorldUpdater
 import kotlin.math.floor
 
 object WorldDataHelper {
+
     fun chunkPositionFromBlockCoords(worldBlockPosition: IntVector3): IntVector3 {
         val chunkSize = ChunkWorldUpdater.CHUNK_SIZE
         val chunkHeight = ChunkWorldUpdater.CHUNK_HEIGHT
