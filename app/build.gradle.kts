@@ -18,6 +18,7 @@ dependencies {
     api("com.badlogicgames.gdx:gdx-freetype:1.13.1")
     api("com.badlogicgames.gdx:gdx:1.13.1")
     api("com.badlogicgames.gdx:gdx-bullet:1.13.1")
+    api("uk.co.caprica:vlcj:4.8.0")
 
     api("de.javagl:obj:0.4.0")
     api("com.esotericsoftware:kryo:5.5.0")

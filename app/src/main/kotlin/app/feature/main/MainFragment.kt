@@ -16,6 +16,7 @@ import com.gigapi.viewport.UnfairViewport
 import core.assets.SkinID
 import core.defaults.CameraTypes
 import core.navigation.Navigation
+import core.video.VideoPlayer
 import core.viewport.ViewportTypes
 
 class MainFragment(
@@ -29,7 +30,10 @@ class MainFragment(
     private lateinit var camera: OrthographicCamera
     private lateinit var viewport: UnfairViewport
 
+    private lateinit var videoPlayer: VideoPlayer
+
     override fun onCreate() {
+        videoPlayer = VideoPlayer("menu.mp4")
         spriteBatch = context.getObject()
         viewport = context.getObject(ViewportTypes.UNFAIR)
         stage = context.getObject()
@@ -64,6 +68,7 @@ class MainFragment(
     override fun onRender(deltaTime: Float) {
         Gdx.gl.glClearColor(135 / 255f, 206 / 255f, 235 / 255f, 1f)
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT or GL20.GL_DEPTH_BUFFER_BIT)
+        videoPlayer.render()
         viewport.apply()
         stage.act(deltaTime)
         stage.draw()
@@ -83,6 +88,7 @@ class MainFragment(
 
     override fun onDestroy() {
         Gdx.input.inputProcessor = null
+        videoPlayer.dispose()
         stage.clear()
     }
 }
