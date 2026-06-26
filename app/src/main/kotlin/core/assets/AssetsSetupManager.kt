@@ -7,8 +7,8 @@ import com.badlogic.gdx.graphics.glutils.ShaderProgram
 import com.badlogic.gdx.scenes.scene2d.ui.Skin
 import com.gigapi.core.effects.LaunchedEffect
 import com.gigapi.general.Context
-import com.gigapi.screens.mesh.ModelAssetManager
-import com.gigapi.screens.sounds.MusicAssetManager
+import com.gigapi.mesh.ModelAssetManager
+import com.gigapi.sounds.MusicAssetManager
 import core.shaders.ShaderTypes
 
 object AssetsSetupManager: LaunchedEffect {

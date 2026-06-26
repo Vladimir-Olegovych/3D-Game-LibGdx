@@ -6,7 +6,7 @@ import com.badlogic.gdx.InputMultiplexer
 import com.gigapi.core.effects.LaunchedEffect
 import com.gigapi.eventbus.EventBus
 import com.gigapi.general.Context
-import com.gigapi.screens.sounds.MusicPlayer
+import com.gigapi.sounds.MusicPlayer
 import core.bullet.world.PhysicsWorldUpdater
 import core.chunk.ChunkWorldUpdater
 import core.controls.PlayerInputProcessor
@@ -41,6 +41,7 @@ object DefaultWorldSetupManager: LaunchedEffect {
         context.setObject(ChunkSystem())
         context.setObject(PhysicSystem())
         context.setObject(MoveSystem())
+        context.setObject(UISystem())
         //---
         context.setObject(TerrainGenerator())
     }

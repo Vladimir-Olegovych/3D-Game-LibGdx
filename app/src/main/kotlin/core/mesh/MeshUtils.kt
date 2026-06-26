@@ -3,7 +3,7 @@ package core.mesh
 import com.badlogic.gdx.graphics.Mesh
 import com.badlogic.gdx.math.Vector3
 import com.badlogic.gdx.math.collision.BoundingBox
-import com.gigapi.screens.mesh.RawMeshData
+import com.gigapi.mesh.RawMeshData
 import core.blocks.BlockDataManager
 import core.blocks.BlockType
 

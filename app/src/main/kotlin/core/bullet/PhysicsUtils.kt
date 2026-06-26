@@ -6,7 +6,7 @@ import com.badlogic.gdx.physics.bullet.collision.*
 import com.badlogic.gdx.physics.bullet.collision.CollisionConstants.DISABLE_SIMULATION
 import com.badlogic.gdx.physics.bullet.dynamics.btRigidBody
 import com.badlogic.gdx.physics.bullet.linearmath.btDefaultMotionState
-import com.gigapi.screens.mesh.RawMeshData
+import com.gigapi.mesh.RawMeshData
 import core.blocks.BlockType
 import core.chunk.ChunkData
 import core.math.createMatrixForChunk

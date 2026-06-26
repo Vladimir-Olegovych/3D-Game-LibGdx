@@ -10,7 +10,7 @@ import com.badlogic.gdx.graphics.GL20
 import com.badlogic.gdx.graphics.PerspectiveCamera
 import com.badlogic.gdx.graphics.glutils.ShaderProgram
 import com.badlogic.gdx.math.Vector3
-import com.gigapi.screens.texture.DefaultsTextures
+import com.gigapi.texture.DefaultsTextures
 import core.chunk.ChunkWorldUpdater
 import core.defaults.CameraTypes
 import core.renderers.SunRenderer

@@ -1,7 +1,7 @@
 package app.feature.main
 
+import com.gigapi.fragment.Fragment
 import com.gigapi.general.Context
-import com.gigapi.screens.fragment.Fragment
 import core.navigation.Navigation
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -14,7 +14,6 @@ class MainFragment(
 ): Fragment() {
 
     override fun onCreate() {
-        println("MainFragment onCreate")
         lifecycleScope.launch {
             delay(1000.milliseconds)
             onGameScreen.invoke()
@@ -34,6 +33,6 @@ class MainFragment(
     }
 
     override fun onDestroy() {
-        println("MainFragment onDestroy")
+
     }
 }

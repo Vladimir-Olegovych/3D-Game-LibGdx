@@ -9,11 +9,10 @@ import com.artemis.ComponentMapper
 import com.artemis.World
 import com.artemis.annotations.Wire
 import com.badlogic.gdx.assets.AssetManager
-import com.badlogic.gdx.math.Vector3
 import com.badlogic.gdx.physics.bullet.collision.CollisionConstants.DISABLE_DEACTIVATION
 import com.gigapi.eventbus.EventBus
 import com.gigapi.eventbus.annotation.BusEvent
-import com.gigapi.screens.mesh.ModelAssetManager
+import com.gigapi.mesh.ModelAssetManager
 import core.defaults.WorldConstants
 import core.mesh.MeshUtils
 

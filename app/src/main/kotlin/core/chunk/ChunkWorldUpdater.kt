@@ -12,7 +12,7 @@ import com.gigapi.eventbus.annotation.BusEvent
 import com.gigapi.general.Context
 import com.gigapi.math.vector.IntVector3
 import com.gigapi.math.vector.roundToFloat
-import com.gigapi.screens.mesh.MeshData
+import com.gigapi.mesh.MeshData
 import core.blocks.BlockType
 import core.bullet.raycast.RayCastTypes
 import core.chunk.world.ChunkHelper
@@ -41,9 +41,11 @@ class ChunkWorldUpdater : LaunchedEffect, DisposableEffect, DeltaUpdater(1 / 60F
 
     private val chunkDataPositionToEntityId = ConcurrentHashMap<IntVector3, Int>()
     private val chunkMeshPositionToEntityId = ConcurrentHashMap<IntVector3, Int>()
+
     private val chunkDataMap = ConcurrentHashMap<IntVector3, ChunkData>()
     private val meshDataMap = ConcurrentHashMap<IntVector3, MeshData>()
     private val generateRequests = ConcurrentLinkedQueue<IntVector3>()
+
     private val removedChunkDates = ConcurrentHashMap.newKeySet<IntVector3>()
     private val removedChunkMeshes = ConcurrentHashMap.newKeySet<IntVector3>()
 
@@ -171,7 +173,7 @@ class ChunkWorldUpdater : LaunchedEffect, DisposableEffect, DeltaUpdater(1 / 60F
                         iterator.remove()
                         if (pendingChunkData.status != ChunkStatus.GENERATION &&
                             pendingChunkPosition !in event.generationData.chunkPositionsToCreate &&
-                            meshDataMap[pendingChunkPosition]?.mesh != null
+                            meshDataMap[pendingChunkPosition] != null
                         ) {
                             removedChunkMeshes.add(pendingChunkPosition)
                             affectedExistingChunks.add(pendingChunkPosition)

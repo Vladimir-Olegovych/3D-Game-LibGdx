@@ -2,11 +2,9 @@ package app.feature.game.event
 
 import com.badlogic.gdx.math.Matrix4
 import com.badlogic.gdx.math.Vector3
-import com.gigapi.math.vector.IntVector3
-import com.gigapi.screens.mesh.MeshData
-import com.gigapi.screens.mesh.RawMeshData
+import com.gigapi.mesh.MeshData
+import com.gigapi.mesh.RawMeshData
 import core.chunk.ChunkData
-import core.chunk.world.WorldGenerationData
 
 sealed class GameEvent {
 

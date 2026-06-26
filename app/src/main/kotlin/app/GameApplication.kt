@@ -4,7 +4,7 @@ import app.feature.game.GameFragment
 import app.feature.main.MainFragment
 import com.badlogic.gdx.Game
 import com.gigapi.general.Context
-import com.gigapi.screens.navigation.NavHostController
+import com.gigapi.navigation.NavHostController
 import core.assets.AssetsSetupManager
 import core.configs.ConfigSetupManager
 import core.defaults.DefaultGameSetupManager

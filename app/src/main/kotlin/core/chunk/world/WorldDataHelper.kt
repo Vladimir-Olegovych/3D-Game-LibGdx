@@ -2,7 +2,7 @@ package core.chunk.world
 
 import com.badlogic.gdx.math.Vector3
 import com.gigapi.math.vector.IntVector3
-import com.gigapi.screens.mesh.MeshData
+import com.gigapi.mesh.MeshData
 import core.chunk.ChunkData
 import core.chunk.ChunkWorldUpdater
 import kotlin.math.floor

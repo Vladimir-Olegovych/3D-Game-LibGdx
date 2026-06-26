@@ -9,11 +9,10 @@ import com.badlogic.gdx.graphics.PerspectiveCamera
 import com.badlogic.gdx.math.Vector3
 import com.gigapi.artemis.world.ArtemisWorld
 import com.gigapi.eventbus.EventBus
+import com.gigapi.fragment.Fragment
 import com.gigapi.general.Context
-import com.gigapi.screens.fragment.Fragment
-import com.gigapi.screens.sounds.MusicPlayer
+import com.gigapi.sounds.MusicPlayer
 import core.artemis.disposeALL
-import core.assets.MusicID
 import core.controls.ProcessorIndex
 import core.defaults.CameraTypes
 import core.defaults.DefaultWorldSetupManager
@@ -42,6 +41,7 @@ class GameFragment(
         camera.position.set(Vector3(0f, TerrainGenerator.WORLD_SURFACE.toFloat(), 0f))
 
         val musicPlayer = gameContext.getObject<MusicPlayer>()
+        musicPlayer.setVolume(0.5F)
         //musicPlayer.play(MusicID.MUSIC_1, true)
 
         Gdx.input.isCursorCatched = true
