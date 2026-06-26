@@ -12,10 +12,11 @@ fun main() {
 
 private fun startScreen(game: Game){
     val config = Lwjgl3ApplicationConfiguration()
-    config.useVsync(true)
+    //config.useVsync(true)
+    //config.setWindowSizeLimits(1000, 700, 1000, 700)
     config.setForegroundFPS((Lwjgl3ApplicationConfiguration.getDisplayMode().refreshRate * 2))
     config.setIdleFPS(30)
     config.setTitle("Amogus Craft")
-    //config.setFullscreenMode(Lwjgl3ApplicationConfiguration.getDisplayMode())
+    config.setFullscreenMode(Lwjgl3ApplicationConfiguration.getDisplayMode())
     Lwjgl3Application(game, config)
 }

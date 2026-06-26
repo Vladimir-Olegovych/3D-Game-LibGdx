@@ -1,0 +1,11 @@
+button.png
+size:512,128
+repeat:none
+ic_button_off
+bounds:308,52,100,50
+ic_button_on
+bounds:206,52,100,50
+ic_item_box
+bounds:104,2,100,100
+ic_menu_button
+bounds:2,2,100,100

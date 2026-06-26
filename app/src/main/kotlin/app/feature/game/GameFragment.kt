@@ -1,6 +1,7 @@
 package app.feature.game
 
 import app.feature.game.event.EventBusTypes
+import app.feature.game.event.UiEvent
 import com.artemis.BaseSystem
 import com.artemis.WorldConfiguration
 import com.badlogic.gdx.Gdx
@@ -9,41 +10,54 @@ import com.badlogic.gdx.graphics.PerspectiveCamera
 import com.badlogic.gdx.math.Vector3
 import com.gigapi.artemis.world.ArtemisWorld
 import com.gigapi.eventbus.EventBus
+import com.gigapi.eventbus.annotation.BusEvent
 import com.gigapi.fragment.Fragment
 import com.gigapi.general.Context
 import com.gigapi.sounds.MusicPlayer
+import com.gigapi.viewport.UnfairViewport
 import core.artemis.disposeALL
-import core.controls.ProcessorIndex
+import core.assets.MusicID
 import core.defaults.CameraTypes
 import core.defaults.DefaultWorldSetupManager
 import core.navigation.Navigation
 import core.terrain.TerrainGenerator
+import core.viewport.ViewportTypes
 
 class GameFragment(
     private val navigation: Navigation.Game,
+    private val onMenuScreen: () -> Unit,
     private val context: Context
 ): Fragment() {
 
     private val gameContext = Context()
     private lateinit var eventBus: EventBus
+    private lateinit var viewport: UnfairViewport
     private lateinit var camera: PerspectiveCamera
     private lateinit var artemisWorld: ArtemisWorld
     private lateinit var inputMultiplexer: InputMultiplexer
 
+    @BusEvent
+    fun onMenuScreen(event: UiEvent.OnMenuScreen) {
+        onMenuScreen.invoke()
+    }
+
     override fun onCreate() {
         gameContext.addContext(context)
+        gameContext.setObject(dialogManager)
         DefaultWorldSetupManager.launch(gameContext)
         gameContext.launch()
 
         inputMultiplexer = gameContext.getObject<InputMultiplexer>()
+        viewport = gameContext.getObject(ViewportTypes.UNFAIR)
         camera = gameContext.getObject(CameraTypes.GL_3D)
         eventBus = gameContext.getObject(EventBusTypes.MAIN_EVENT_BUS)
         camera.position.set(Vector3(0f, TerrainGenerator.WORLD_SURFACE.toFloat(), 0f))
 
         val musicPlayer = gameContext.getObject<MusicPlayer>()
         musicPlayer.setVolume(0.5F)
-        //musicPlayer.play(MusicID.MUSIC_1, true)
+        musicPlayer.play(MusicID.MUSIC_1, true)
 
+        eventBus.registerHandler(this)
         Gdx.input.isCursorCatched = true
         Gdx.input.inputProcessor = inputMultiplexer
 
@@ -77,22 +91,14 @@ class GameFragment(
         camera.viewportWidth = width.toFloat()
         camera.viewportHeight = height.toFloat()
         camera.update()
-    }
-
-    override fun onResume() {
-        Gdx.input.isCursorCatched = true
-    }
-
-    override fun onPause() {
-        Gdx.input.isCursorCatched = false
+        viewport.update(width, height, true)
     }
 
     override fun onDestroy() {
         Gdx.input.inputProcessor = null
         Gdx.input.isCursorCatched = false
 
-        inputMultiplexer.removeProcessor(ProcessorIndex.PLAYER_INPUT)
-
+        inputMultiplexer.clear()
         artemisWorld.disposeALL()
         eventBus.clear()
         gameContext.removeContext(context)

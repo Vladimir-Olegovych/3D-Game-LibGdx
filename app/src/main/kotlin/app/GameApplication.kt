@@ -31,13 +31,16 @@ class GameApplication :  Game() {
                     context = context,
                     onGameScreen = {
                         navHostController.navigate(Navigation.Game())
-                    },
+                    }
                 )
             }
             fragment<Navigation.Game> {
                 return@fragment GameFragment(
                     navigation = it,
-                    context = context
+                    context = context,
+                    onMenuScreen = {
+                        navHostController.navigate(Navigation.Main)
+                    }
                 )
             }
             navigate(Navigation.Main)

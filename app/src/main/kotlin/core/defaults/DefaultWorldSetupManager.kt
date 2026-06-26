@@ -1,8 +1,10 @@
 package core.defaults
 
+import app.feature.game.dialogs.PauseDialog
 import app.feature.game.ecs.systems.*
 import app.feature.game.event.EventBusTypes
 import com.badlogic.gdx.InputMultiplexer
+import com.badlogic.gdx.scenes.scene2d.Stage
 import com.gigapi.core.effects.LaunchedEffect
 import com.gigapi.eventbus.EventBus
 import com.gigapi.general.Context
@@ -10,17 +12,23 @@ import com.gigapi.sounds.MusicPlayer
 import core.bullet.world.PhysicsWorldUpdater
 import core.chunk.ChunkWorldUpdater
 import core.controls.PlayerInputProcessor
-import core.controls.ProcessorIndex
+import core.controls.UiInputProcessor
 import core.renderers.SunRenderer
 import core.terrain.TerrainGenerator
 
 object DefaultWorldSetupManager: LaunchedEffect {
 
     override fun launch(context: Context) {
-        val inputMultiplexer = context.getObject<InputMultiplexer>()
         val playerInputProcessor = PlayerInputProcessor()
-        inputMultiplexer.addProcessor(ProcessorIndex.PLAYER_INPUT, playerInputProcessor)
         context.setObject(playerInputProcessor)
+        //---
+        val uiInputProcessor = UiInputProcessor()
+        context.setObject(uiInputProcessor)
+        //---
+        val inputMultiplexer = context.getObject<InputMultiplexer>()
+        inputMultiplexer.addProcessor(context.getObject<Stage>())
+        inputMultiplexer.addProcessor(playerInputProcessor)
+        inputMultiplexer.addProcessor(uiInputProcessor)
         //---
         val musicPlayer = MusicPlayer(context.getObject())
         context.setObject(musicPlayer)
@@ -30,6 +38,8 @@ object DefaultWorldSetupManager: LaunchedEffect {
         context.setObject(EventBusTypes.MAIN_EVENT_BUS, EventBus())
         context.setObject(EventBusTypes.CHUNK_EVENT_BUS, EventBus())
         context.setObject(EventBusTypes.PHYSICS_EVENT_BUS, EventBus())
+        //Dialogs
+        context.setObject(PauseDialog())
         //---
         context.setObject(PhysicsWorldUpdater())
         //---
@@ -38,10 +48,10 @@ object DefaultWorldSetupManager: LaunchedEffect {
         context.setObject(WorldSystem())
         context.setObject(PlayerSystem())
         context.setObject(DrawSystem())
+        context.setObject(UISystem())
         context.setObject(ChunkSystem())
         context.setObject(PhysicSystem())
         context.setObject(MoveSystem())
-        context.setObject(UISystem())
         //---
         context.setObject(TerrainGenerator())
     }

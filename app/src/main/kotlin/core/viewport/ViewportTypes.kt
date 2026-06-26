@@ -1,5 +1,6 @@
 package core.viewport
 
 object ViewportTypes {
-    const val SCREEN = "SCREEN_VIEWPORT"
+    const val UNFAIR = "UNFAIR_VIEWPORT"
+
 }

@@ -45,6 +45,19 @@ class PlayerInputProcessor: LaunchedEffect, InputProcessor {
     private val moveDirection = Vector3()
     private val moveDirectionByCamera = Vector3()
 
+    fun clear() {
+        isMouseHold = false
+        jump = false
+        lastMouseX = -1
+        lastMouseY = -1
+        deltaMouseX = 0f
+        deltaMouseY = 0f
+        //pitch = 0f
+        //yaw = 0f
+        moveDirection.set(Vector3.Zero)
+        moveDirectionByCamera.set(Vector3.Zero)
+    }
+
     fun isJumped() = jump
     fun getPitch() = pitch
     fun getYaw() = yaw
@@ -122,7 +135,7 @@ class PlayerInputProcessor: LaunchedEffect, InputProcessor {
             Keys.D -> updateMoveDirection(x = -PLAYER_SPEED)
             Keys.SPACE -> { jump = true }
         }
-        return true
+        return false
     }
 
     override fun keyUp(keycode: Int): Boolean {
@@ -133,12 +146,12 @@ class PlayerInputProcessor: LaunchedEffect, InputProcessor {
             Keys.D -> updateMoveDirection(x = 0f)
             Keys.SPACE -> { jump = false }
         }
-        return true
+        return false
     }
 
     override fun mouseMoved(screenX: Int, screenY: Int): Boolean {
         updateCameraPosition(screenX, screenY)
-        return true
+        return false
     }
 
 
@@ -153,7 +166,7 @@ class PlayerInputProcessor: LaunchedEffect, InputProcessor {
         button: Int
     ): Boolean {
         isMouseHold = true
-        return true
+        return false
     }
 
     override fun touchUp(
@@ -163,7 +176,7 @@ class PlayerInputProcessor: LaunchedEffect, InputProcessor {
         button: Int
     ): Boolean {
         isMouseHold = false
-        return true
+        return false
     }
 
     override fun touchCancelled(
@@ -177,7 +190,7 @@ class PlayerInputProcessor: LaunchedEffect, InputProcessor {
 
     override fun touchDragged(screenX: Int, screenY: Int, pointer: Int): Boolean {
         updateCameraPosition(screenX, screenY)
-        return true
+        return false
     }
 
     override fun scrolled(amountX: Float, amountY: Float): Boolean {

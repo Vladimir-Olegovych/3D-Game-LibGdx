@@ -1,0 +1,59 @@
+{
+  Color: {
+    default: {
+      hex: #FFFFFFFF
+    }
+  },
+  BitmapFont: {
+    large: {
+      file: fonts/bold.fnt,
+      scaledSize: 18
+    }
+    medium: {
+      file: fonts/bold.fnt,
+      scaledSize: 16
+    }
+    small: {
+      file: fonts/bold.fnt,
+      scaledSize: 12
+    }
+  }
+  TextButtonStyle: {
+    default: {
+      font: small,
+      fontColor: default
+
+      up: ic_button_off
+      down: ic_button_on
+    }
+  }
+  ImageButtonStyle: {
+    menu: {
+      up: ic_menu_button
+    }
+    inventory_box: {
+      up: ic_item_box
+    }
+    default: {
+      up: ic_button_off
+      down: ic_button_on
+    }
+  }
+  LabelStyle: {
+    default: {
+      font: medium,
+      fontColor: default
+    }
+    small: {
+      font: small,
+      fontColor: default
+    }
+  }
+
+  WindowStyle: {
+    default: {
+      titleFont: medium,
+      titleFontColor: default
+    }
+  }
+}

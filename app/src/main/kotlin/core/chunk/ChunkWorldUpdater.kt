@@ -27,6 +27,7 @@ import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentLinkedQueue
+import kotlin.time.Duration.Companion.milliseconds
 
 class ChunkWorldUpdater : LaunchedEffect, DisposableEffect, DeltaUpdater(1 / 60F, Dispatchers.Default) {
 
@@ -37,7 +38,7 @@ class ChunkWorldUpdater : LaunchedEffect, DisposableEffect, DeltaUpdater(1 / 60F
         const val CHUNK_HEIGHT = 16
     }
 
-    private val parallelismMesh = Semaphore(64)
+    private val parallelismMesh = Semaphore(DRAW_RADIUS_X)
 
     private val chunkDataPositionToEntityId = ConcurrentHashMap<IntVector3, Int>()
     private val chunkMeshPositionToEntityId = ConcurrentHashMap<IntVector3, Int>()
@@ -182,19 +183,26 @@ class ChunkWorldUpdater : LaunchedEffect, DisposableEffect, DeltaUpdater(1 / 60F
                 }
             }
 
-            for (chunkPos in affectedExistingChunks) {
-                val updateChunkData = chunkDataMap[chunkPos] ?: continue
-                val updateChunkEntityId = chunkDataPositionToEntityId[chunkPos] ?: continue
+            val meshJobs = coroutineScope {
+                affectedExistingChunks.map { chunkPos ->
+                    delay(500.milliseconds)
+                    async(Dispatchers.Default) {
+                        parallelismMesh.withPermit {
+                            val updateChunkData = chunkDataMap[chunkPos] ?: return@async
+                            val updateChunkEntityId = chunkDataPositionToEntityId[chunkPos] ?: return@async
 
-                val rawMeshData = meshHelper.createMesh(chunkDataMap, updateChunkData)
-                val meshData = withContext(mainScope.coroutineContext) {
-                    rawMeshData.createMeshData()
+                            val rawMeshData = meshHelper.createMesh(chunkDataMap, updateChunkData)
+                            val meshData = withContext(mainScope.coroutineContext) {
+                                rawMeshData.createMeshData()
+                            }
+                            meshDataMap[chunkPos] = meshData
+                            physicsEventBus.sendEvent(GameEvent.OnUpdateChunkData(updateChunkEntityId, updateChunkData))
+                            mainEventBus.sendEvent(GameEvent.OnUpdateChunkMeshData(updateChunkEntityId, meshData))
+                        }
+                    }
                 }
-                meshDataMap[chunkPos] = meshData
-                physicsEventBus.sendEvent(GameEvent.OnUpdateChunkData(updateChunkEntityId, updateChunkData))
-                mainEventBus.sendEvent(GameEvent.OnUpdateChunkMeshData(updateChunkEntityId, meshData))
             }
-
+            meshJobs.awaitAll()
             chunkEventBus.sendEvent(ChunkEvent.OnDrawResponse(event.generationData))
         }
     }
@@ -246,9 +254,9 @@ class ChunkWorldUpdater : LaunchedEffect, DisposableEffect, DeltaUpdater(1 / 60F
 
                 val rawMeshData = meshHelper.createMesh(chunkDataMap, updateChunkData)
 
-                val meshData = withContext(mainScope.coroutineContext) {
+                val meshData = mainScope.async {
                     rawMeshData.createMeshData()
-                }
+                }.await()
                 meshDataMap[chunkPos] = meshData
                 physicsEventBus.sendEvent(GameEvent.OnUpdateChunkData(updateChunkEntityId, updateChunkData))
                 mainEventBus.sendEvent(GameEvent.OnUpdateChunkMeshData(updateChunkEntityId, meshData))
@@ -346,12 +354,12 @@ class ChunkWorldUpdater : LaunchedEffect, DisposableEffect, DeltaUpdater(1 / 60F
         val rawMeshData = meshHelper.createMesh(chunkDataMap, chunkData)
         if (rawMeshData.isEmpty()) return
 
-        withContext(mainScope.coroutineContext) {
+        mainScope.async {
             val meshData = rawMeshData.createMeshData()
             meshDataMap[position] = meshData
             mainEventBus.sendEvent(GameEvent.OnCreateChunkMeshData(meshEntityId, meshData))
             physicsEventBus.sendEvent(GameEvent.OnCreateChunkRigidBody(meshEntityId, chunkData))
-        }
+        }.await()
     }
 
     private fun getWorldGenerationData(playerPosition: IntVector3): WorldGenerationData {
