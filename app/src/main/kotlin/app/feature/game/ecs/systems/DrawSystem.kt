@@ -6,15 +6,19 @@ import com.artemis.annotations.One
 import com.artemis.annotations.Wire
 import com.artemis.systems.IteratingSystem
 import com.badlogic.gdx.Gdx
+import com.badlogic.gdx.assets.AssetManager
 import com.badlogic.gdx.graphics.GL20
 import com.badlogic.gdx.graphics.PerspectiveCamera
 import com.badlogic.gdx.graphics.glutils.ShaderProgram
 import com.badlogic.gdx.math.Vector3
+import com.badlogic.gdx.scenes.scene2d.Stage
 import com.gigapi.texture.DefaultsTextures
+import com.gigapi.viewport.UnfairViewport
 import core.chunk.ChunkWorldUpdater
 import core.defaults.CameraTypes
 import core.renderers.SunRenderer
 import core.shaders.ShaderTypes
+import core.viewport.ViewportTypes
 
 @One(MeshComponent::class, BlenderModelComponent::class)
 class DrawSystem: IteratingSystem() {
@@ -32,6 +36,11 @@ class DrawSystem: IteratingSystem() {
     private lateinit var simpleShader: ShaderProgram
     @Wire
     private lateinit var sunRenderer: SunRenderer
+
+    @Wire
+    private lateinit var stage: Stage
+    @Wire(name = ViewportTypes.UNFAIR)
+    private lateinit var viewport: UnfairViewport
 
     override fun begin() {
         Gdx.gl.glClearColor(135 / 255f, 206 / 255f, 235 / 255f, 1f)

@@ -17,6 +17,6 @@ private fun startScreen(game: Game){
     config.setForegroundFPS((Lwjgl3ApplicationConfiguration.getDisplayMode().refreshRate * 2))
     config.setIdleFPS(30)
     config.setTitle("Amogus Craft")
-    config.setFullscreenMode(Lwjgl3ApplicationConfiguration.getDisplayMode())
+    //config.setFullscreenMode(Lwjgl3ApplicationConfiguration.getDisplayMode())
     Lwjgl3Application(game, config)
 }

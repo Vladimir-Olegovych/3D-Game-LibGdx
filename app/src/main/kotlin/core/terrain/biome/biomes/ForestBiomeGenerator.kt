@@ -46,7 +46,7 @@ class ForestBiomeGenerator : LaunchedEffect, BiomeGenerator() {
             .setNext(StructureLayerHandler(
                 seed = perlinNoise.seed,
                 structureList = listOf(
-                    TreeStructure(), RockStructure(), TestStructure()
+                    TreeStructure(), RockStructure(), //TestStructure()
                 )
             ))
     }

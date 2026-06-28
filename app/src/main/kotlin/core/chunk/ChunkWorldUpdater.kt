@@ -39,6 +39,7 @@ class ChunkWorldUpdater : LaunchedEffect, DisposableEffect, DeltaUpdater(1 / 60F
     }
 
     private val parallelismMesh = Semaphore(DRAW_RADIUS_X)
+    private val parallelismMeshStart = Semaphore(1000)
 
     private val chunkDataPositionToEntityId = ConcurrentHashMap<IntVector3, Int>()
     private val chunkMeshPositionToEntityId = ConcurrentHashMap<IntVector3, Int>()
@@ -212,7 +213,9 @@ class ChunkWorldUpdater : LaunchedEffect, DisposableEffect, DeltaUpdater(1 / 60F
             val meshJobs = coroutineScope {
                 event.generationData.chunkPositionsToCreate.map { position ->
                     async(Dispatchers.Default) {
-                        parallelismMesh.withPermit {
+                        if (isFirstGeneration) parallelismMeshStart.withPermit {
+                            drawChunkData(position)
+                        } else parallelismMesh.withPermit {
                             drawChunkData(position)
                         }
                     }

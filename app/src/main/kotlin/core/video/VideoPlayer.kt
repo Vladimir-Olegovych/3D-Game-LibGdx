@@ -13,7 +13,7 @@ import core.assets.AssetsSetupManager
 class VideoPlayer(
     val fileName: String,
     val repeatable: Boolean = true,
-    private val startVolume: Float = 0.5f
+    private val startVolume: Float = 0.4f
 ) : Disposable {
 
     val videoPlayer = GigVideoPlayer(repeatable)

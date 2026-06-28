@@ -1,8 +1,10 @@
 package core.defaults
 
+import app.feature.game.dialogs.InventoryDialog
 import app.feature.game.dialogs.PauseDialog
 import app.feature.game.ecs.systems.*
 import app.feature.game.event.EventBusTypes
+import app.feature.game.ui.InventoryUI
 import com.badlogic.gdx.InputMultiplexer
 import com.badlogic.gdx.scenes.scene2d.Stage
 import com.gigapi.core.effects.LaunchedEffect
@@ -40,6 +42,9 @@ object DefaultWorldSetupManager: LaunchedEffect {
         context.setObject(EventBusTypes.PHYSICS_EVENT_BUS, EventBus())
         //Dialogs
         context.setObject(PauseDialog())
+        context.setObject(InventoryDialog())
+        //UI
+        context.setObject(InventoryUI())
         //---
         context.setObject(PhysicsWorldUpdater())
         //---
@@ -47,8 +52,8 @@ object DefaultWorldSetupManager: LaunchedEffect {
         //Systems
         context.setObject(WorldSystem())
         context.setObject(PlayerSystem())
-        context.setObject(DrawSystem())
         context.setObject(UISystem())
+        context.setObject(DrawSystem())
         context.setObject(ChunkSystem())
         context.setObject(PhysicSystem())
         context.setObject(MoveSystem())

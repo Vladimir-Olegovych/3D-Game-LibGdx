@@ -1,7 +1,9 @@
 package app.feature.game.ecs.systems
 
+import app.feature.game.dialogs.InventoryDialog
 import app.feature.game.dialogs.PauseDialog
 import app.feature.game.event.UiEvent
+import app.feature.game.ui.InventoryUI
 import com.artemis.BaseSystem
 import com.artemis.annotations.Wire
 import com.badlogic.gdx.Gdx
@@ -28,6 +30,8 @@ class UISystem: BaseSystem() {
     private lateinit var dialogManager: DialogManager
     @Wire
     private lateinit var pauseDialog: PauseDialog
+    @Wire
+    private lateinit var inventoryDialog: InventoryDialog
 
     @Wire
     private lateinit var inputMultiplexer: InputMultiplexer
@@ -36,19 +40,11 @@ class UISystem: BaseSystem() {
     @Wire
     private lateinit var uiInputProcessor: UiInputProcessor
 
+    @Wire
+    private lateinit var inventoryUI: InventoryUI
+
     override fun initialize() {
-        /*
-        val skin = assetManager.get<Skin>(SkinID.BUTTON.skin)
-        val uiTable = Table().apply {
-            setFillParent(true)
-            top()
-        }
-        val quitButton = TextButton("quit", skin).setOnClickListener {
-            Gdx.app.exit()
-        }
-        uiTable.add(quitButton).height(40F).width(200F).padTop(8F)
-        stage.addActor(uiTable)
-         */
+        stage.addActor(inventoryUI.getUI())
     }
 
     @BusEvent
@@ -71,18 +67,20 @@ class UISystem: BaseSystem() {
         playerInputProcessor.clear()
         inputMultiplexer.removeProcessor(playerInputProcessor)
         Gdx.input.isCursorCatched = false
+        if (!inventoryDialog.isShowed()) inventoryDialog.show(dialogManager)
     }
 
     @BusEvent
     fun onInventoryClose(event: UiEvent.OnInventoryClose) {
         inputMultiplexer.addProcessor(playerInputProcessor)
         Gdx.input.isCursorCatched = true
+        if (inventoryDialog.isShowed()) inventoryDialog.dismiss()
     }
 
     override fun processSystem() {
         viewport.apply()
-        stage.act(world.delta)
         stage.draw()
+        stage.act(world.delta)
     }
 
     override fun dispose() {
