@@ -18,6 +18,7 @@ import com.gigapi.setOnClickListener
 import com.gigapi.texture.ColorDrawable
 import core.assets.SkinID
 import core.controls.UiInputProcessor
+import core.items.InventoryManager
 
 class InventoryDialog: LaunchedEffect, Dialog() {
 
@@ -41,8 +42,8 @@ class InventoryDialog: LaunchedEffect, Dialog() {
             pad(16f)
         }
 
-        for (row in 0 until 4) {
-            for (col in 0 until 8) {
+        for (row in 0 until InventoryManager.ROWS) {
+            for (col in 0 until InventoryManager.COLS) {
                 val index = row * 8 + col
                 val cellContainer = Stack().apply {
                     setSize(64f, 64f)

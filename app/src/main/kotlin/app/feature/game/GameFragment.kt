@@ -1,8 +1,8 @@
 package app.feature.game
 
+import app.feature.game.ecs.systems.*
 import app.feature.game.event.EventBusTypes
 import app.feature.game.event.UiEvent
-import com.artemis.BaseSystem
 import com.artemis.WorldConfiguration
 import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.InputMultiplexer
@@ -64,12 +64,6 @@ class GameFragment(
         val configuration = WorldConfiguration()
         for ((key, value) in gameContext.objectMap) {
             val anObject = value.anObject
-            if (anObject is BaseSystem){
-                eventBus.registerHandler(anObject)
-                configuration.setSystem(anObject)
-                continue
-            }
-
             val customKey = key.customKey
             if(customKey != null) {
                 configuration.register(customKey, anObject)
@@ -77,6 +71,20 @@ class GameFragment(
                 configuration.register(anObject)
             }
         }
+
+        arrayOf(
+            WorldSystem(),
+            PlayerSystem(),
+            MoveSystem(),
+            ChunkSystem(),
+            PhysicSystem(),
+            DrawSystem(),
+            UISystem()
+        ).forEach { system ->
+            eventBus.registerHandler(system)
+            configuration.setSystem(system)
+        }
+
         configuration.isAlwaysDelayComponentRemoval = false
         artemisWorld = ArtemisWorld(configuration)
     }

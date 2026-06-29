@@ -4,6 +4,7 @@ import app.feature.game.dialogs.InventoryDialog
 import app.feature.game.dialogs.PauseDialog
 import app.feature.game.ecs.systems.*
 import app.feature.game.event.EventBusTypes
+import app.feature.game.ui.AimUI
 import app.feature.game.ui.InventoryUI
 import com.badlogic.gdx.InputMultiplexer
 import com.badlogic.gdx.scenes.scene2d.Stage
@@ -44,19 +45,12 @@ object DefaultWorldSetupManager: LaunchedEffect {
         context.setObject(PauseDialog())
         context.setObject(InventoryDialog())
         //UI
+        context.setObject(AimUI())
         context.setObject(InventoryUI())
         //---
         context.setObject(PhysicsWorldUpdater())
         //---
         context.setObject(ChunkWorldUpdater())
-        //Systems
-        context.setObject(WorldSystem())
-        context.setObject(PlayerSystem())
-        context.setObject(UISystem())
-        context.setObject(DrawSystem())
-        context.setObject(ChunkSystem())
-        context.setObject(PhysicSystem())
-        context.setObject(MoveSystem())
         //---
         context.setObject(TerrainGenerator())
     }

@@ -9,6 +9,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Table
 import com.gigapi.core.effects.LaunchedEffect
 import com.gigapi.general.Context
 import core.assets.SkinID
+import core.items.InventoryManager
 import core.ui.UIGetter
 
 class InventoryUI: LaunchedEffect, UIGetter {
@@ -26,10 +27,10 @@ class InventoryUI: LaunchedEffect, UIGetter {
         val itemBox = assetManager.get<TextureAtlas>(SkinID.BUTTON.atlas).findRegion("ic_item_box")
 
         val inventoryTable = Table().apply {
-            defaults().size(64f, 64f).pad(4f)
+            defaults().size(64f, 64f).pad(2f)
         }
 
-        for (index in 0 until 10) {
+        for (index in 0 until InventoryManager.TOOL_BAR_SIZE) {
             val cellContainer = Stack().apply {
                 setSize(64f, 64f)
 
