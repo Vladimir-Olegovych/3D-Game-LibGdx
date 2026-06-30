@@ -2,8 +2,10 @@ package app.feature.game.event
 
 import com.badlogic.gdx.math.Matrix4
 import com.badlogic.gdx.math.Vector3
+import com.gigapi.math.vector.IntVector3
 import com.gigapi.mesh.MeshData
 import com.gigapi.mesh.RawMeshData
+import core.blocks.BlockType
 import core.chunk.ChunkData
 
 sealed class GameEvent {
@@ -46,4 +48,6 @@ sealed class GameEvent {
         val hitNormal: Vector3,
         val hitEntityId: Int? = null
     ) : GameEvent()
+
+    class OnBlockRemoved(val blockType: BlockType, val chunkPosition: IntVector3, val localPosition: IntVector3)
 }

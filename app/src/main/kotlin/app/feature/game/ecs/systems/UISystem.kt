@@ -68,6 +68,7 @@ class UISystem: BaseSystem() {
 
     @BusEvent
     fun onInventoryOpen(event: UiEvent.OnInventoryOpen) {
+        inventoryUI.getUI().isVisible = false
         playerInputProcessor.clear()
         inputMultiplexer.removeProcessor(playerInputProcessor)
         Gdx.input.isCursorCatched = false
@@ -76,6 +77,7 @@ class UISystem: BaseSystem() {
 
     @BusEvent
     fun onInventoryClose(event: UiEvent.OnInventoryClose) {
+        inventoryUI.getUI().isVisible = true
         inputMultiplexer.addProcessor(playerInputProcessor)
         Gdx.input.isCursorCatched = true
         if (inventoryDialog.isShowed()) inventoryDialog.dismiss()

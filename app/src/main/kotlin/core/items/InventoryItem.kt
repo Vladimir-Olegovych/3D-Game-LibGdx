@@ -1,9 +1,13 @@
 package core.items
 
-import com.badlogic.gdx.graphics.Texture
+import com.badlogic.gdx.graphics.g2d.TextureRegion
 
 data class InventoryItem(
-    val name: String,
-    val texture: Texture
+    val item: Item,
+    val texture: TextureRegion,
+    var count: Int
 ) {
+    fun refreshCount() {
+
+    }
 }

@@ -1,23 +1,25 @@
 package app.feature.game.dialogs
 
+import app.feature.game.event.EventBusTypes
+import app.feature.game.event.InventoryEvent
 import app.feature.game.ui.InventoryUI.Companion.CELL_BACKGROUND_NAME
 import app.feature.game.ui.InventoryUI.Companion.CELL_ITEM_NAME
 import com.badlogic.gdx.assets.AssetManager
 import com.badlogic.gdx.graphics.g2d.TextureAtlas
 import com.badlogic.gdx.scenes.scene2d.Stage
 import com.badlogic.gdx.scenes.scene2d.ui.Image
-import com.badlogic.gdx.scenes.scene2d.ui.Table
-import com.badlogic.gdx.scenes.scene2d.ui.Label
 import com.badlogic.gdx.scenes.scene2d.ui.Skin
 import com.badlogic.gdx.scenes.scene2d.ui.Stack
+import com.badlogic.gdx.scenes.scene2d.ui.Table
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable
 import com.gigapi.core.effects.LaunchedEffect
 import com.gigapi.dialogs.Dialog
+import com.gigapi.eventbus.EventBus
+import com.gigapi.eventbus.annotation.BusEvent
 import com.gigapi.general.Context
 import com.gigapi.setOnClickListener
 import com.gigapi.texture.ColorDrawable
 import core.assets.SkinID
-import core.controls.UiInputProcessor
 import core.items.InventoryManager
 
 class InventoryDialog: LaunchedEffect, Dialog() {
@@ -25,11 +27,18 @@ class InventoryDialog: LaunchedEffect, Dialog() {
     private lateinit var stage: Stage
     private lateinit var fullscreenOverlay: Table
 
+    private lateinit var inventoryCells: Array<Stack?>
+
     override fun launch(context: Context) {
         stage = context.getObject()
         val assetManager = context.getObject<AssetManager>()
         val skin = assetManager.get<Skin>(SkinID.BUTTON.skin)
         val itemBox = assetManager.get<TextureAtlas>(SkinID.BUTTON.atlas).findRegion("ic_item_box")
+        val inventoryManager = context.getObject<InventoryManager>()
+        val eventBus = context.getObject<EventBus>(EventBusTypes.MAIN_EVENT_BUS)
+        eventBus.registerHandler(this)
+
+        inventoryCells = Array(inventoryManager.inventorySize) { null }
 
         fullscreenOverlay = Table().apply {
             setFillParent(true)
@@ -42,16 +51,19 @@ class InventoryDialog: LaunchedEffect, Dialog() {
             pad(16f)
         }
 
-        for (row in 0 until InventoryManager.ROWS) {
-            for (col in 0 until InventoryManager.COLS) {
+        for (row in 0 until inventoryManager.rows) {
+            for (col in 0 until inventoryManager.cols) {
                 val index = row * 8 + col
+                val inventoryItem = inventoryManager.getInventoryItem(index)
+                val itemTexture = inventoryItem?.texture
+
                 val cellContainer = Stack().apply {
                     setSize(64f, 64f)
 
                     val background = Image(itemBox)
                     background.name = CELL_BACKGROUND_NAME
+                    val item: Image = if (itemTexture != null) Image(itemTexture) else Image()
 
-                    val item = Image()
                     item.setSize(48f, 48f)
                     item.name = CELL_ITEM_NAME
 
@@ -60,12 +72,20 @@ class InventoryDialog: LaunchedEffect, Dialog() {
                 }.setOnClickListener {
                     println("clicked on $index")
                 }
+                inventoryCells[index] = cellContainer
                 inventoryTable.add(cellContainer)
             }
             inventoryTable.row()
         }
 
         fullscreenOverlay.add(inventoryTable).center()
+    }
+
+    @BusEvent
+    fun updateItem(event: InventoryEvent.OnUpdate) {
+        val cellContainer = inventoryCells[event.slot] ?: return
+        val image = cellContainer.findActor<Image>(CELL_ITEM_NAME)
+        image.drawable = TextureRegionDrawable(event.inventoryItem.texture)
     }
 
     override fun onCreate() {

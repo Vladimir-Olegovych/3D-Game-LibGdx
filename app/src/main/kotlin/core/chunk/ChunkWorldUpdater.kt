@@ -283,6 +283,7 @@ class ChunkWorldUpdater : LaunchedEffect, DisposableEffect, DeltaUpdater(1 / 60F
         chunkEventBus.sendEventNow(ChunkEvent.OnSetBlock(
             chunkData, BlockType.AIR, blockPosition
         ))
+        mainEventBus.sendEvent(GameEvent.OnBlockRemoved(currentBlock, chunkPosition, blockPosition))
     }
 
     private fun findSpawnPosition(centerPosition: Vector3): Vector3? {

@@ -16,6 +16,7 @@ import core.bullet.world.PhysicsWorldUpdater
 import core.chunk.ChunkWorldUpdater
 import core.controls.PlayerInputProcessor
 import core.controls.UiInputProcessor
+import core.items.InventoryManager
 import core.renderers.SunRenderer
 import core.terrain.TerrainGenerator
 
@@ -53,6 +54,8 @@ object DefaultWorldSetupManager: LaunchedEffect {
         context.setObject(ChunkWorldUpdater())
         //---
         context.setObject(TerrainGenerator())
+        //---
+        context.setObject(InventoryManager())
     }
 
 }
