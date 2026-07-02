@@ -49,6 +49,14 @@ class InventoryManager(
         addItem(item)
     }
 
+    fun swapIndexes(from: Int, to: Int) {
+        val itemFrom = inventorySlots[from]
+        inventorySlots[from] = inventorySlots[to]
+        inventorySlots[to] = itemFrom
+        eventBus.sendEvent(InventoryEvent.OnUpdate(inventorySlots[from], from))
+        eventBus.sendEvent(InventoryEvent.OnUpdate(itemFrom, to))
+    }
+
     fun getInventoryItem(index: Int): InventoryItem? {
         return inventorySlots[index]
     }

@@ -8,7 +8,7 @@ data class Item(
     val skinID: SkinID,
     val regionName: String,
     val maxStack: Int = 4,
-    val stackable: Boolean = false
+    val stackable: Boolean = true
 )
 
 val testItem = Item(

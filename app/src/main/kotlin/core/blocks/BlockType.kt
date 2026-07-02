@@ -7,7 +7,7 @@ enum class BlockType(val id: Byte, val regionName: String) {
     DIRT(3, "dirt_soil_brown"),
     STONE(4, "stone_ground_grey"),
     WOOD(5, "dark_wood_planks"),
-    LEAVES(6, "jungle_leaves"),
+    LEAVES(6, "sand_smooth"),
     SAND(7, "white_sand");
 
     companion object {

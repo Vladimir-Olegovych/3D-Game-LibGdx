@@ -45,6 +45,7 @@ class ChunkSystem: BaseSystem() {
     override fun initialize() {
         chunkWorldUpdater.start()
         chunkMeshTextureData = assetManager.get<TextureAtlas>(SkinID.BLOCK.atlas).textures.first()
+        chunkMeshTextureData.setWrap(Texture.TextureWrap.ClampToEdge, Texture.TextureWrap.ClampToEdge)
     }
 
     private var lastCameraPosition = IntVector3()
