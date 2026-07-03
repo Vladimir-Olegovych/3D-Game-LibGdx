@@ -4,7 +4,6 @@ import com.badlogic.gdx.math.Vector3
 import com.gigapi.math.vector.IntVector3
 import com.gigapi.mesh.MeshData
 import core.chunk.ChunkData
-import core.chunk.ChunkStatus
 import core.chunk.ChunkWorldUpdater
 import kotlin.math.floor
 
@@ -137,23 +136,12 @@ object WorldDataHelper {
             .toList()
     }
 
-    fun hasValidMesh(chunkMap: Map<IntVector3, MeshData>, pos: IntVector3): Boolean =
-        chunkMap[pos]?.mesh != null
-
-    fun needsMesh(chunkMap: Map<IntVector3, MeshData>, pos: IntVector3): Boolean =
-        !hasValidMesh(chunkMap, pos)
-
-    fun needsData(chunkDataMap: Map<IntVector3, ChunkData>, pos: IntVector3): Boolean {
-        val data = chunkDataMap[pos] ?: return true
-        return data.status == ChunkStatus.GENERATION
-    }
-
     fun getUnneededChunks(
         chunkMap: Map<IntVector3, MeshData>,
         allChunkPositionsNeeded: List<IntVector3>
     ): List<IntVector3> {
         return chunkMap.keys
-            .filter { pos -> pos !in allChunkPositionsNeeded && hasValidMesh(chunkMap, pos) }
+            .filter { pos -> pos !in allChunkPositionsNeeded }
             .toList()
     }
 
@@ -163,7 +151,7 @@ object WorldDataHelper {
         playerPosition: IntVector3
     ): List<IntVector3> {
         return allChunkPositionsNeeded
-            .filter { pos -> needsMesh(chunkMap, pos) }
+            .filter { pos -> pos !in chunkMap }
             .sortedBy { pos -> IntVector3.dst(playerPosition, pos) }
             .toList()
     }
@@ -174,7 +162,7 @@ object WorldDataHelper {
         playerPosition: IntVector3
     ): List<IntVector3> {
         return allChunkDataPositionsNeeded
-            .filter { pos -> needsData(chunkDataMap, pos) }
+            .filter { pos -> pos !in chunkDataMap }
             .sortedBy { pos -> IntVector3.dst(playerPosition, pos) }
             .toList()
     }

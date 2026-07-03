@@ -46,7 +46,6 @@ class ChunkSystem: BaseSystem() {
         chunkWorldUpdater.start()
         chunkMeshTextureData = assetManager.get<TextureAtlas>(SkinID.BLOCK.atlas).textures.first()
         chunkMeshTextureData.setWrap(Texture.TextureWrap.ClampToEdge, Texture.TextureWrap.ClampToEdge)
-        chunkEventBus.sendEvent(ChunkEvent.LoadAdditionalChunksRequest(IntVector3.roundToInt(camera.position)))
     }
 
     private var lastCameraPosition = IntVector3()
@@ -82,21 +81,16 @@ class ChunkSystem: BaseSystem() {
             entities = entities
         ))
     }
-    private fun isEntityAlive(entityId: Int): Boolean =
-        world.entityManager.isActive(entityId)
-
     @BusEvent
     fun onChunkDataCreated(event: GameEvent.OnCreateChunkTransform) {
         val entityId = event.chunkEntityId
-        if (!isEntityAlive(entityId)) return
         transformMapper.create(entityId).transform = event.transform
     }
 
     @BusEvent
     fun onUpdateChunkMeshData(event: GameEvent.OnUpdateChunkMeshData) {
         val entityId = event.chunkEntityId
-        if (!isEntityAlive(entityId)) return
-        val meshComponent = meshMapper[entityId] ?: meshMapper.create(entityId)
+        val meshComponent = meshMapper[entityId]?: meshMapper.create(entityId)
         meshComponent.dispose()
         meshComponent.meshData = event.meshData
         meshComponent.meshTextureData = chunkMeshTextureData
@@ -109,7 +103,6 @@ class ChunkSystem: BaseSystem() {
     @BusEvent
     fun onMeshDataCreated(event: GameEvent.OnCreateChunkMeshData) {
         val entityId = event.chunkEntityId
-        if (!isEntityAlive(entityId)) return
         if (meshMapper[entityId] != null) return
         val meshComponent = meshMapper.create(entityId)
         val mesh = event.meshData.mesh ?: return

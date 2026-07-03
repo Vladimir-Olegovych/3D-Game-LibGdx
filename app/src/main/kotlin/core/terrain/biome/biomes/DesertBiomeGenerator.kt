@@ -34,12 +34,11 @@ class DesertBiomeGenerator : LaunchedEffect, BiomeGenerator() {
     )
 
     override fun launch(context: Context) {
-        initFromNoise(context.getObject(NoiceTypes.PERLIN_WORLD))
-    }
-
-    fun initFromNoise(perlinNoise: PerlinNoise) {
+        val perlinNoise = context.getObject<PerlinNoise>(NoiceTypes.PERLIN_WORLD)
         val noiceGenerator = perlinNoise.asGenerator()
+
         baseDomainWarping = getSurfaceDomainWarping(noiceGenerator)
+
         startLayerHandler
             .setNext(ShadowLayerHandler())
             .setNext(UndergroundLayerHandler())

@@ -16,30 +16,38 @@ import core.terrain.biome.biomes.DesertBiomeGenerator
 import core.terrain.biome.biomes.ForestBiomeGenerator
 import core.terrain.biome.biomes.MountainBiomeGenerator
 import core.terrain.biome.models.BiomeType
+import core.terrain.level.StructureSelector
 import math.noice.FastNoise
 import kotlin.random.Random
 
-class TerrainGenerator : LaunchedEffect {
-
-    var worldSeed: Int = 0
-        private set
+class TerrainGenerator: LaunchedEffect {
 
     private lateinit var noiseWarp: DomainWarping2D
     private lateinit var biomeSelector: BiomeSelector
+    private lateinit var structureSelector: StructureSelector
     private lateinit var biomeGenerators: Map<BiomeType, BiomeGenerator>
 
     override fun launch(context: Context) {
-        worldSeed = Random.nextInt()
-        initGenerators(worldSeed)
-
+        val worldSeed = Random.nextInt()
         context.setObject(NoiceTypes.PERLIN_WORLD, PerlinNoise(worldSeed))
         context.setObject(NoiceTypes.FAST_PERLIN, FastNoise(worldSeed))
         context.setObject(NoiceTypes.RANDOM_WORLD, RandomNoise(worldSeed))
+
         context.setObject(BiomeSelector(worldSeed))
 
         context.setObject(ForestBiomeGenerator())
         context.setObject(DesertBiomeGenerator())
         context.setObject(MountainBiomeGenerator())
+
+        biomeGenerators = mapOf(
+            BiomeType.FOREST    to context.getObject<ForestBiomeGenerator>(),
+            BiomeType.DESERT    to context.getObject<DesertBiomeGenerator>(),
+            BiomeType.MOUNTAINS to context.getObject<MountainBiomeGenerator>()
+        )
+
+        biomeSelector = context.getObject()
+        val noise = context.getObject<PerlinNoise>(NoiceTypes.PERLIN_WORLD)
+        noiseWarp = getNoiseDomainWarping(noise.asGenerator())
     }
 
     fun generateChunkData(chunkData: ChunkData) {
@@ -70,27 +78,8 @@ class TerrainGenerator : LaunchedEffect {
         generator.process(chunkData, localX, localZ, Pair(terrain, surface))
     }
 
-    private fun initGenerators(seed: Int) {
-        worldSeed = seed
-        val perlinNoise = PerlinNoise(seed)
-        biomeSelector = BiomeSelector(seed)
-        noiseWarp = getNoiseDomainWarping(perlinNoise.asGenerator())
-        biomeGenerators = createBiomeGenerators(perlinNoise)
-    }
-
-    private fun createBiomeGenerators(perlinNoise: PerlinNoise): Map<BiomeType, BiomeGenerator> {
-        val forest = ForestBiomeGenerator().also { it.initFromNoise(perlinNoise) }
-        val desert = DesertBiomeGenerator().also { it.initFromNoise(perlinNoise) }
-        val mountain = MountainBiomeGenerator().also { it.initFromNoise(perlinNoise) }
-        return mapOf(
-            BiomeType.FOREST to forest,
-            BiomeType.DESERT to desert,
-            BiomeType.MOUNTAINS to mountain,
-        )
-    }
-
     private fun getNoiseDomainWarping(noiceGenerator: NoiceGenerator): DomainWarping2D {
-        val domainXNoiseSettings = NoiseSettings(
+        val domainXNoiseSettings= NoiseSettings(
             noiseZoom = 0.005f,
             octaves = 1,
             persistance = 0.5f,
@@ -120,8 +109,6 @@ class TerrainGenerator : LaunchedEffect {
         const val UNDERGROUND_HEIGHT = 80
         const val WORLD_HEIGHT = 300
         const val WORLD_SURFACE = WORLD_HEIGHT / 1.5
-
-        fun createWorker(seed: Int): TerrainGenerator =
-            TerrainGenerator().apply { initGenerators(seed) }
     }
+
 }
