@@ -51,9 +51,9 @@ object DefaultWorldSetupManager: LaunchedEffect {
         //---
         context.setObject(PhysicsWorldUpdater())
         //---
-        context.setObject(ChunkWorldUpdater())
-        //---
         context.setObject(TerrainGenerator())
+        //---
+        context.setObject(ChunkWorldUpdater())
         //---
         context.setObject(InventoryManager())
     }

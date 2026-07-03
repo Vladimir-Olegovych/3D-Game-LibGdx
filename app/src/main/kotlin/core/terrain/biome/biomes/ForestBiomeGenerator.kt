@@ -35,18 +35,19 @@ class ForestBiomeGenerator : LaunchedEffect, BiomeGenerator() {
     override val startLayerHandler = SurfaceLayerHandler()
 
     override fun launch(context: Context) {
-        val perlinNoise = context.getObject<PerlinNoise>(NoiceTypes.PERLIN_WORLD)
+        initFromNoise(context.getObject(NoiceTypes.PERLIN_WORLD))
+    }
+
+    fun initFromNoise(perlinNoise: PerlinNoise) {
         val noiceGenerator = perlinNoise.asGenerator()
-
         baseDomainWarping = getSurfaceDomainWarping(noiceGenerator)
-
         startLayerHandler
             .setNext(ShadowLayerHandler())
             .setNext(UndergroundLayerHandler())
             .setNext(StructureLayerHandler(
                 seed = perlinNoise.seed,
                 structureList = listOf(
-                    TreeStructure(), RockStructure(), //TestStructure()
+                    TreeStructure(), RockStructure(),
                 )
             ))
     }

@@ -60,7 +60,10 @@ class MeshHelper: LaunchedEffect {
                                 directionType = dir.directionType,
                                 shadow = shadow,
                                 blockExists = { wx, wy, wz ->
-                                    getNeighborBlock(chunkData, chunkMap, wx, wy, wz, w, h) != BlockType.AIR
+                                    when(getNeighborBlock(chunkData, chunkMap, wx, wy, wz, w, h)) {
+                                        BlockType.AIR, BlockType.NOTHING -> false
+                                        else -> true
+                                    }
                                 }
                             )
                         }

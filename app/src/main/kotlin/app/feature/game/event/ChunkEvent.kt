@@ -10,7 +10,10 @@ sealed class ChunkEvent {
     class LoadAdditionalChunksRequest(val playerPosition: IntVector3): GameEvent()
     class OnSetBlock(val chunkData: ChunkData, val blockType: BlockType, val position: IntVector3)
     class ChunkEntitiesRequest(val generationData: WorldGenerationData): GameEvent()
-    class ChunkEntitiesResponse(val generationData: WorldGenerationData, val entities: Map<IntVector3, Int>): GameEvent()
+    class ChunkEntitiesResponse(
+        val generationData: WorldGenerationData,
+        val entities: Map<IntVector3, Int>
+    ): GameEvent()
     class OnGenerateResponse(val generationData: WorldGenerationData)
     class OnDrawResponse(val generationData: WorldGenerationData)
     class OnAcceptPendingResponse(val generationData: WorldGenerationData)
