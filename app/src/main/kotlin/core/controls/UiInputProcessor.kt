@@ -5,7 +5,7 @@ import app.feature.game.event.EventBusTypes
 import app.feature.game.event.UiEvent
 import com.badlogic.gdx.Input.Keys
 import com.badlogic.gdx.InputProcessor
-import com.gigapi.core.effects.LaunchedEffect
+import com.gigapi.effects.LaunchedEffect
 import com.gigapi.eventbus.EventBus
 import com.gigapi.general.Context
 

@@ -3,7 +3,7 @@ package app.feature.game.ui
 import com.badlogic.gdx.scenes.scene2d.Actor
 import com.badlogic.gdx.scenes.scene2d.ui.Image
 import com.badlogic.gdx.scenes.scene2d.ui.Table
-import com.gigapi.core.effects.LaunchedEffect
+import com.gigapi.effects.LaunchedEffect
 import com.gigapi.general.Context
 import com.gigapi.texture.DefaultsTextures
 import core.ui.UIGetter

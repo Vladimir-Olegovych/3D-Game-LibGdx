@@ -6,8 +6,8 @@ import com.badlogic.gdx.physics.bullet.collision.btDbvtBroadphase
 import com.badlogic.gdx.physics.bullet.collision.btDefaultCollisionConfiguration
 import com.badlogic.gdx.physics.bullet.dynamics.btDiscreteDynamicsWorld
 import com.badlogic.gdx.physics.bullet.dynamics.btSequentialImpulseConstraintSolver
-import com.gigapi.core.effects.DisposableEffect
-import com.gigapi.core.effects.LaunchedEffect
+import com.gigapi.effects.DisposableEffect
+import com.gigapi.effects.LaunchedEffect
 import com.gigapi.general.Context
 
 class PhysicsWorld: LaunchedEffect, DisposableEffect {

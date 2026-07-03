@@ -17,7 +17,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Stack
 import com.badlogic.gdx.scenes.scene2d.ui.Table
 import com.badlogic.gdx.scenes.scene2d.utils.DragAndDrop
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable
-import com.gigapi.core.effects.LaunchedEffect
+import com.gigapi.effects.LaunchedEffect
 import com.gigapi.dialogs.Dialog
 import com.gigapi.eventbus.EventBus
 import com.gigapi.eventbus.annotation.BusEvent

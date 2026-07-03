@@ -5,8 +5,8 @@ import app.feature.game.event.GameEvent
 import app.feature.game.event.InventoryEvent
 import com.badlogic.gdx.assets.AssetManager
 import com.badlogic.gdx.graphics.g2d.TextureAtlas
-import com.gigapi.core.effects.DisposableEffect
-import com.gigapi.core.effects.LaunchedEffect
+import com.gigapi.effects.DisposableEffect
+import com.gigapi.effects.LaunchedEffect
 import com.gigapi.eventbus.EventBus
 import com.gigapi.eventbus.annotation.BusEvent
 import com.gigapi.general.Context

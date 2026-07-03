@@ -8,7 +8,7 @@ import app.feature.game.ui.AimUI
 import app.feature.game.ui.InventoryUI
 import com.badlogic.gdx.InputMultiplexer
 import com.badlogic.gdx.scenes.scene2d.Stage
-import com.gigapi.core.effects.LaunchedEffect
+import com.gigapi.effects.LaunchedEffect
 import com.gigapi.eventbus.EventBus
 import com.gigapi.general.Context
 import com.gigapi.sounds.MusicPlayer

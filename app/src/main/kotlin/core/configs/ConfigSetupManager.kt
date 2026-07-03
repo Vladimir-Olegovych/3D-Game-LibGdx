@@ -1,6 +1,6 @@
 package core.configs
 
-import com.gigapi.core.effects.LaunchedEffect
+import com.gigapi.effects.LaunchedEffect
 import com.gigapi.general.Context
 import com.gigapi.storage.json.AppConfig
 import core.assets.AssetsSetupManager

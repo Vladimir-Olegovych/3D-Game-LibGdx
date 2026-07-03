@@ -1,6 +1,6 @@
 package core.terrain
 
-import com.gigapi.core.effects.LaunchedEffect
+import com.gigapi.effects.LaunchedEffect
 import com.gigapi.general.Context
 import com.gigapi.math.noice.NoiceGenerator
 import com.gigapi.math.noice.PerlinNoise

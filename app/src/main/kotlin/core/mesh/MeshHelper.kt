@@ -1,6 +1,6 @@
 package core.mesh
 
-import com.gigapi.core.effects.LaunchedEffect
+import com.gigapi.effects.LaunchedEffect
 import com.gigapi.general.Context
 import com.gigapi.math.vector.IntVector3
 import com.gigapi.mesh.RawMeshData

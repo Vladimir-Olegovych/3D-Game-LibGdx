@@ -4,8 +4,8 @@ import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.graphics.*
 import com.badlogic.gdx.graphics.glutils.ShaderProgram
 import com.badlogic.gdx.math.Vector3
-import com.gigapi.core.effects.DisposableEffect
-import com.gigapi.core.effects.LaunchedEffect
+import com.gigapi.effects.DisposableEffect
+import com.gigapi.effects.LaunchedEffect
 import com.gigapi.general.Context
 import core.defaults.CameraTypes
 import core.shaders.ShaderTypes

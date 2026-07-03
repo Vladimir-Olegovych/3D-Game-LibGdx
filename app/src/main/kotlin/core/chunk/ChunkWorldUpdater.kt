@@ -4,8 +4,8 @@ import app.feature.game.event.ChunkEvent
 import app.feature.game.event.EventBusTypes
 import app.feature.game.event.GameEvent
 import com.badlogic.gdx.math.Vector3
-import com.gigapi.core.effects.DisposableEffect
-import com.gigapi.core.effects.LaunchedEffect
+import com.gigapi.effects.DisposableEffect
+import com.gigapi.effects.LaunchedEffect
 import com.gigapi.coruntines.DeltaUpdater
 import com.gigapi.eventbus.EventBus
 import com.gigapi.eventbus.annotation.BusEvent
