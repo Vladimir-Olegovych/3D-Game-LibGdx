@@ -129,9 +129,10 @@ object WorldDataHelper {
         chunkDataMap: Map<IntVector3, ChunkData>,
         allChunkDataPositionsNeeded: List<IntVector3>
     ): List<IntVector3> {
+        val neededPositions = allChunkDataPositionsNeeded.toHashSet()
         return chunkDataMap.keys
             .filter { pos ->
-                pos !in allChunkDataPositionsNeeded
+                pos !in neededPositions
             }
             .toList()
     }
@@ -140,8 +141,9 @@ object WorldDataHelper {
         chunkMap: Map<IntVector3, MeshData>,
         allChunkPositionsNeeded: List<IntVector3>
     ): List<IntVector3> {
+        val neededPositions = allChunkPositionsNeeded.toHashSet()
         return chunkMap.keys
-            .filter { pos -> pos !in allChunkPositionsNeeded }
+            .filter { pos -> pos !in neededPositions }
             .toList()
     }
 
@@ -150,9 +152,15 @@ object WorldDataHelper {
         allChunkPositionsNeeded: List<IntVector3>,
         playerPosition: IntVector3
     ): List<IntVector3> {
+        val playerChunkPosition = chunkPositionFromBlockCoords(playerPosition)
         return allChunkPositionsNeeded
             .filter { pos -> pos !in chunkMap }
-            .sortedBy { pos -> IntVector3.dst(playerPosition, pos) }
+            .sortedBy { pos ->
+                val dx = pos.x - playerChunkPosition.x
+                val dy = pos.y - playerChunkPosition.y
+                val dz = pos.z - playerChunkPosition.z
+                dx * dx + dy * dy + dz * dz
+            }
             .toList()
     }
 
@@ -161,9 +169,15 @@ object WorldDataHelper {
         allChunkDataPositionsNeeded: List<IntVector3>,
         playerPosition: IntVector3
     ): List<IntVector3> {
+        val playerChunkPosition = chunkPositionFromBlockCoords(playerPosition)
         return allChunkDataPositionsNeeded
             .filter { pos -> pos !in chunkDataMap }
-            .sortedBy { pos -> IntVector3.dst(playerPosition, pos) }
+            .sortedBy { pos ->
+                val dx = pos.x - playerChunkPosition.x
+                val dy = pos.y - playerChunkPosition.y
+                val dz = pos.z - playerChunkPosition.z
+                dx * dx + dy * dy + dz * dz
+            }
             .toList()
     }
 

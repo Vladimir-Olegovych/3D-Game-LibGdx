@@ -26,8 +26,6 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
 import java.util.concurrent.ConcurrentHashMap
-import java.util.concurrent.ConcurrentLinkedQueue
-import kotlin.time.Duration.Companion.milliseconds
 
 class ChunkWorldUpdater : LaunchedEffect, DisposableEffect, DeltaUpdater(1 / 60F, Dispatchers.Default) {
 
@@ -40,14 +38,14 @@ class ChunkWorldUpdater : LaunchedEffect, DisposableEffect, DeltaUpdater(1 / 60F
 
     private val workerCount = Runtime.getRuntime().availableProcessors().coerceAtLeast(2)
     private val parallelismMesh = Semaphore(workerCount)
-    private val parallelismMeshStart = Semaphore(1000)
+    private val parallelismChunk = Semaphore(workerCount)
+    private val parallelismStart = Semaphore(1000)
 
     private val chunkDataPositionToEntityId = ConcurrentHashMap<IntVector3, Int>()
     private val chunkMeshPositionToEntityId = ConcurrentHashMap<IntVector3, Int>()
 
     private val chunkDataMap = ConcurrentHashMap<IntVector3, ChunkData>()
     private val meshDataMap = ConcurrentHashMap<IntVector3, MeshData>()
-    private val generateRequests = ConcurrentLinkedQueue<IntVector3>()
 
     private val removedChunkDates = ConcurrentHashMap.newKeySet<IntVector3>()
     private val removedChunkMeshes = ConcurrentHashMap.newKeySet<IntVector3>()
@@ -59,7 +57,12 @@ class ChunkWorldUpdater : LaunchedEffect, DisposableEffect, DeltaUpdater(1 / 60F
     private lateinit var terrainGenerator: TerrainGenerator
     private lateinit var mainScope: CoroutineScope
 
+    @Volatile
     private var isFirstGeneration = true
+    @Volatile
+    private var activeGenerationPosition: IntVector3? = null
+    @Volatile
+    private var queuedGenerationPosition: IntVector3? = null
 
     override fun launch(context: Context) {
         mainEventBus = context.getObject(EventBusTypes.MAIN_EVENT_BUS)
@@ -85,24 +88,20 @@ class ChunkWorldUpdater : LaunchedEffect, DisposableEffect, DeltaUpdater(1 / 60F
         chunkMeshPositionToEntityId.clear()
         meshDataMap.clear()
         chunkDataMap.clear()
+        activeGenerationPosition = null
+        queuedGenerationPosition = null
         chunkEventBus.clear()
     }
 
     @BusEvent
     fun loadAdditionalChunksRequest(event: ChunkEvent.LoadAdditionalChunksRequest) {
-        if (generateRequests.isNotEmpty() || generateRequests.contains(event.playerPosition)) return
-        generateRequests.add(event.playerPosition)
-
-        val generationData = getWorldGenerationData(event.playerPosition)
-        mainEventBus.sendEvent(ChunkEvent.ChunkEntitiesRequest(generationData))
-        for (position in generationData.chunkDataPositionsToCreate) {
-            val chunkData = ChunkData.create(position, CHUNK_SIZE, CHUNK_HEIGHT)
-            chunkData.status = ChunkStatus.GENERATION
-            chunkDataMap[position] = chunkData
-        }
-        for (position in generationData.chunkPositionsToCreate) {
-            val meshData = MeshData(null)
-            meshDataMap[position] = meshData
+        synchronized(this) {
+            if (event.playerPosition == activeGenerationPosition || event.playerPosition == queuedGenerationPosition) return
+            if (activeGenerationPosition != null) {
+                queuedGenerationPosition = event.playerPosition
+                return
+            }
+            startGeneration(event.playerPosition)
         }
     }
 
@@ -151,7 +150,13 @@ class ChunkWorldUpdater : LaunchedEffect, DisposableEffect, DeltaUpdater(1 / 60F
         lifecycleScope.launch(Dispatchers.Default) {
             val dataJobs = coroutineScope {
                 event.generationData.chunkDataPositionsToCreate.map { position ->
-                    async(Dispatchers.Default) { generateChunkData(position) }
+                    async(Dispatchers.Default) {
+                        if (isFirstGeneration) parallelismStart.withPermit {
+                            generateChunkData(position)
+                        } else parallelismChunk.withPermit {
+                            generateChunkData(position)
+                        }
+                    }
                 }
             }
             dataJobs.awaitAll()
@@ -187,7 +192,6 @@ class ChunkWorldUpdater : LaunchedEffect, DisposableEffect, DeltaUpdater(1 / 60F
 
             val meshJobs = coroutineScope {
                 affectedExistingChunks.map { chunkPos ->
-                    delay(500.milliseconds)
                     async(Dispatchers.Default) {
                         parallelismMesh.withPermit {
                             val updateChunkData = chunkDataMap[chunkPos] ?: return@async
@@ -214,7 +218,7 @@ class ChunkWorldUpdater : LaunchedEffect, DisposableEffect, DeltaUpdater(1 / 60F
             val meshJobs = coroutineScope {
                 event.generationData.chunkPositionsToCreate.map { position ->
                     async(Dispatchers.Default) {
-                        if (isFirstGeneration) parallelismMeshStart.withPermit {
+                        if (isFirstGeneration) parallelismStart.withPermit {
                             drawChunkData(position)
                         } else parallelismMesh.withPermit {
                             drawChunkData(position)
@@ -235,9 +239,22 @@ class ChunkWorldUpdater : LaunchedEffect, DisposableEffect, DeltaUpdater(1 / 60F
             mainEventBus.sendEvent(ChunkEvent.GameWorldStarted(position))
             isFirstGeneration = false
         }
-        generateRequests.remove(event.generationData.playerPosition)
         removedChunkDates.clear()
         removedChunkMeshes.clear()
+
+        val nextPosition = synchronized(this) {
+            activeGenerationPosition = null
+            queuedGenerationPosition?.also { queuedGenerationPosition = null }
+        }
+        if (nextPosition != null && nextPosition != event.generationData.playerPosition) {
+            synchronized(this) {
+                if (activeGenerationPosition == null) {
+                    startGeneration(nextPosition)
+                } else {
+                    queuedGenerationPosition = nextPosition
+                }
+            }
+        }
     }
 
     @BusEvent
@@ -386,6 +403,21 @@ class ChunkWorldUpdater : LaunchedEffect, DisposableEffect, DeltaUpdater(1 / 60F
             chunkPositionsToRemove = chunkPositionsToRemove,
             chunkDataToRemove = dataToRemove
         )
+    }
+
+    private fun startGeneration(playerPosition: IntVector3) {
+        activeGenerationPosition = playerPosition
+        val generationData = getWorldGenerationData(playerPosition)
+        mainEventBus.sendEvent(ChunkEvent.ChunkEntitiesRequest(generationData))
+        for (position in generationData.chunkDataPositionsToCreate) {
+            val chunkData = ChunkData.create(position, CHUNK_SIZE, CHUNK_HEIGHT)
+            chunkData.status = ChunkStatus.GENERATION
+            chunkDataMap[position] = chunkData
+        }
+        for (position in generationData.chunkPositionsToCreate) {
+            val meshData = MeshData(null)
+            meshDataMap[position] = meshData
+        }
     }
 
 }
