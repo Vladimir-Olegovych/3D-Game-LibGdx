@@ -11,6 +11,7 @@ import com.gigapi.eventbus.EventBus
 import com.gigapi.eventbus.annotation.BusEvent
 import com.gigapi.general.Context
 import core.assets.SkinID
+import core.blocks.BlockDataManager
 import core.blocks.BlockType
 
 class InventoryManager(
@@ -21,29 +22,28 @@ class InventoryManager(
 
     private val inventorySlots = Array<InventoryItem?>(inventorySize) { null }
 
+    private lateinit var blockDataManager: BlockDataManager
     private lateinit var assetManager: AssetManager
     private lateinit var eventBus: EventBus
 
     override fun launch(context: Context) {
+        blockDataManager = context.getObject()
         assetManager = context.getObject()
         eventBus = context.getObject(EventBusTypes.MAIN_EVENT_BUS)
         eventBus.registerHandler(this)
-
-        for (i in 0 until 8) {
-            addItem(testItem)
-        }
     }
 
     @BusEvent
     fun onBlockRemoved(event: GameEvent.OnBlockRemoved) {
         val blockType = event.blockType
         if (blockType == BlockType.AIR) return
+        val blockData = blockDataManager.getBlockTextureDataMap()[blockType]?: return
         val item = Item(
             name = blockType.name,
             description = "Block",
             skinID = SkinID.BLOCK,
-            regionName = blockType.regionName,
-            maxStack = 8,
+            regionName = blockData.regionNameSide,
+            maxStack = 64,
             stackable = true
         )
         addItem(item)

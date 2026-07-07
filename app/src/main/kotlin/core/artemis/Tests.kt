@@ -10,9 +10,11 @@ import com.badlogic.gdx.assets.AssetManager
 import com.badlogic.gdx.graphics.g2d.TextureAtlas
 import com.badlogic.gdx.math.Vector3
 import com.gigapi.eventbus.EventBus
+import com.gigapi.mesh.blender.BlenderParser
 import core.assets.SkinID
 import core.blocks.BlockDataManager
 import core.blocks.BlockType
+import core.mesh.MeshHelper
 import core.mesh.MeshUtils
 
 fun World.startTest100Box() {
@@ -27,7 +29,7 @@ fun World.startTest100Box() {
 
     val size = 2F
     val m = size * 2.1F
-    val playerPhysicalModel = MeshUtils.createBoxModel(size, size)
+    val playerPhysicalModel = MeshUtils.createHitboxModel(size, size)
 
     val rawBoxMesh = MeshUtils.createBoxMeshData(blockDataManager, BlockType.STONE, size)
 
@@ -36,7 +38,7 @@ fun World.startTest100Box() {
             for (z in 0 .. 5) {
                 val entityId = this.create()
 
-                val meshData = rawBoxMesh.createMeshData()
+                val meshData = rawBoxMesh.createMeshData(BlenderParser.modelMeshParams)
                 val radius = MeshUtils.getBoundRadius(meshData.mesh)
                 boundMapper.create(entityId).boundingRadius = radius
                 transformMapper.create(entityId)

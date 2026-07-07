@@ -199,7 +199,7 @@ class ChunkWorldUpdater : LaunchedEffect, DisposableEffect, DeltaUpdater(1 / 60F
 
                             val rawMeshData = meshHelper.createMesh(chunkDataMap, updateChunkData)
                             val meshData = withContext(mainScope.coroutineContext) {
-                                rawMeshData.createMeshData()
+                                rawMeshData.createMeshData(MeshHelper.chunkMeshParams)
                             }
                             meshDataMap[chunkPos] = meshData
                             physicsEventBus.sendEvent(GameEvent.OnUpdateChunkData(updateChunkEntityId, updateChunkData))
@@ -276,7 +276,7 @@ class ChunkWorldUpdater : LaunchedEffect, DisposableEffect, DeltaUpdater(1 / 60F
                 val rawMeshData = meshHelper.createMesh(chunkDataMap, updateChunkData)
 
                 val meshData = mainScope.async {
-                    rawMeshData.createMeshData()
+                    rawMeshData.createMeshData(MeshHelper.chunkMeshParams)
                 }.await()
                 meshDataMap[chunkPos] = meshData
                 physicsEventBus.sendEvent(GameEvent.OnUpdateChunkData(updateChunkEntityId, updateChunkData))
@@ -377,7 +377,7 @@ class ChunkWorldUpdater : LaunchedEffect, DisposableEffect, DeltaUpdater(1 / 60F
         if (rawMeshData.isEmpty()) return
 
         mainScope.async {
-            val meshData = rawMeshData.createMeshData()
+            val meshData = rawMeshData.createMeshData(MeshHelper.chunkMeshParams)
             meshDataMap[position] = meshData
             mainEventBus.sendEvent(GameEvent.OnCreateChunkMeshData(meshEntityId, meshData))
             physicsEventBus.sendEvent(GameEvent.OnCreateChunkRigidBody(meshEntityId, chunkData))

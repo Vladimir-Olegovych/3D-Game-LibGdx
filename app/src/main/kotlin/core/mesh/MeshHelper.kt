@@ -1,8 +1,11 @@
 package core.mesh
 
+import com.badlogic.gdx.graphics.VertexAttribute
+import com.badlogic.gdx.graphics.VertexAttributes
 import com.gigapi.effects.LaunchedEffect
 import com.gigapi.general.Context
 import com.gigapi.math.vector.IntVector3
+import com.gigapi.mesh.MeshParams
 import com.gigapi.mesh.RawMeshData
 import core.blocks.BlockDataManager
 import core.blocks.BlockType
@@ -12,12 +15,22 @@ class MeshHelper: LaunchedEffect {
 
     companion object {
         val directions = listOf(
-            Direction( 1, 0, 0, VertexAttribute.Normal(1F, 0f, 0f), DirectionType.RIGHT),
-            Direction(-1, 0, 0, VertexAttribute.Normal(-1F, 0f, 0f), DirectionType.LEFT),
-            Direction( 0, 1, 0, VertexAttribute.Normal(0f, 1F, 0f), DirectionType.UP),
-            Direction( 0,-1, 0, VertexAttribute.Normal(0f,-1F, 0f), DirectionType.DOWN),
-            Direction( 0, 0, 1, VertexAttribute.Normal(0f, 0f, 1F), DirectionType.FRONT),
-            Direction( 0, 0,-1, VertexAttribute.Normal(0f, 0f,-1F), DirectionType.BACK)
+            Direction( 1, 0, 0, VertexAttribute3.Normal(1F, 0f, 0f), DirectionType.RIGHT),
+            Direction(-1, 0, 0, VertexAttribute3.Normal(-1F, 0f, 0f), DirectionType.LEFT),
+            Direction( 0, 1, 0, VertexAttribute3.Normal(0f, 1F, 0f), DirectionType.UP),
+            Direction( 0,-1, 0, VertexAttribute3.Normal(0f,-1F, 0f), DirectionType.DOWN),
+            Direction( 0, 0, 1, VertexAttribute3.Normal(0f, 0f, 1F), DirectionType.FRONT),
+            Direction( 0, 0,-1, VertexAttribute3.Normal(0f, 0f,-1F), DirectionType.BACK)
+        )
+        val chunkMeshParams = MeshParams(
+            attributes = arrayOf(
+                VertexAttribute(VertexAttributes.Usage.Position, 3, "a_Position"),
+                VertexAttribute(VertexAttributes.Usage.Normal, 3, "a_Normal"),
+                VertexAttribute(VertexAttributes.Usage.TextureCoordinates, 2, "a_TexCoord"),
+                VertexAttribute(VertexAttributes.Usage.Generic, 1, "a_AO"),
+                VertexAttribute(VertexAttributes.Usage.Generic, 1, "a_Shadow")
+            ),
+            stride = 10
         )
     }
 
@@ -48,25 +61,32 @@ class MeshHelper: LaunchedEffect {
                             chunkData, chunkMap,
                             nx, ny, nz, w, h
                         )
-                        if (neighborBlock == BlockType.AIR) {
-                            val shadow = getNeighborShadow(chunkData, chunkMap, nx, ny, nz, w, h)
-                            MeshUtils.addFace(
-                                blockDataManager = blockDataManager,
-                                verticesList = verticesList,
-                                indicesList = indicesList,
-                                x, y, z,
-                                normal = dir.normal,
-                                blockType = block,
-                                directionType = dir.directionType,
-                                shadow = shadow,
-                                blockExists = { wx, wy, wz ->
-                                    when(getNeighborBlock(chunkData, chunkMap, wx, wy, wz, w, h)) {
-                                        BlockType.AIR, BlockType.NOTHING -> false
-                                        else -> true
-                                    }
+                        val blockData = blockDataManager.getBlockTextureDataMap()[block] ?: continue
+                        val neighborBlockData = blockDataManager.getBlockTextureDataMap()[neighborBlock]
+
+                        val shouldRenderFace =
+                            neighborBlock == BlockType.AIR ||
+                            neighborBlock == BlockType.NOTHING ||
+                            blockData.generateAllSides || neighborBlockData?.generateAllSides == true
+                        if (!shouldRenderFace) continue
+
+                        val shadow = getNeighborShadow(chunkData, chunkMap, nx, ny, nz, w, h)
+                        MeshUtils.addChunkFace(
+                            blockDataManager = blockDataManager,
+                            verticesList = verticesList,
+                            indicesList = indicesList,
+                            x, y, z,
+                            normal = dir.normal,
+                            blockType = block,
+                            directionType = dir.directionType,
+                            shadow = shadow,
+                            blockExists = { wx, wy, wz ->
+                                when(getNeighborBlock(chunkData, chunkMap, wx, wy, wz, w, h)) {
+                                    BlockType.AIR, BlockType.NOTHING -> false
+                                    else -> true
                                 }
-                            )
-                        }
+                            }
+                        )
                     }
                 }
             }

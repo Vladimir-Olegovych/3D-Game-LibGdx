@@ -13,16 +13,24 @@ uniform sampler2D u_texture;
 uniform vec3 objectColor;
 uniform vec3 fogColor;
 uniform float u_useTexture;
-uniform float u_modelAO;
+uniform float u_useAO;
+uniform float u_useShadow;
 
 void main() {
-    vec3 texColor = texture2D(u_texture, v_TexCoord).rgb;
+    vec4 texSample = texture2D(u_texture, v_TexCoord);
+    if (u_useTexture > 0.0 && texSample.a <= 0.001) {
+        discard;
+    }
+
+    vec3 texColor = texSample.rgb;
     vec3 albedo   = mix(objectColor, texColor, u_useTexture);
 
-    float ambient  = 0.05;
-    float shadow = v_Shadow;
-    float ao       = 1.0;
-    if (u_modelAO > 0.0) { ao = v_AO * u_modelAO; }
+    float ambient = 0.05;
+    float shadow  = 1.0;
+    float ao      = 1.0;
+
+    if (u_useAO > 0.0)     { ao     = v_AO; }
+    if (u_useShadow > 0.0) { shadow = v_Shadow; }
 
     float dirLight;
     if      (v_Normal.y >  0.5) dirLight = 1.00;
@@ -35,5 +43,6 @@ void main() {
     vec3 litColor   = albedo * clamp(lit, 0.0, 1.5);
     vec3 finalColor = mix(fogColor, litColor, 1.0 - v_FogFactor);
 
-    gl_FragColor = vec4(finalColor, 1.0);
+    float outAlpha = mix(1.0, texSample.a, u_useTexture);
+    gl_FragColor = vec4(finalColor, outAlpha);
 }

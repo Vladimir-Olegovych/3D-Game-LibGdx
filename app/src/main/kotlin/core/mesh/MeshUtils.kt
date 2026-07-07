@@ -5,16 +5,17 @@ import com.badlogic.gdx.math.Vector2
 import com.badlogic.gdx.math.Vector3
 import com.badlogic.gdx.math.collision.BoundingBox
 import com.gigapi.mesh.RawMeshData
+import com.gigapi.mesh.blender.BlenderParser
 import core.blocks.BlockDataManager
 import core.blocks.BlockType
 
 data class Direction(
     val dx: Int, val dy: Int, val dz: Int,
-    val normal: VertexAttribute.Normal,
+    val normal: VertexAttribute3.Normal,
     val directionType: DirectionType
 )
 
-class VertexAttribute {
+class VertexAttribute3 {
     data class Normal(val x: Float, val y: Float, val z: Float)
 }
 
@@ -32,50 +33,50 @@ object MeshUtils {
         return boundingBox.getDimensions(Vector3()).len()
     }
 
-    fun createBoxModel(width: Float, height: Float, depth: Float = width): RawMeshData {
+    fun createHitboxModel(width: Float, height: Float, depth: Float = width): RawMeshData {
         val halfW = width / 2f
         val halfH = height / 2f
         val halfD = depth / 2f
 
         val vertices = floatArrayOf(
-            -halfW, -halfH,  halfD,  0f, 0f, 1f,  // 0
-            halfW, -halfH,  halfD,  0f, 0f, 1f,  // 1
-            halfW,  halfH,  halfD,  0f, 0f, 1f,  // 2
-            -halfW,  halfH,  halfD,  0f, 0f, 1f,  // 3
+            -halfW, -halfH,  halfD,  0f, 0f, 1f,
+            halfW, -halfH,  halfD,  0f, 0f, 1f,
+            halfW,  halfH,  halfD,  0f, 0f, 1f,
+            -halfW,  halfH,  halfD,  0f, 0f, 1f,
 
-            -halfW, -halfH, -halfD,  0f, 0f, -1f, // 4
-            -halfW,  halfH, -halfD,  0f, 0f, -1f, // 5
-            halfW,  halfH, -halfD,  0f, 0f, -1f, // 6
-            halfW, -halfH, -halfD,  0f, 0f, -1f, // 7
+            -halfW, -halfH, -halfD,  0f, 0f, -1f,
+            -halfW,  halfH, -halfD,  0f, 0f, -1f,
+            halfW,  halfH, -halfD,  0f, 0f, -1f,
+            halfW, -halfH, -halfD,  0f, 0f, -1f,
 
-            -halfW, -halfH, -halfD,  -1f, 0f, 0f, // 8
-            -halfW, -halfH,  halfD,  -1f, 0f, 0f, // 9
-            -halfW,  halfH,  halfD,  -1f, 0f, 0f, // 10
-            -halfW,  halfH, -halfD,  -1f, 0f, 0f, // 11
+            -halfW, -halfH, -halfD,  -1f, 0f, 0f,
+            -halfW, -halfH,  halfD,  -1f, 0f, 0f,
+            -halfW,  halfH,  halfD,  -1f, 0f, 0f,
+            -halfW,  halfH, -halfD,  -1f, 0f, 0f,
 
-            halfW, -halfH,  halfD,   1f, 0f, 0f,  // 12
-            halfW, -halfH, -halfD,   1f, 0f, 0f,  // 13
-            halfW,  halfH, -halfD,   1f, 0f, 0f,  // 14
-            halfW,  halfH,  halfD,   1f, 0f, 0f,  // 15
+            halfW, -halfH,  halfD,   1f, 0f, 0f,
+            halfW, -halfH, -halfD,   1f, 0f, 0f,
+            halfW,  halfH, -halfD,   1f, 0f, 0f,
+            halfW,  halfH,  halfD,   1f, 0f, 0f,
 
-            -halfW,  halfH,  halfD,   0f, 1f, 0f,  // 16
-            halfW,  halfH,  halfD,   0f, 1f, 0f,  // 17
-            halfW,  halfH, -halfD,   0f, 1f, 0f,  // 18
-            -halfW,  halfH, -halfD,   0f, 1f, 0f,  // 19
+            -halfW,  halfH,  halfD,   0f, 1f, 0f,
+            halfW,  halfH,  halfD,   0f, 1f, 0f,
+            halfW,  halfH, -halfD,   0f, 1f, 0f,
+            -halfW,  halfH, -halfD,   0f, 1f, 0f,
 
-            -halfW, -halfH, -halfD,   0f, -1f, 0f, // 20
-            -halfW, -halfH,  halfD,   0f, -1f, 0f, // 21
-            halfW, -halfH,  halfD,   0f, -1f, 0f, // 22
-            halfW, -halfH, -halfD,   0f, -1f, 0f  // 23
+            -halfW, -halfH, -halfD,   0f, -1f, 0f,
+            -halfW, -halfH,  halfD,   0f, -1f, 0f,
+            halfW, -halfH,  halfD,   0f, -1f, 0f,
+            halfW, -halfH, -halfD,   0f, -1f, 0f
         )
 
         val indices = shortArrayOf(
-            0, 1, 2,     0, 2, 3,      // передняя
-            4, 5, 6,     4, 6, 7,      // задняя
-            8, 9, 10,    8, 10, 11,    // левая
-            12, 13, 14,  12, 14, 15,   // правая
-            16, 17, 18,  16, 18, 19,   // верхняя
-            20, 22, 21,  20, 23, 22    // нижняя
+            0, 1, 2,     0, 2, 3,
+            4, 5, 6,     4, 6, 7,
+            8, 9, 10,    8, 10, 11,
+            12, 13, 14,  12, 14, 15,
+            16, 17, 18,  16, 18, 19,
+            20, 22, 21,  20, 23, 22
         )
 
         return RawMeshData(vertices, indices)
@@ -90,16 +91,16 @@ object MeshUtils {
         val indicesList = ArrayList<Short>()
 
         val directions = listOf(
-            Direction( 1, 0, 0, VertexAttribute.Normal(1f, 0f, 0f), DirectionType.RIGHT),
-            Direction(-1, 0, 0, VertexAttribute.Normal(-1f, 0f, 0f), DirectionType.LEFT),
-            Direction( 0, 1, 0, VertexAttribute.Normal(0f, 1f, 0f), DirectionType.UP),
-            Direction( 0,-1, 0, VertexAttribute.Normal(0f,-1f, 0f), DirectionType.DOWN),
-            Direction( 0, 0, 1, VertexAttribute.Normal(0f, 0f, 1f), DirectionType.FRONT),
-            Direction( 0, 0,-1, VertexAttribute.Normal(0f, 0f,-1f), DirectionType.BACK)
+            Direction( 1, 0, 0, VertexAttribute3.Normal(1f, 0f, 0f), DirectionType.RIGHT),
+            Direction(-1, 0, 0, VertexAttribute3.Normal(-1f, 0f, 0f), DirectionType.LEFT),
+            Direction( 0, 1, 0, VertexAttribute3.Normal(0f, 1f, 0f), DirectionType.UP),
+            Direction( 0,-1, 0, VertexAttribute3.Normal(0f,-1f, 0f), DirectionType.DOWN),
+            Direction( 0, 0, 1, VertexAttribute3.Normal(0f, 0f, 1f), DirectionType.FRONT),
+            Direction( 0, 0,-1, VertexAttribute3.Normal(0f, 0f,-1f), DirectionType.BACK)
         )
 
         for (dir in directions) {
-            addFaceSingle(
+            addModelFace(
                 blockDataManager = blockDataManager,
                 verticesList = verticesList,
                 indicesList = indicesList,
@@ -116,11 +117,11 @@ object MeshUtils {
         )
     }
 
-    fun addFaceSingle(
+    fun addModelFace(
         blockDataManager: BlockDataManager,
         verticesList: ArrayList<Float>,
         indicesList: ArrayList<Short>,
-        normal: VertexAttribute.Normal,
+        normal: VertexAttribute3.Normal,
         blockType: BlockType,
         directionType: DirectionType,
         size: Float
@@ -170,7 +171,7 @@ object MeshUtils {
         }
 
         val uvs = blockDataManager.faceUVs(directionType, blockType)
-        val baseIndex = (verticesList.size / RawMeshData.STRIDE).toShort()
+        val baseIndex = (verticesList.size / BlenderParser.modelMeshParams.stride).toShort()
 
         for (i in quadVertices.indices) {
             val v = quadVertices[i]
@@ -183,8 +184,6 @@ object MeshUtils {
             verticesList.add(nz)
             verticesList.add(uv.x)     // u
             verticesList.add(uv.y)     // v
-            verticesList.add(0f)
-            verticesList.add(1f)
         }
 
         indicesList.add(baseIndex)
@@ -195,12 +194,12 @@ object MeshUtils {
         indicesList.add((baseIndex + 3).toShort())
     }
 
-    fun addFace(
+    fun addChunkFace(
         blockDataManager: BlockDataManager,
         verticesList: ArrayList<Float>,
         indicesList: ArrayList<Short>,
         bx: Int, by: Int, bz: Int,
-        normal: VertexAttribute.Normal,
+        normal: VertexAttribute3.Normal,
         blockType: BlockType,
         directionType: DirectionType,
         shadow: Float,
@@ -259,7 +258,7 @@ object MeshUtils {
 
         val uvs = blockDataManager.faceUVs(directionType, blockType)
 
-        val baseIndex = (verticesList.size / RawMeshData.STRIDE).toShort()
+        val baseIndex = (verticesList.size / MeshHelper.chunkMeshParams.stride).toShort()
 
         for (i in quadVertices.indices) {
             val v = quadVertices[i]
@@ -335,7 +334,7 @@ object MeshUtils {
         )
 
         val flip = ao[0] + ao[2] < ao[1] + ao[3]
-        val baseIndex = (verticesList.size / RawMeshData.STRIDE).toShort()
+        val baseIndex = (verticesList.size / MeshHelper.chunkMeshParams.stride).toShort()
 
         for (i in 0 until 4) {
             val p = positions[i]

@@ -10,10 +10,3 @@ data class Item(
     val maxStack: Int = 4,
     val stackable: Boolean = true
 )
-
-val testItem = Item(
-    name = "Test Item",
-    description = "Test description",
-    skinID = SkinID.BLOCK,
-    regionName = "brick_red",
-)

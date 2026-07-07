@@ -50,7 +50,7 @@ class WorldSystem: BaseSystem() {
         }
 
          */
-        val playerPhysicalModel = MeshUtils.createBoxModel(1F, 1.8F)
+        val playerPhysicalModel = MeshUtils.createHitboxModel(1F, 1.8F)
 
         linearMoveMapper.create(playerEntityId).ignoreYLinear = true
         forceMoveMapper.create(playerEntityId)

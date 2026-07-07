@@ -1,101 +1,51 @@
 {
-  "textureSizeX" : 0.1,
-  "textureSizeY" : 0.1,
   "textureDataList" : [ {
     "blockType" : "GRASS",
-    "up" : {
-      "x" : 6,
-      "y" : 1
-    },
-    "down" : {
-      "x" : 7,
-      "y" : 5
-    },
-    "side" : {
-      "x" : 7,
-      "y" : 4
-    },
+    "regionNameUp" : "tile_grass_block_top",
+    "regionNameSide" : "tile_grass_block_side",
+    "regionNameDown" : "tile_dirt_block",
     "solid" : true,
-    "generatesCollider" : true
+    "generateAllSides" : false,
+    "generateCollider" : true
   }, {
     "blockType" : "DIRT",
-    "up" : {
-      "x" : 7,
-      "y" : 5
-    },
-    "down" : {
-      "x" : 7,
-      "y" : 5
-    },
-    "side" : {
-      "x" : 7,
-      "y" : 5
-    },
+    "regionNameUp" : "tile_dirt_block",
+    "regionNameSide" : "tile_dirt_block",
+    "regionNameDown" : "tile_dirt_block",
     "solid" : true,
-    "generatesCollider" : true
+    "generateAllSides" : false,
+    "generateCollider" : true
   }, {
     "blockType" : "STONE",
-    "up" : {
-      "x" : 3,
-      "y" : 4
-    },
-    "down" : {
-      "x" : 3,
-      "y" : 4
-    },
-    "side" : {
-      "x" : 3,
-      "y" : 4
-    },
+    "regionNameUp" : "tile_stone_block",
+    "regionNameSide" : "tile_stone_block",
+    "regionNameDown" : "tile_stone_block",
     "solid" : true,
-    "generatesCollider" : true
+    "generateAllSides" : false,
+    "generateCollider" : true
   }, {
     "blockType" : "SAND",
-    "up" : {
-      "x" : 3,
-      "y" : 6
-    },
-    "down" : {
-      "x" : 3,
-      "y" : 6
-    },
-    "side" : {
-      "x" : 3,
-      "y" : 6
-    },
+    "regionNameUp" : "tile_sand_block",
+    "regionNameSide" : "tile_sand_block",
+    "regionNameDown" : "tile_sand_block",
     "solid" : true,
-    "generatesCollider" : true
+    "generateAllSides" : false,
+    "generateCollider" : true
   }, {
     "blockType" : "WOOD",
-    "up" : {
-      "x" : 0,
-      "y" : 9
-    },
-    "down" : {
-      "x" : 0,
-      "y" : 9
-    },
-    "side" : {
-      "x" : 1,
-      "y" : 0
-    },
+    "regionNameUp" : "tile_oak_wood_top",
+    "regionNameSide" : "tile_oak_wood_side",
+    "regionNameDown" : "tile_oak_wood_top",
     "solid" : true,
-    "generatesCollider" : true
+    "generateAllSides" : false,
+    "generateCollider" : true
   }, {
     "blockType" : "LEAVES",
-    "up" : {
-      "x" : 8,
-      "y" : 0
-    },
-    "down" : {
-      "x" : 8,
-      "y" : 0
-    },
-    "side" : {
-      "x" : 8,
-      "y" : 0
-    },
+    "regionNameUp" : "tile_oak_wood_leaves",
+    "regionNameSide" : "tile_oak_wood_leaves",
+    "regionNameDown" : "tile_oak_wood_leaves",
     "solid" : true,
-    "generatesCollider" : true
+    "generateAllSides" : true,
+    "generateCollider" : true
   } ]
 }

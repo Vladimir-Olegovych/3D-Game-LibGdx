@@ -26,15 +26,15 @@ class GreedyMesher(
     enum class FaceDirection(
         val axis: Int,
         val positive: Boolean,
-        val normal: VertexAttribute.Normal,
+        val normal: VertexAttribute3.Normal,
         val directionType: DirectionType,
     ) {
-        POS_X(0, true, VertexAttribute.Normal(1f, 0f, 0f), DirectionType.RIGHT),
-        NEG_X(0, false, VertexAttribute.Normal(-1f, 0f, 0f), DirectionType.LEFT),
-        POS_Y(1, true, VertexAttribute.Normal(0f, 1f, 0f), DirectionType.UP),
-        NEG_Y(1, false, VertexAttribute.Normal(0f, -1f, 0f), DirectionType.DOWN),
-        POS_Z(2, true, VertexAttribute.Normal(0f, 0f, 1f), DirectionType.FRONT),
-        NEG_Z(2, false, VertexAttribute.Normal(0f, 0f, -1f), DirectionType.BACK),
+        POS_X(0, true, VertexAttribute3.Normal(1f, 0f, 0f), DirectionType.RIGHT),
+        NEG_X(0, false, VertexAttribute3.Normal(-1f, 0f, 0f), DirectionType.LEFT),
+        POS_Y(1, true, VertexAttribute3.Normal(0f, 1f, 0f), DirectionType.UP),
+        NEG_Y(1, false, VertexAttribute3.Normal(0f, -1f, 0f), DirectionType.DOWN),
+        POS_Z(2, true, VertexAttribute3.Normal(0f, 0f, 1f), DirectionType.FRONT),
+        NEG_Z(2, false, VertexAttribute3.Normal(0f, 0f, -1f), DirectionType.BACK),
     }
 
     fun build(

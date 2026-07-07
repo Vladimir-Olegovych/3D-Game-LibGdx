@@ -6,7 +6,6 @@ import com.artemis.annotations.One
 import com.artemis.annotations.Wire
 import com.artemis.systems.IteratingSystem
 import com.badlogic.gdx.Gdx
-import com.badlogic.gdx.assets.AssetManager
 import com.badlogic.gdx.graphics.GL20
 import com.badlogic.gdx.graphics.PerspectiveCamera
 import com.badlogic.gdx.graphics.glutils.ShaderProgram
@@ -29,6 +28,7 @@ class DrawSystem: IteratingSystem() {
     private lateinit var transformMapper: ComponentMapper<TransformComponent>
     private lateinit var staticMapper: ComponentMapper<StaticComponent>
     private lateinit var aoMapper: ComponentMapper<AOComponent>
+    private lateinit var shadowMapper: ComponentMapper<ShadowComponent>
 
     @Wire(name = CameraTypes.GL_3D)
     private lateinit var camera: PerspectiveCamera
@@ -74,7 +74,8 @@ class DrawSystem: IteratingSystem() {
     override fun process(entityId: Int) {
         val transformComponent = transformMapper[entityId]?: return
         val transform = transformComponent.transform ?: return
-        val aoCount = aoMapper[entityId]?.count
+        val aoComponent = aoMapper[entityId]
+        val shadowComponent = shadowMapper[entityId]
         val boundingRadius = boundMapper[entityId]?.boundingRadius
 
         if(boundingRadius != null) {
@@ -83,22 +84,19 @@ class DrawSystem: IteratingSystem() {
 
             if (toObject.dot(camera.direction) + boundingRadius < 0f) return
         }
-
-        /*
-        if (staticMapper[entityId] != null) {
-            val interpolated = transformComponent.getInterpolated()?: return
-            simpleShader.setUniformMatrix("transform", interpolated)
-        } else {
-            simpleShader.setUniformMatrix("transform", transform)
-        }
-         */
         simpleShader.setUniformMatrix("transform", transform)
 
 
-        if (aoCount != null) {
-            simpleShader.setUniformf("u_modelAO", aoCount)
+        if (aoComponent != null) {
+            simpleShader.setUniformf("u_useAO", 1f)
         } else {
-            simpleShader.setUniformf("u_modelAO", 0f)
+            simpleShader.setUniformf("u_useAO", 0f)
+        }
+
+        if (shadowComponent != null) {
+            simpleShader.setUniformf("u_useShadow", 1f)
+        } else {
+            simpleShader.setUniformf("u_useShadow", 0f)
         }
 
         processModelMesh(entityId)

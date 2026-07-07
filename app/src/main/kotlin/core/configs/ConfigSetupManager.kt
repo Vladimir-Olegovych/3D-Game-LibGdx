@@ -12,11 +12,7 @@ object ConfigSetupManager: LaunchedEffect {
             customKey = ConfigTypes.BLOCK_DATA_SO,
             AppConfig(
                 configName = "${AssetsSetupManager.ASSETS_PATH}/configs/${ConfigTypes.BLOCK_DATA_SO}",
-                default = BlockDataSO(
-                    textureSizeX = 0.1f,
-                    textureSizeY = 0.1f,
-                    emptyList()
-                )
+                default = BlockDataSO(emptyList())
             )
         )
         //---

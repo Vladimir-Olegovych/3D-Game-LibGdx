@@ -101,7 +101,7 @@ class PlayerInputProcessor: LaunchedEffect, InputProcessor {
                 requestId = RayCastTypes.CHUNK_RAY_CAST,
                 from = camera.position.cpy(),
                 direction = camera.direction.cpy(),
-                maxDistance = 10f
+                maxDistance = 5f
             )
         )
     }

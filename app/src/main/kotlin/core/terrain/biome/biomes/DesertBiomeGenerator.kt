@@ -21,7 +21,7 @@ import core.terrain.layers.UndergroundLayerHandler
 class DesertBiomeGenerator : LaunchedEffect, BiomeGenerator() {
 
     private val baseNoiseSettings = NoiseSettings(
-        noiseZoom = 0.01f,
+        noiseZoom = 0.005f,
         octaves = 5,
         persistance = 0.5f,
         redistributionModifier = 1.6f,
