@@ -4,6 +4,7 @@ import app.feature.game.dialogs.InventoryDialog
 import app.feature.game.dialogs.PauseDialog
 import app.feature.game.event.UiEvent
 import app.feature.game.ui.AimUI
+import app.feature.game.ui.FpsUI
 import app.feature.game.ui.InventoryUI
 import com.artemis.BaseSystem
 import com.artemis.annotations.Wire
@@ -45,9 +46,12 @@ class UISystem: BaseSystem() {
     private lateinit var inventoryUI: InventoryUI
     @Wire
     private lateinit var aimUI: AimUI
+    @Wire
+    private lateinit var fpsUI: FpsUI
 
     override fun initialize() {
         stage.addActor(aimUI.getUI())
+        stage.addActor(fpsUI.getUI())
         stage.addActor(inventoryUI.getUI())
     }
 
@@ -84,6 +88,8 @@ class UISystem: BaseSystem() {
     }
 
     override fun processSystem() {
+        fpsUI.update(world.delta)
+
         stage.act(world.delta)
         viewport.apply()
         stage.draw()

@@ -5,6 +5,7 @@ import app.feature.game.dialogs.PauseDialog
 import app.feature.game.ecs.systems.*
 import app.feature.game.event.EventBusTypes
 import app.feature.game.ui.AimUI
+import app.feature.game.ui.FpsUI
 import app.feature.game.ui.InventoryUI
 import com.badlogic.gdx.InputMultiplexer
 import com.badlogic.gdx.scenes.scene2d.Stage
@@ -47,6 +48,7 @@ object DefaultWorldSetupManager: LaunchedEffect {
         context.setObject(InventoryDialog())
         //UI
         context.setObject(AimUI())
+        context.setObject(FpsUI())
         context.setObject(InventoryUI())
         //---
         context.setObject(PhysicsWorldUpdater())
