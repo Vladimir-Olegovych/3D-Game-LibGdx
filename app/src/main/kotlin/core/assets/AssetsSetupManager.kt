@@ -13,7 +13,7 @@ import core.shaders.ShaderTypes
 
 object AssetsSetupManager: LaunchedEffect {
 
-    const val ASSETS_PATH = "app/src/main/resources"
+    const val ASSETS_PATH = "resources"
 
     override fun launch(context: Context) {
         val assetManager = AssetManager()

@@ -5,22 +5,22 @@ import com.gigapi.math.vector.IntVector2
 
 class BlockDataSO(
     @get:JsonProperty("textureDataList") @param:JsonProperty("textureDataList")
-    val textureDataList: List<TextureData>
+    val textureDataList: List<TextureData> = emptyList()
 )
 
 class TextureData(
     @get:JsonProperty("blockType") @param:JsonProperty("blockType")
-    val blockType: BlockType,
+    val blockType: BlockType = BlockType.NOTHING,
     @get:JsonProperty("regionNameUp") @param:JsonProperty("regionNameUp")
-    val regionNameUp: String,
+    val regionNameUp: String = "",
     @get:JsonProperty("regionNameSide") @param:JsonProperty("regionNameSide")
-    val regionNameSide: String,
+    val regionNameSide: String = "",
     @get:JsonProperty("regionNameDown") @param:JsonProperty("regionNameDown")
-    val regionNameDown: String,
+    val regionNameDown: String = "",
     @get:JsonProperty("solid") @param:JsonProperty("solid")
-    val isSolid: Boolean,
+    val isSolid: Boolean = true,
     @get:JsonProperty("generateAllSides") @param:JsonProperty("generateAllSides")
-    val generateAllSides: Boolean,
+    val generateAllSides: Boolean = false,
     @get:JsonProperty("generateCollider") @param:JsonProperty("generateCollider")
-    val generateCollider: Boolean
+    val generateCollider: Boolean = true
 )
