@@ -15,10 +15,9 @@ dependencies {
     api("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.1")
     api("net.onedaybeard.artemis:artemis-odb:2.3.0")
 
-    api("com.badlogicgames.gdx:gdx-freetype:1.13.1")
-    api("com.badlogicgames.gdx:gdx:1.13.1")
-    api("com.badlogicgames.gdx:gdx-bullet:1.13.1")
-    api("uk.co.caprica:vlcj:4.8.0")
+    api("com.badlogicgames.gdx:gdx-freetype:1.14.2")
+    api("com.badlogicgames.gdx:gdx:1.14.2")
+    api("com.badlogicgames.gdx:gdx-bullet:1.14.2")
 
     api("de.javagl:obj:0.4.0")
     api("com.esotericsoftware:kryo:5.5.0")

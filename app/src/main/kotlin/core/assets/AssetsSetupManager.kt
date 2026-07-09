@@ -3,6 +3,7 @@ package core.assets
 import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.assets.AssetManager
 import com.badlogic.gdx.graphics.Texture
+import com.badlogic.gdx.graphics.g2d.TextureAtlas
 import com.badlogic.gdx.graphics.glutils.ShaderProgram
 import com.badlogic.gdx.scenes.scene2d.ui.Skin
 import com.gigapi.effects.LaunchedEffect
@@ -17,6 +18,7 @@ object AssetsSetupManager: LaunchedEffect {
 
     override fun launch(context: Context) {
         val assetManager = AssetManager()
+        assetManager.load(SkinID.BLOCK.atlas, TextureAtlas::class.java)
         SkinID.entries.forEach {
             assetManager.load(it.skin, Skin::class.java)
         }
@@ -43,11 +45,13 @@ object AssetsSetupManager: LaunchedEffect {
             Gdx.files.local("$ASSETS_PATH/shaders/vertex_shader_simple.glsl").readString(),
             Gdx.files.local("$ASSETS_PATH/shaders/fragment_shader_simple.glsl").readString()
         )
+        check(simpleShader.isCompiled) { "Simple shader compile error: ${simpleShader.log}" }
         context.setObject(ShaderTypes.SIMPLE_SHADER, simpleShader)
         val sunShader = ShaderProgram(
             Gdx.files.local("$ASSETS_PATH/shaders/vertex_shader_sun.glsl").readString(),
             Gdx.files.local("$ASSETS_PATH/shaders/fragment_shader_sun.glsl").readString()
         )
+        check(sunShader.isCompiled) { "Sun shader compile error: ${sunShader.log}" }
         context.setObject(ShaderTypes.SUN_SHADER, sunShader)
     }
 }

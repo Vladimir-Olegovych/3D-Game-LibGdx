@@ -10,11 +10,10 @@ plugins {
 
 dependencies {
     api(project(":app"))
-    api("com.badlogicgames.gdx:gdx-bullet-platform:1.13.1:natives-desktop")
-    api("com.badlogicgames.gdx:gdx-freetype-platform:1.13.1:natives-desktop")
-    api("com.badlogicgames.gdx:gdx-platform:1.13.1:natives-desktop")
-    api("com.badlogicgames.gdx:gdx-backend-lwjgl3:1.13.1")
-    api("uk.co.caprica:vlcj:4.8.0")
+    api("com.badlogicgames.gdx:gdx-bullet-platform:1.14.2:natives-desktop")
+    api("com.badlogicgames.gdx:gdx-freetype-platform:1.14.2:natives-desktop")
+    api("com.badlogicgames.gdx:gdx-platform:1.14.2:natives-desktop")
+    api("com.badlogicgames.gdx:gdx-backend-lwjgl3:1.14.2")
 }
 
 application {

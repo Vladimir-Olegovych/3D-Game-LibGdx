@@ -1,5 +1,5 @@
 #ifdef GL_ES
-precision mediump float;
+precision mediump int;
 #endif
 
 varying vec2 v_TexCoord;
@@ -18,7 +18,7 @@ uniform float u_useShadow;
 
 void main() {
     vec4 texSample = texture2D(u_texture, v_TexCoord);
-    if (u_useTexture > 0.0 && texSample.a <= 0.001) {
+    if (u_useTexture > 0.0 && texSample.a <= 0.5) {
         discard;
     }
 

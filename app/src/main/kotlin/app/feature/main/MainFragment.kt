@@ -4,11 +4,14 @@ import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.assets.AssetManager
 import com.badlogic.gdx.graphics.GL20
 import com.badlogic.gdx.graphics.OrthographicCamera
+import com.badlogic.gdx.graphics.Texture
 import com.badlogic.gdx.graphics.g2d.SpriteBatch
+import com.badlogic.gdx.graphics.g2d.TextureRegion
 import com.badlogic.gdx.scenes.scene2d.Stage
 import com.badlogic.gdx.scenes.scene2d.ui.Skin
 import com.badlogic.gdx.scenes.scene2d.ui.Table
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton
+import com.gigapi.fillDraw
 import com.gigapi.fragment.Fragment
 import com.gigapi.general.Context
 import com.gigapi.setOnClickListener
@@ -16,7 +19,6 @@ import com.gigapi.viewport.UnfairViewport
 import core.assets.SkinID
 import core.defaults.CameraTypes
 import core.navigation.Navigation
-import core.video.VideoPlayer
 import core.viewport.ViewportTypes
 
 class MainFragment(
@@ -29,17 +31,15 @@ class MainFragment(
     private lateinit var stage: Stage
     private lateinit var camera: OrthographicCamera
     private lateinit var viewport: UnfairViewport
-
-    private lateinit var videoPlayer: VideoPlayer
+    private lateinit var menuBackground: Texture
 
     override fun onCreate() {
-        videoPlayer = VideoPlayer("menu.mp4")
         spriteBatch = context.getObject()
         viewport = context.getObject(ViewportTypes.UNFAIR)
         stage = context.getObject()
         camera = context.getObject(CameraTypes.GL_2D)
         val assetManager = context.getObject<AssetManager>()
-
+        menuBackground = assetManager.get<Skin>(SkinID.BLOCK.skin).atlas.textures.first()
 
         val skin = assetManager.get<Skin>(SkinID.BUTTON.skin)
         val menuTable = Table().apply {
@@ -68,9 +68,12 @@ class MainFragment(
     override fun onRender(deltaTime: Float) {
         Gdx.gl.glClearColor(135 / 255f, 206 / 255f, 235 / 255f, 1f)
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT or GL20.GL_DEPTH_BUFFER_BIT)
-        videoPlayer.render()
         stage.act(deltaTime)
         viewport.apply()
+        spriteBatch.projectionMatrix = camera.combined
+        spriteBatch.begin()
+        spriteBatch.fillDraw(menuBackground, camera)
+        spriteBatch.end()
         stage.draw()
     }
 
@@ -88,7 +91,6 @@ class MainFragment(
 
     override fun onDestroy() {
         Gdx.input.inputProcessor = null
-        videoPlayer.dispose()
         stage.clear()
     }
 }

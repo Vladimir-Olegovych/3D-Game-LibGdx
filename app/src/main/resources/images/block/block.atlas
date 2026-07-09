@@ -1,6 +1,7 @@
 block.png
 size:2048,1024
 repeat:none
+filter: Linear,Linear
 tile_047e1c1d-36d5-4c2c-b1b3-4ed5dba536ca
 bounds:256,640,128,128
 tile_05eb4e16-3412-4a6e-aeeb-f5f9ada3791c
