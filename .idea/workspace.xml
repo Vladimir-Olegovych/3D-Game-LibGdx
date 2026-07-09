@@ -4,12 +4,13 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="df78e54d-8fbf-4f78-86ee-f370d7368d41" name="Changes" comment="added fps">
+    <list default="true" id="df78e54d-8fbf-4f78-86ee-f370d7368d41" name="Changes" comment="added vlc windows">
+      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/core/assets/AssetsSetupManager.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/assets/AssetsSetupManager.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/core/blocks/BlockDataSO.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/blocks/BlockDataSO.kt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/desktop/build.gradle.kts" beforeDir="false" afterPath="$PROJECT_DIR$/desktop/build.gradle.kts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/desktop/scripts/windows/run.bat" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/desktop/src/main/kotlin/Main.kt" beforeDir="false" afterPath="$PROJECT_DIR$/desktop/src/main/kotlin/Main.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/desktop/vlc/win64/README.txt" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -62,31 +63,6 @@
     </key>
   </component>
   <component name="RunManager" selected="Gradle.GDX-3D-TEST [desktop:shadowJar]">
-    <configuration name="GDX-3D-TEST [:desktop:windowsShadowDist]" type="GradleRunConfiguration" factoryName="Gradle" nameIsGenerated="true">
-      <ExternalSystemSettings>
-        <option name="executionName" />
-        <option name="externalProjectPath" value="$PROJECT_DIR$" />
-        <option name="externalSystemIdString" value="GRADLE" />
-        <option name="scriptParameters" value="" />
-        <option name="taskDescriptions">
-          <list />
-        </option>
-        <option name="taskNames">
-          <list>
-            <option value=":desktop:windowsShadowDist" />
-          </list>
-        </option>
-        <option name="vmOptions" />
-      </ExternalSystemSettings>
-      <ExternalSystemDebugServerProcess>true</ExternalSystemDebugServerProcess>
-      <ExternalSystemReattachDebugProcess>true</ExternalSystemReattachDebugProcess>
-      <ExternalSystemDebugDisabled>false</ExternalSystemDebugDisabled>
-      <DebugAllEnabled>false</DebugAllEnabled>
-      <RunAsTest>false</RunAsTest>
-      <GradleProfilingDisabled>false</GradleProfilingDisabled>
-      <GradleCoverageDisabled>false</GradleCoverageDisabled>
-      <method v="2" />
-    </configuration>
     <configuration name="GDX-3D-TEST [desktop:shadowJar]" type="GradleRunConfiguration" factoryName="Gradle" nameIsGenerated="true">
       <ExternalSystemSettings>
         <option name="executionName" />
@@ -130,7 +106,6 @@
       <method v="2" />
     </configuration>
     <list>
-      <item itemvalue="Gradle.GDX-3D-TEST [:desktop:windowsShadowDist]" />
       <item itemvalue="Gradle.GDX-3D-TEST [desktop:shadowJar]" />
       <item itemvalue="Kotlin.MainKt" />
     </list>
@@ -188,7 +163,23 @@
       <option name="project" value="LOCAL" />
       <updated>1783497950685</updated>
     </task>
-    <option name="localTasksCounter" value="6" />
+    <task id="LOCAL-00006" summary="added fps">
+      <option name="closed" value="true" />
+      <created>1783598945624</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1783598945624</updated>
+    </task>
+    <task id="LOCAL-00007" summary="added vlc windows">
+      <option name="closed" value="true" />
+      <created>1783598971279</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1783598971279</updated>
+    </task>
+    <option name="localTasksCounter" value="8" />
     <servers />
   </component>
   <component name="VcsManagerConfiguration">
@@ -196,6 +187,7 @@
     <MESSAGE value="added fast chunk manager" />
     <MESSAGE value="added easy tiled" />
     <MESSAGE value="added fps" />
-    <option name="LAST_COMMIT_MESSAGE" value="added fps" />
+    <MESSAGE value="added vlc windows" />
+    <option name="LAST_COMMIT_MESSAGE" value="added vlc windows" />
   </component>
 </project>
