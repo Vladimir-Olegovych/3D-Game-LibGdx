@@ -12,7 +12,7 @@ object ConfigSetupManager: LaunchedEffect {
             customKey = ConfigTypes.BLOCK_DATA_SO,
             AppConfig(
                 configName = "${AssetsSetupManager.ASSETS_PATH}/configs/${ConfigTypes.BLOCK_DATA_SO}",
-                default = BlockDataSO(emptyList())
+                default = BlockDataSO()
             )
         )
         //---

@@ -62,8 +62,9 @@ class BlockDataManager: LaunchedEffect
     private fun createFaceUvs(region: TextureRegion): Array<Vector2> {
         val textureWidth = region.texture.width.toFloat()
         val textureHeight = region.texture.height.toFloat()
-        val epsilonU = 0.5f / textureWidth
-        val epsilonV = 0.5f / textureHeight
+
+        val epsilonU = 1f / textureWidth
+        val epsilonV = 1f / textureHeight
 
         val left = minOf(region.u, region.u2) + epsilonU
         val right = maxOf(region.u, region.u2) - epsilonU
