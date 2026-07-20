@@ -25,7 +25,7 @@ void main() {
     v_Normal   = normalize(mat3(transform) * a_Normal);
     v_TexCoord = a_TexCoord;
     v_AO       = a_AO;
-    v_Shadow = a_Shadow;
+    v_Shadow   = a_Shadow;
 
     float fogStart = 0.7;
     float fogEnd   = 0.95;

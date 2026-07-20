@@ -1,18 +1,14 @@
 package app.feature.game.ui
 
 import com.badlogic.gdx.assets.AssetManager
-import com.badlogic.gdx.graphics.FPSLogger
 import com.badlogic.gdx.scenes.scene2d.Actor
-import com.badlogic.gdx.scenes.scene2d.ui.Image
 import com.badlogic.gdx.scenes.scene2d.ui.Label
 import com.badlogic.gdx.scenes.scene2d.ui.Skin
 import com.badlogic.gdx.scenes.scene2d.ui.Table
 import com.gigapi.effects.LaunchedEffect
 import com.gigapi.general.Context
-import com.gigapi.texture.DefaultsTextures
 import core.assets.SkinID
 import core.ui.UIGetter
-import java.awt.Color
 
 class FpsUI : LaunchedEffect, UIGetter {
 

@@ -5,11 +5,38 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="df78e54d-8fbf-4f78-86ee-f370d7368d41" name="Changes" comment="update">
+      <change afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/mesh/MeshGenerator.kt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/src/main/resources/shaders/model/fragment_shader_model.glsl" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/src/main/resources/shaders/model/vertex_shader_model.glsl" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/core/blocks/BlockDataManager.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/blocks/BlockDataManager.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/core/configs/ConfigSetupManager.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/configs/ConfigSetupManager.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/resources/images/block/block.atlas" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/resources/images/block/block.atlas" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/resources/images/block/block.png" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/resources/images/block/block.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/app/feature/game/GameFragment.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/app/feature/game/GameFragment.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/app/feature/game/dialogs/InventoryDialog.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/app/feature/game/dialogs/InventoryDialog.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/app/feature/game/dialogs/PauseDialog.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/app/feature/game/dialogs/PauseDialog.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/app/feature/game/ecs/components/AOComponent.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/app/feature/game/ecs/components/ChunkComponent.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/app/feature/game/ecs/components/ChunkComponent.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/app/feature/game/ecs/components/ShadowComponent.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/app/feature/game/ecs/systems/ChunkSystem.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/app/feature/game/ecs/systems/ChunkSystem.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/app/feature/game/ecs/systems/DrawSystem.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/app/feature/game/ecs/systems/DrawSystem.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/app/feature/game/ecs/systems/PlayerSystem.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/app/feature/game/ecs/systems/PlayerSystem.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/app/feature/game/ui/FpsUI.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/app/feature/game/ui/FpsUI.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/app/feature/game/ui/InventoryUI.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/app/feature/game/ui/InventoryUI.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/app/feature/main/MainFragment.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/app/feature/main/MainFragment.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/core/artemis/Tests.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/artemis/Tests.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/core/assets/AssetsSetupManager.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/assets/AssetsSetupManager.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/core/blocks/BlockDataSO.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/blocks/BlockDataSO.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/core/bullet/world/PhysicsWorldUpdater.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/bullet/world/PhysicsWorldUpdater.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/core/chunk/ChunkWorldUpdater.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/chunk/ChunkWorldUpdater.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/core/defaults/DefaultWorldSetupManager.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/defaults/DefaultWorldSetupManager.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/core/mesh/ChunkBlockAccess.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/core/mesh/GreedyMesher.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/core/mesh/MeshHelper.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/mesh/MeshHelper.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/core/mesh/MeshUtils.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/mesh/MeshUtils.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/core/shaders/ShaderTypes.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/shaders/ShaderTypes.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/core/terrain/biome/biomes/ForestBiomeGenerator.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/terrain/biome/biomes/ForestBiomeGenerator.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/resources/shaders/fragment_shader_simple.glsl" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/resources/shaders/chunk/fragment_shader_chunk.glsl" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/resources/shaders/fragment_shader_sun.glsl" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/resources/shaders/sun/fragment_shader_sun.glsl" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/resources/shaders/vertex_shader_simple.glsl" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/resources/shaders/chunk/vertex_shader_chunk.glsl" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/resources/shaders/vertex_shader_sun.glsl" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/resources/shaders/sun/vertex_shader_sun.glsl" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -25,6 +52,7 @@
     <option name="RECENT_TEMPLATES">
       <list>
         <option value="Kotlin Class" />
+        <option value="Kotlin Data Class" />
       </list>
     </option>
   </component>
@@ -51,24 +79,30 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;Gradle.GDX-3D-TEST [:desktop:com.gigcreator.MainKt.main()].executor&quot;: &quot;Run&quot;,
-    &quot;Gradle.GDX-3D-TEST [:desktop:windowsShadowDist].executor&quot;: &quot;Run&quot;,
-    &quot;Gradle.GDX-3D-TEST [desktop:shadowJar].executor&quot;: &quot;Run&quot;,
-    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
-    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
-    &quot;last_opened_file_path&quot;: &quot;/home/vladimir/Documents/Java/GDX-3D-TEST/app/src/main/resources/images/block&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "Gradle.GDX-3D-TEST [:desktop:com.gigcreator.MainKt.main()].executor": "Run",
+    "Gradle.GDX-3D-TEST [:desktop:windowsShadowDist].executor": "Run",
+    "Gradle.GDX-3D-TEST [desktop:shadowJar].executor": "Run",
+    "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "git-widget-placeholder": "main",
+    "kotlin-language-version-configured": "true",
+    "last_opened_file_path": "/home/vladimir/Documents/Java/GDX-3D-TEST/app/src/main/resources/shaders/model"
   }
-}</component>
+}]]></component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/app/src/main/resources/shaders/model" />
       <recent name="$PROJECT_DIR$/app/src/main/resources/images/block" />
     </key>
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/app/src/main/resources/shaders/sun" />
+      <recent name="$PROJECT_DIR$/app/src/main/resources/shaders/chunk" />
+    </key>
     <key name="CopyKotlinDeclarationDialog.RECENTS_KEY">
+      <recent name="app.feature.game.ecs.systems" />
       <recent name="app.feature.game.ui" />
       <recent name="app.feature.game.ecs.components" />
     </key>
@@ -214,7 +248,15 @@
       <option name="project" value="LOCAL" />
       <updated>1783697430149</updated>
     </task>
-    <option name="localTasksCounter" value="11" />
+    <task id="LOCAL-00011" summary="update">
+      <option name="closed" value="true" />
+      <created>1783699972899</created>
+      <option name="number" value="00011" />
+      <option name="presentableId" value="LOCAL-00011" />
+      <option name="project" value="LOCAL" />
+      <updated>1783699972899</updated>
+    </task>
+    <option name="localTasksCounter" value="12" />
     <servers />
   </component>
   <component name="VcsManagerConfiguration">

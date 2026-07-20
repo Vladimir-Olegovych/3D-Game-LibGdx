@@ -2,7 +2,6 @@ package core.defaults
 
 import app.feature.game.dialogs.InventoryDialog
 import app.feature.game.dialogs.PauseDialog
-import app.feature.game.ecs.systems.*
 import app.feature.game.event.EventBusTypes
 import app.feature.game.ui.AimUI
 import app.feature.game.ui.FpsUI

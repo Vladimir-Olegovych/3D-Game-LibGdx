@@ -16,7 +16,6 @@ import com.gigapi.general.Context
 import com.gigapi.sounds.MusicPlayer
 import com.gigapi.viewport.UnfairViewport
 import core.artemis.disposeALL
-import core.assets.MusicID
 import core.defaults.CameraTypes
 import core.defaults.DefaultWorldSetupManager
 import core.navigation.Navigation
@@ -55,7 +54,7 @@ class GameFragment(
 
         val musicPlayer = gameContext.getObject<MusicPlayer>()
         musicPlayer.setVolume(0.5F)
-        musicPlayer.play(MusicID.MUSIC_1, true)
+        //musicPlayer.play(MusicID.MUSIC_1, true)
 
         eventBus.registerHandler(this)
         Gdx.input.isCursorCatched = true

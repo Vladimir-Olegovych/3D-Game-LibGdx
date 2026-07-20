@@ -1,17 +1,14 @@
 package core.mesh
 
-import com.badlogic.gdx.graphics.VertexAttribute
-import com.badlogic.gdx.graphics.VertexAttributes
 import com.gigapi.effects.LaunchedEffect
 import com.gigapi.general.Context
 import com.gigapi.math.vector.IntVector3
-import com.gigapi.mesh.MeshParams
 import com.gigapi.mesh.RawMeshData
 import core.blocks.BlockDataManager
 import core.blocks.BlockType
 import core.chunk.ChunkData
 
-class MeshHelper: LaunchedEffect {
+class MeshHelper: MeshGenerator, LaunchedEffect {
 
     companion object {
         val directions = listOf(
@@ -22,16 +19,6 @@ class MeshHelper: LaunchedEffect {
             Direction( 0, 0, 1, VertexAttribute3.Normal(0f, 0f, 1F), DirectionType.FRONT),
             Direction( 0, 0,-1, VertexAttribute3.Normal(0f, 0f,-1F), DirectionType.BACK)
         )
-        val chunkMeshParams = MeshParams(
-            attributes = arrayOf(
-                VertexAttribute(VertexAttributes.Usage.Position, 3, "a_Position"),
-                VertexAttribute(VertexAttributes.Usage.Normal, 3, "a_Normal"),
-                VertexAttribute(VertexAttributes.Usage.TextureCoordinates, 2, "a_TexCoord"),
-                VertexAttribute(VertexAttributes.Usage.Generic, 1, "a_AO"),
-                VertexAttribute(VertexAttributes.Usage.Generic, 1, "a_Shadow")
-            ),
-            stride = 10
-        )
     }
 
     private lateinit var blockDataManager: BlockDataManager
@@ -40,7 +27,10 @@ class MeshHelper: LaunchedEffect {
         blockDataManager = context.getObject()
     }
 
-    fun createMesh(chunkMap: Map<IntVector3, ChunkData>, chunkData: ChunkData): RawMeshData {
+    override fun createMesh(
+        chunkMap: Map<IntVector3, ChunkData>,
+        chunkData: ChunkData
+    ): RawMeshData {
         val w = chunkData.chunkWidth
         val h = chunkData.chunkHeight
 

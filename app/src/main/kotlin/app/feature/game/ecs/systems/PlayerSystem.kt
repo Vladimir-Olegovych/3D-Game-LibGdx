@@ -73,7 +73,7 @@ class PlayerSystem: BaseSystem() {
 
         val direction = Vector3(dirX.toFloat(), dirY.toFloat(), dirZ.toFloat()).nor()
 
-        camera.position.lerp(playerPosition, 0.6f)
+        camera.position.lerp(playerPosition, 0.2f)
         camera.direction.set(direction)
         camera.up.set(Vector3.Y)
         camera.update()

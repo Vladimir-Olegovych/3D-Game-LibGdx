@@ -18,7 +18,6 @@ import core.terrain.layers.StructureLayerHandler
 import core.terrain.layers.SurfaceLayerHandler
 import core.terrain.layers.UndergroundLayerHandler
 import core.terrain.structures.RockStructure
-import core.terrain.structures.TestStructure
 import core.terrain.structures.TreeStructure
 
 class ForestBiomeGenerator : LaunchedEffect, BiomeGenerator() {

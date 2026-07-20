@@ -1,13 +1,26 @@
 package core.mesh
 
 import com.badlogic.gdx.graphics.Mesh
-import com.badlogic.gdx.math.Vector2
+import com.badlogic.gdx.graphics.VertexAttribute
+import com.badlogic.gdx.graphics.VertexAttributes
 import com.badlogic.gdx.math.Vector3
 import com.badlogic.gdx.math.collision.BoundingBox
+import com.gigapi.mesh.MeshParams
 import com.gigapi.mesh.RawMeshData
 import com.gigapi.mesh.blender.BlenderParser
 import core.blocks.BlockDataManager
 import core.blocks.BlockType
+
+val chunkMeshParams = MeshParams(
+    attributes = arrayOf(
+        VertexAttribute(VertexAttributes.Usage.Position, 3, "a_Position"),
+        VertexAttribute(VertexAttributes.Usage.Normal, 3, "a_Normal"),
+        VertexAttribute(VertexAttributes.Usage.TextureCoordinates, 2, "a_TexCoord"),
+        VertexAttribute(VertexAttributes.Usage.Generic, 1, "a_AO"),
+        VertexAttribute(VertexAttributes.Usage.Generic, 1, "a_Shadow")
+    ),
+    stride = 10
+)
 
 data class Direction(
     val dx: Int, val dy: Int, val dz: Int,
@@ -258,7 +271,7 @@ object MeshUtils {
 
         val uvs = blockDataManager.faceUVs(directionType, blockType)
 
-        val baseIndex = (verticesList.size / MeshHelper.chunkMeshParams.stride).toShort()
+        val baseIndex = (verticesList.size / chunkMeshParams.stride).toShort()
 
         for (i in quadVertices.indices) {
             val v = quadVertices[i]
@@ -290,156 +303,5 @@ object MeshUtils {
             indicesList.add((baseIndex + 2).toShort())
             indicesList.add((baseIndex + 3).toShort())
         }
-    }
-
-    /**
-     * Adds a merged greedy-mesh quad. [quadU] and [quadV] are sizes in block units
-     * along [uAxis] and [vAxis] tangent axes.
-     */
-    fun addGreedyQuad(
-        blockDataManager: BlockDataManager,
-        verticesList: ArrayList<Float>,
-        indicesList: ArrayList<Short>,
-        face: GreedyMesher.FaceDirection,
-        originX: Int,
-        originY: Int,
-        originZ: Int,
-        quadU: Int,
-        quadV: Int,
-        uAxis: Int,
-        vAxis: Int,
-        blockType: BlockType,
-        ao: FloatArray,
-        shadows: FloatArray,
-    ) {
-        val nx = face.normal.x
-        val ny = face.normal.y
-        val nz = face.normal.z
-
-        val positions = greedyCornerPositions(
-            face = face,
-            originX = originX,
-            originY = originY,
-            originZ = originZ,
-            quadU = quadU,
-            quadV = quadV,
-        )
-
-        val uvs = mergedGreedyFaceUvs(
-            blockDataManager = blockDataManager,
-            face = face,
-            blockType = blockType,
-            quadU = quadU,
-            quadV = quadV,
-        )
-
-        val flip = ao[0] + ao[2] < ao[1] + ao[3]
-        val baseIndex = (verticesList.size / MeshHelper.chunkMeshParams.stride).toShort()
-
-        for (i in 0 until 4) {
-            val p = positions[i]
-            val uv = uvs[i]
-            verticesList.add(p[0])
-            verticesList.add(p[1])
-            verticesList.add(p[2])
-            verticesList.add(nx)
-            verticesList.add(ny)
-            verticesList.add(nz)
-            verticesList.add(uv.x)
-            verticesList.add(uv.y)
-            verticesList.add(ao[i])
-            verticesList.add(shadows[i])
-        }
-
-        if (flip) {
-            indicesList.add((baseIndex + 1).toShort())
-            indicesList.add((baseIndex + 2).toShort())
-            indicesList.add((baseIndex + 3).toShort())
-            indicesList.add((baseIndex + 1).toShort())
-            indicesList.add((baseIndex + 3).toShort())
-            indicesList.add(baseIndex)
-        } else {
-            indicesList.add(baseIndex)
-            indicesList.add((baseIndex + 1).toShort())
-            indicesList.add((baseIndex + 2).toShort())
-            indicesList.add(baseIndex)
-            indicesList.add((baseIndex + 2).toShort())
-            indicesList.add((baseIndex + 3).toShort())
-        }
-    }
-
-    private fun greedyCornerPositions(
-        face: GreedyMesher.FaceDirection,
-        originX: Int,
-        originY: Int,
-        originZ: Int,
-        quadU: Int,
-        quadV: Int,
-    ): Array<FloatArray> {
-        val ox = originX.toFloat()
-        val oy = originY.toFloat()
-        val oz = originZ.toFloat()
-        val su = when (face) {
-            GreedyMesher.FaceDirection.POS_Y,
-            GreedyMesher.FaceDirection.NEG_Y -> quadV.toFloat()
-            else -> quadU.toFloat()
-        }
-        val sv = when (face) {
-            GreedyMesher.FaceDirection.POS_Y,
-            GreedyMesher.FaceDirection.NEG_Y -> quadU.toFloat()
-            else -> quadV.toFloat()
-        }
-
-        return when (face) {
-            GreedyMesher.FaceDirection.POS_X -> arrayOf(
-                floatArrayOf(ox + 1f, oy + su, oz + sv),
-                floatArrayOf(ox + 1f, oy, oz + sv),
-                floatArrayOf(ox + 1f, oy, oz),
-                floatArrayOf(ox + 1f, oy + su, oz),
-            )
-            GreedyMesher.FaceDirection.NEG_X -> arrayOf(
-                floatArrayOf(ox, oy + su, oz),
-                floatArrayOf(ox, oy, oz),
-                floatArrayOf(ox, oy, oz + sv),
-                floatArrayOf(ox, oy + su, oz + sv),
-            )
-            GreedyMesher.FaceDirection.POS_Y -> arrayOf(
-                floatArrayOf(ox, oy + 1f, oz + sv),
-                floatArrayOf(ox + su, oy + 1f, oz + sv),
-                floatArrayOf(ox + su, oy + 1f, oz),
-                floatArrayOf(ox, oy + 1f, oz),
-            )
-            GreedyMesher.FaceDirection.NEG_Y -> arrayOf(
-                floatArrayOf(ox, oy, oz),
-                floatArrayOf(ox + su, oy, oz),
-                floatArrayOf(ox + su, oy, oz + sv),
-                floatArrayOf(ox, oy, oz + sv),
-            )
-            GreedyMesher.FaceDirection.POS_Z -> arrayOf(
-                floatArrayOf(ox, oy + sv, oz + 1f),
-                floatArrayOf(ox, oy, oz + 1f),
-                floatArrayOf(ox + su, oy, oz + 1f),
-                floatArrayOf(ox + su, oy + sv, oz + 1f),
-            )
-            GreedyMesher.FaceDirection.NEG_Z -> arrayOf(
-                floatArrayOf(ox + su, oy + sv, oz),
-                floatArrayOf(ox + su, oy, oz),
-                floatArrayOf(ox, oy, oz),
-                floatArrayOf(ox, oy + sv, oz),
-            )
-        }
-    }
-
-    private fun mergedGreedyFaceUvs(
-        blockDataManager: BlockDataManager,
-        face: GreedyMesher.FaceDirection,
-        blockType: BlockType,
-        quadU: Int,
-        quadV: Int,
-    ): Array<Vector2> {
-        // Atlas stores one tile per block type. Scaling UV by merge size walks across unrelated
-        // atlas cells and, with clamp, stretches the whole atlas onto the face.
-        // Keep the single-block UVs; the merged quad repeats one tile (same as naive mesh per block).
-        return blockDataManager.faceUVs(face.directionType, blockType)
     }
 }

@@ -14,7 +14,6 @@ import com.gigapi.mesh.blender.BlenderParser
 import core.assets.SkinID
 import core.blocks.BlockDataManager
 import core.blocks.BlockType
-import core.mesh.MeshHelper
 import core.mesh.MeshUtils
 
 fun World.startTest100Box() {

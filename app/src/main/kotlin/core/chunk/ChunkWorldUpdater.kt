@@ -4,9 +4,9 @@ import app.feature.game.event.ChunkEvent
 import app.feature.game.event.EventBusTypes
 import app.feature.game.event.GameEvent
 import com.badlogic.gdx.math.Vector3
+import com.gigapi.coruntines.DeltaUpdater
 import com.gigapi.effects.DisposableEffect
 import com.gigapi.effects.LaunchedEffect
-import com.gigapi.coruntines.DeltaUpdater
 import com.gigapi.eventbus.EventBus
 import com.gigapi.eventbus.annotation.BusEvent
 import com.gigapi.general.Context
@@ -19,7 +19,9 @@ import core.chunk.world.ChunkHelper
 import core.chunk.world.WorldDataHelper
 import core.chunk.world.WorldGenerationData
 import core.math.createMatrixForChunk
+import core.mesh.MeshGenerator
 import core.mesh.MeshHelper
+import core.mesh.chunkMeshParams
 import core.scope.DispatcherTypes
 import core.terrain.TerrainGenerator
 import kotlinx.coroutines.*
@@ -53,7 +55,7 @@ class ChunkWorldUpdater : LaunchedEffect, DisposableEffect, DeltaUpdater(1 / 60F
     private lateinit var mainEventBus: EventBus
     private lateinit var chunkEventBus: EventBus
     private lateinit var physicsEventBus: EventBus
-    private lateinit var meshHelper: MeshHelper
+    private lateinit var meshGenerator: MeshGenerator
     private lateinit var terrainGenerator: TerrainGenerator
     private lateinit var mainScope: CoroutineScope
 
@@ -68,7 +70,7 @@ class ChunkWorldUpdater : LaunchedEffect, DisposableEffect, DeltaUpdater(1 / 60F
         mainEventBus = context.getObject(EventBusTypes.MAIN_EVENT_BUS)
         chunkEventBus = context.getObject(EventBusTypes.CHUNK_EVENT_BUS)
         physicsEventBus = context.getObject(EventBusTypes.PHYSICS_EVENT_BUS)
-        meshHelper = context.getObject()
+        meshGenerator = context.getObject<MeshHelper>()
         terrainGenerator = context.getObject()
         mainScope = CoroutineScope(context.getObject<CoroutineDispatcher>(DispatcherTypes.MAIN))
         chunkEventBus.registerHandler(this)
@@ -197,9 +199,9 @@ class ChunkWorldUpdater : LaunchedEffect, DisposableEffect, DeltaUpdater(1 / 60F
                             val updateChunkData = chunkDataMap[chunkPos] ?: return@async
                             val updateChunkEntityId = chunkDataPositionToEntityId[chunkPos] ?: return@async
 
-                            val rawMeshData = meshHelper.createMesh(chunkDataMap, updateChunkData)
+                            val rawMeshData = meshGenerator.createMesh(chunkDataMap, updateChunkData)
                             val meshData = withContext(mainScope.coroutineContext) {
-                                rawMeshData.createMeshData(MeshHelper.chunkMeshParams)
+                                rawMeshData.createMeshData(chunkMeshParams)
                             }
                             meshDataMap[chunkPos] = meshData
                             physicsEventBus.sendEvent(GameEvent.OnUpdateChunkData(updateChunkEntityId, updateChunkData))
@@ -273,10 +275,10 @@ class ChunkWorldUpdater : LaunchedEffect, DisposableEffect, DeltaUpdater(1 / 60F
                 if (updateChunkData.status == ChunkStatus.GENERATION) continue
                 val updateChunkEntityId = chunkDataPositionToEntityId[chunkPos] ?: continue
 
-                val rawMeshData = meshHelper.createMesh(chunkDataMap, updateChunkData)
+                val rawMeshData = meshGenerator.createMesh(chunkDataMap, updateChunkData)
 
                 val meshData = mainScope.async {
-                    rawMeshData.createMeshData(MeshHelper.chunkMeshParams)
+                    rawMeshData.createMeshData(chunkMeshParams)
                 }.await()
                 meshDataMap[chunkPos] = meshData
                 physicsEventBus.sendEvent(GameEvent.OnUpdateChunkData(updateChunkEntityId, updateChunkData))
@@ -373,11 +375,11 @@ class ChunkWorldUpdater : LaunchedEffect, DisposableEffect, DeltaUpdater(1 / 60F
         if (removedChunkDates.contains(position) || removedChunkMeshes.contains(position)) return
         val chunkData = chunkDataMap[position]?: return
         val meshEntityId = chunkMeshPositionToEntityId[position]?: return
-        val rawMeshData = meshHelper.createMesh(chunkDataMap, chunkData)
+        val rawMeshData = meshGenerator.createMesh(chunkDataMap, chunkData)
         if (rawMeshData.isEmpty()) return
 
         mainScope.async {
-            val meshData = rawMeshData.createMeshData(MeshHelper.chunkMeshParams)
+            val meshData = rawMeshData.createMeshData(chunkMeshParams)
             meshDataMap[position] = meshData
             mainEventBus.sendEvent(GameEvent.OnCreateChunkMeshData(meshEntityId, meshData))
             physicsEventBus.sendEvent(GameEvent.OnCreateChunkRigidBody(meshEntityId, chunkData))

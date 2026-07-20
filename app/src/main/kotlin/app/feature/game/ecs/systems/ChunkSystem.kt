@@ -1,6 +1,9 @@
 package app.feature.game.ecs.systems
 
-import app.feature.game.ecs.components.*
+import app.feature.game.ecs.components.BoundRadiusComponent
+import app.feature.game.ecs.components.ChunkComponent
+import app.feature.game.ecs.components.MeshComponent
+import app.feature.game.ecs.components.TransformComponent
 import app.feature.game.event.ChunkEvent
 import app.feature.game.event.EventBusTypes
 import app.feature.game.event.GameEvent
@@ -38,8 +41,6 @@ class ChunkSystem: BaseSystem() {
     private lateinit var transformMapper: ComponentMapper<TransformComponent>
     private lateinit var chunkMapper: ComponentMapper<ChunkComponent>
     private lateinit var meshMapper: ComponentMapper<MeshComponent>
-    private lateinit var aoMapper: ComponentMapper<AOComponent>
-    private lateinit var shadowMapper: ComponentMapper<ShadowComponent>
 
     private lateinit var chunkMeshTextureData: Texture
 
@@ -85,6 +86,7 @@ class ChunkSystem: BaseSystem() {
     @BusEvent
     fun onChunkDataCreated(event: GameEvent.OnCreateChunkTransform) {
         val entityId = event.chunkEntityId
+        chunkMapper.create(entityId)
         transformMapper.create(entityId).transform = event.transform
     }
 
@@ -96,8 +98,6 @@ class ChunkSystem: BaseSystem() {
         meshComponent.meshData = event.meshData
         meshComponent.meshTextureData = chunkMeshTextureData
         val radius = MeshUtils.getBoundRadius(event.meshData.mesh)
-        aoMapper[entityId]?: aoMapper.create(entityId)
-        shadowMapper[entityId]?: shadowMapper.create(entityId)
         val boundComponent = boundMapper[entityId]?: boundMapper.create(entityId)
         boundComponent.boundingRadius = radius
     }
@@ -111,16 +111,12 @@ class ChunkSystem: BaseSystem() {
         val radius = MeshUtils.getBoundRadius(mesh)
         meshComponent.meshData = event.meshData
         meshComponent.meshTextureData = chunkMeshTextureData
-        aoMapper.create(entityId)
-        shadowMapper.create(entityId)
         boundMapper.create(entityId).boundingRadius = radius
     }
 
     @BusEvent
     fun onChunkDataRemoved(event: GameEvent.OnRemoveChunkData) {
-        //chunkMapper.remove(event.chunkEntityId)
-        aoMapper.remove(event.chunkEntityId)
-        shadowMapper.remove(event.chunkEntityId)
+        chunkMapper.remove(event.chunkEntityId)
         transformMapper.remove(event.chunkEntityId)
         world.delete(event.chunkEntityId)
     }
@@ -130,7 +126,6 @@ class ChunkSystem: BaseSystem() {
         meshMapper[event.chunkEntityId]?.dispose()
         meshMapper.remove(event.chunkEntityId)
         boundMapper.remove(event.chunkEntityId)
-        aoMapper.remove(event.chunkEntityId)
     }
 
 }

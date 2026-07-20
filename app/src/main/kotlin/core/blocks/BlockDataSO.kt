@@ -1,7 +1,6 @@
 package core.blocks
 
 import com.fasterxml.jackson.annotation.JsonProperty
-import com.gigapi.math.vector.IntVector2
 
 class BlockDataSO(
     @get:JsonProperty("textureDataList") @param:JsonProperty("textureDataList")

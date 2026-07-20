@@ -1,66 +1,49 @@
 package app.feature.game.ecs.systems
 
 import app.feature.game.ecs.components.*
+import com.artemis.BaseEntitySystem
 import com.artemis.ComponentMapper
 import com.artemis.annotations.One
 import com.artemis.annotations.Wire
-import com.artemis.systems.IteratingSystem
+import com.artemis.utils.IntBag
 import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.graphics.GL20
 import com.badlogic.gdx.graphics.PerspectiveCamera
 import com.badlogic.gdx.graphics.glutils.ShaderProgram
 import com.badlogic.gdx.math.Vector3
-import com.badlogic.gdx.scenes.scene2d.Stage
 import com.gigapi.texture.DefaultsTextures
-import com.gigapi.viewport.UnfairViewport
 import core.chunk.ChunkWorldUpdater
 import core.defaults.CameraTypes
-import core.renderers.SunRenderer
 import core.shaders.ShaderTypes
-import core.viewport.ViewportTypes
 
 @One(MeshComponent::class, BlenderModelComponent::class)
-class DrawSystem: IteratingSystem() {
+class DrawSystem: BaseEntitySystem() {
 
     private lateinit var boundMapper: ComponentMapper<BoundRadiusComponent>
     private lateinit var blenderMapper: ComponentMapper<BlenderModelComponent>
     private lateinit var meshMapper: ComponentMapper<MeshComponent>
     private lateinit var transformMapper: ComponentMapper<TransformComponent>
     private lateinit var staticMapper: ComponentMapper<StaticComponent>
-    private lateinit var aoMapper: ComponentMapper<AOComponent>
-    private lateinit var shadowMapper: ComponentMapper<ShadowComponent>
+    private lateinit var chunkMapper: ComponentMapper<ChunkComponent>
 
     @Wire(name = CameraTypes.GL_3D)
     private lateinit var camera: PerspectiveCamera
-    @Wire(name = ShaderTypes.SIMPLE_SHADER)
-    private lateinit var simpleShader: ShaderProgram
-    @Wire
-    private lateinit var sunRenderer: SunRenderer
+    @Wire(name = ShaderTypes.CHUNK_SHADER)
+    private lateinit var chunkShader: ShaderProgram
+    //@Wire(name = ShaderTypes.MODEL_SHADER)
+    //private lateinit var modelShader: ShaderProgram
 
-    @Wire
-    private lateinit var stage: Stage
-    @Wire(name = ViewportTypes.UNFAIR)
-    private lateinit var viewport: UnfairViewport
+    private val drawTasks = arrayOf(DrawTaskChunks())
 
     override fun begin() {
         Gdx.gl.glClearColor(135 / 255f, 206 / 255f, 235 / 255f, 1f)
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT or GL20.GL_DEPTH_BUFFER_BIT)
-
         Gdx.gl.glEnable(GL20.GL_CULL_FACE)
         Gdx.gl.glEnable(GL20.GL_DEPTH_TEST)
+    }
 
-        val fogVerticalRadius = ChunkWorldUpdater.CHUNK_HEIGHT * ChunkWorldUpdater.DRAW_RADIUS_Y - ChunkWorldUpdater.CHUNK_HEIGHT * 2F
-
-        simpleShader.bind()
-        //Mesh
-        simpleShader.setUniformi("u_texture", 0)
-        simpleShader.setUniformMatrix("modelViewProjection", camera.combined)
-        //Fog
-        simpleShader.setUniformf("viewPosition", camera.position)
-        simpleShader.setUniformf("horizontalRadius", camera.far)
-        simpleShader.setUniformf("verticalRadius", fogVerticalRadius)
-        simpleShader.setUniformf("fogColor", 135 / 255f, 206 / 255f, 240 / 255f)
-
+    override fun processSystem() {
+        drawTasks.forEach { it.draw(subscription.entities) }
     }
 
     override fun end() {
@@ -71,38 +54,55 @@ class DrawSystem: IteratingSystem() {
 
     private val tmpVec = Vector3()
 
-    override fun process(entityId: Int) {
-        val transformComponent = transformMapper[entityId]?: return
-        val transform = transformComponent.transform ?: return
-        val aoComponent = aoMapper[entityId]
-        val shadowComponent = shadowMapper[entityId]
-        val boundingRadius = boundMapper[entityId]?.boundingRadius
-
-        if(boundingRadius != null) {
-            val objectPosition = transform.getTranslation(tmpVec)
-            val toObject = tmpVec.set(objectPosition).sub(camera.position)
-
-            if (toObject.dot(camera.direction) + boundingRadius < 0f) return
-        }
-        simpleShader.setUniformMatrix("transform", transform)
-
-
-        if (aoComponent != null) {
-            simpleShader.setUniformf("u_useAO", 1f)
-        } else {
-            simpleShader.setUniformf("u_useAO", 0f)
-        }
-
-        if (shadowComponent != null) {
-            simpleShader.setUniformf("u_useShadow", 1f)
-        } else {
-            simpleShader.setUniformf("u_useShadow", 0f)
-        }
-
-        processModelMesh(entityId)
-        processMesh(entityId)
+    interface DrawTask {
+        fun draw(entities: IntBag)
+        fun singleCall(entityId: Int)
     }
 
+    inner class DrawTaskChunks: DrawTask {
+        override fun draw(entities: IntBag) {
+            val fogVerticalRadius = ChunkWorldUpdater.CHUNK_HEIGHT * ChunkWorldUpdater.DRAW_RADIUS_Y - ChunkWorldUpdater.CHUNK_HEIGHT * 2F
+
+            chunkShader.bind()
+            chunkShader.setUniformi("u_texture", 0)
+            chunkShader.setUniformMatrix("modelViewProjection", camera.combined)
+            //Fog
+            chunkShader.setUniformf("viewPosition", camera.position)
+            chunkShader.setUniformf("horizontalRadius", camera.far)
+            chunkShader.setUniformf("verticalRadius", fogVerticalRadius)
+            chunkShader.setUniformf("fogColor", 135 / 255f, 206 / 255f, 240 / 255f)
+
+            for (i in 0 until entities.size()) {
+                val entityId = entities[i]
+                singleCall(entityId)
+            }
+        }
+
+        override fun singleCall(entityId: Int) {
+            chunkMapper[entityId]?: return
+            val transformComponent = transformMapper[entityId]?: return
+            val transform = transformComponent.transform ?: return
+            val boundingRadius = boundMapper[entityId]?.boundingRadius
+
+            if(boundingRadius != null) {
+                val objectPosition = transform.getTranslation(tmpVec)
+                val toObject = tmpVec.set(objectPosition).sub(camera.position)
+
+                if (toObject.dot(camera.direction) + boundingRadius < 0f) return
+            }
+
+            val meshComponent = meshMapper[entityId] ?: return
+            val meshTextureData = meshComponent.meshTextureData ?: DefaultsTextures.WHITE
+            val mesh = meshComponent.meshData?.mesh ?: return
+
+            chunkShader.setUniformMatrix("transform", transform)
+            chunkShader.setUniformf("objectColor", 1f, 1f, 1f)
+            meshTextureData.bind(0)
+
+            mesh.render(chunkShader, GL20.GL_TRIANGLES)
+        }
+    }
+    /*
 
     private fun processModelMesh(entityId: Int) {
         val blenderModel = blenderMapper[entityId]?: return
@@ -127,15 +127,5 @@ class DrawSystem: IteratingSystem() {
         }
     }
 
-    private fun processMesh(entityId: Int) {
-        val meshComponent = meshMapper[entityId] ?: return
-        val meshTextureData = meshComponent.meshTextureData ?: DefaultsTextures.WHITE
-        val mesh = meshComponent.meshData?.mesh ?: return
-
-        simpleShader.setUniformf("objectColor", 1f, 1f, 1f)
-        meshTextureData.bind(0)
-        simpleShader.setUniformf("u_useTexture", 1f)
-
-        mesh.render(simpleShader, GL20.GL_TRIANGLES)
-    }
+     */
 }

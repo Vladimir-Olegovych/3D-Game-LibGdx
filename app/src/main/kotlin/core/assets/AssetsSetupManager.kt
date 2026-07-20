@@ -41,17 +41,20 @@ object AssetsSetupManager: LaunchedEffect {
         context.setObject(musicAssetManager)
         //---
         //ShaderProgram.pedantic = false
-        val simpleShader = ShaderProgram(
-            Gdx.files.local("$ASSETS_PATH/shaders/vertex_shader_simple.glsl").readString(),
-            Gdx.files.local("$ASSETS_PATH/shaders/fragment_shader_simple.glsl").readString()
+        val chunkShader = ShaderProgram(
+            Gdx.files.local("$ASSETS_PATH/shaders/chunk/vertex_shader_chunk.glsl").readString(),
+            Gdx.files.local("$ASSETS_PATH/shaders/chunk/fragment_shader_chunk.glsl").readString()
         )
-        check(simpleShader.isCompiled) { "Simple shader compile error: ${simpleShader.log}" }
-        context.setObject(ShaderTypes.SIMPLE_SHADER, simpleShader)
+        context.setObject(ShaderTypes.CHUNK_SHADER, chunkShader)
+        val modelShader = ShaderProgram(
+            Gdx.files.local("$ASSETS_PATH/shaders/model/vertex_shader_model.glsl").readString(),
+            Gdx.files.local("$ASSETS_PATH/shaders/model/fragment_shader_model.glsl").readString()
+        )
+        context.setObject(ShaderTypes.MODEL_SHADER, modelShader)
         val sunShader = ShaderProgram(
-            Gdx.files.local("$ASSETS_PATH/shaders/vertex_shader_sun.glsl").readString(),
-            Gdx.files.local("$ASSETS_PATH/shaders/fragment_shader_sun.glsl").readString()
+            Gdx.files.local("$ASSETS_PATH/shaders/sun/vertex_shader_sun.glsl").readString(),
+            Gdx.files.local("$ASSETS_PATH/shaders/sun/fragment_shader_sun.glsl").readString()
         )
-        check(sunShader.isCompiled) { "Sun shader compile error: ${sunShader.log}" }
         context.setObject(ShaderTypes.SUN_SHADER, sunShader)
     }
 }
