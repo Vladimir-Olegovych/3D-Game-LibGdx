@@ -16,16 +16,16 @@ class ChunkData(
     val pendingBlocks = ConcurrentHashMap<IntVector3, BlockType>()
 
     companion object {
-        const val SHADOW_MIN = 0x0F.toByte()
-        const val SHADOW_MAX = 0x6F.toByte()
+        const val SHADOW_MIN: Byte = 0
+        const val SHADOW_MAX: Byte = 30
 
-        private fun floatToShadowByte(value: Float): Byte {
+        fun floatToShadowByte(value: Float): Byte {
             val clamped = value.coerceIn(0f, 1f)
             val intValue = (clamped * (SHADOW_MAX - SHADOW_MIN) + SHADOW_MIN).toInt()
             return intValue.coerceIn(SHADOW_MIN.toInt(), SHADOW_MAX.toInt()).toByte()
         }
 
-        private fun shadowByteToFloat(byteValue: Byte): Float {
+        fun shadowByteToFloat(byteValue: Byte): Float {
             val normalized = (byteValue.toInt() - SHADOW_MIN).toFloat() / (SHADOW_MAX - SHADOW_MIN)
             return normalized.coerceIn(0f, 1f)
         }
@@ -36,7 +36,7 @@ class ChunkData(
             chunkHeight: Int
         ): ChunkData {
             val blocks = ByteArray(chunkWidth * chunkHeight * chunkWidth) { BlockType.AIR.id }
-            val shadows = ByteArray(chunkWidth * chunkHeight * chunkWidth) { 0x3f }
+            val shadows = ByteArray(chunkWidth * chunkHeight * chunkWidth) { 0 }
             return ChunkData(position, chunkWidth, chunkHeight, blocks, shadows)
         }
     }

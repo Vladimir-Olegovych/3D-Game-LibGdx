@@ -1,6 +1,6 @@
 package core.mesh
 
-object ShadowCompilerAO {
+object ShadowCompiler {
 
     fun vertexAO(side1: Boolean, side2: Boolean, corner: Boolean): Float {
         val blocked = (if (side1) 1 else 0) +
@@ -83,6 +83,29 @@ object ShadowCompilerAO {
             )
 
             else -> floatArrayOf(1f, 1f, 1f, 1f)
+        }
+    }
+
+    fun applyDirectionalAO(
+        aoPerVertex: FloatArray,
+        nx: Float,
+        ny: Float,
+        nz: Float
+    ): FloatArray {
+        val strength = when {
+            // AO from vertical walls should be the most visible.
+            nx != 0f || nz != 0f -> 1.0f
+            // Top face: keep AO softer to preserve skylight readability.
+            ny > 0f -> 0.45f
+            // Bottom face: moderate AO.
+            else -> 0.70f
+        }
+
+        if (strength >= 0.999f) return aoPerVertex
+
+        return FloatArray(aoPerVertex.size) { index ->
+            val ao = aoPerVertex[index].coerceIn(0f, 1f)
+            (1f - strength) + ao * strength
         }
     }
 
