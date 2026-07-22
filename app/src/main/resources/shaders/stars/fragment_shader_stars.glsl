@@ -23,12 +23,12 @@ float hash21(vec2 p) {
 
 float starCell(vec2 cellId, vec2 local) {
     float h = hash21(cellId);
-    if (h > 0.86) {
+    if (h > 0.92) {
         vec2 starPos = vec2(hash21(cellId + 1.3), hash21(cellId + 2.7));
         float dist = length(local - starPos);
         float brightness = hash21(cellId + 3.1);
-        float size = mix(0.032, 0.144, brightness);
-        return smoothstep(size, 0.0, dist) * mix(0.35, 1.0, brightness);
+        float size = mix(0.055, 0.13, brightness);
+        return smoothstep(size, 0.0, dist) * mix(0.45, 1.0, brightness);
     }
     return 0.0;
 }
@@ -86,7 +86,7 @@ float meteorStreak(vec2 uv, float slot, float time) {
         mix(0.35, 0.95, hash21(seed + 2.2))
     );
     float angle = mix(-0.9, -0.35, hash21(seed + 3.3));
-    float lengthTrail = mix(0.12, 0.28, hash21(seed + 4.4));
+    float lengthTrail = mix(0.04, 0.93, hash21(seed + 4.4));
     vec2 dir = vec2(cos(angle), sin(angle));
 
     vec2 head = start + dir * (progress * lengthTrail);
@@ -96,10 +96,10 @@ float meteorStreak(vec2 uv, float slot, float time) {
 
     float trailLen = lengthTrail * mix(0.35, 1.0, progress);
     float alongMask = step(0.0, along) * (1.0 - smoothstep(0.0, trailLen, along));
-    float width = mix(0.0025, 0.0012, along / max(trailLen, 0.001));
+    float width = mix(0.00083, 0.0004, along / max(trailLen, 0.001));
     float acrossMask = 1.0 - smoothstep(width, width * 2.5, across);
 
-    float headGlow = 1.0 - smoothstep(0.0, 0.012, length(toPixel));
+    float headGlow = 1.0 - smoothstep(0.0, 0.004, length(toPixel));
     float fade = sin(progress * 3.14159265);
     float brightness = mix(0.7, 1.0, hash21(seed + 5.5));
 
@@ -131,10 +131,9 @@ void main() {
     vec2 skyUv = rayToCubeUV(skyRay);
 
     float stars = 0.0;
-    stars += starLayer(skyUv, 100.0);
-    stars += starLayer(skyUv + 0.17, 180.0);
-    stars += starLayer(skyUv + 0.43, 320.0);
-    stars += starLayer(skyUv + 0.71, 520.0);
+    stars += starLayer(skyUv, 80.0);
+    stars += starLayer(skyUv + 0.17, 140.0);
+    stars += starLayer(skyUv + 0.43, 220.0) * 0.65;
     stars = min(stars, 1.0);
 
     float meteor = meteors(skyUv, u_time);
