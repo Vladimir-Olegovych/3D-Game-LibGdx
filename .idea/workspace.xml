@@ -6,8 +6,8 @@
   <component name="ChangeListManager">
     <list default="true" id="df78e54d-8fbf-4f78-86ee-f370d7368d41" name="Changes" comment="night update - day-cycle">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/core/time/TimeState.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/time/TimeState.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/resources/shaders/stars/fragment_shader_stars.glsl" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/resources/shaders/stars/fragment_shader_stars.glsl" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/core/assets/AssetsSetupManager.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/assets/AssetsSetupManager.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/core/configs/ConfigSetupManager.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/configs/ConfigSetupManager.kt" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -289,7 +289,15 @@
       <option name="project" value="LOCAL" />
       <updated>1784715972652</updated>
     </task>
-    <option name="localTasksCounter" value="19" />
+    <task id="LOCAL-00019" summary="night update - day-cycle">
+      <option name="closed" value="true" />
+      <created>1784727759530</created>
+      <option name="number" value="00019" />
+      <option name="presentableId" value="LOCAL-00019" />
+      <option name="project" value="LOCAL" />
+      <updated>1784727759530</updated>
+    </task>
+    <option name="localTasksCounter" value="20" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
