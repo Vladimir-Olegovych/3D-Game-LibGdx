@@ -58,7 +58,6 @@ class ChunkWorldUpdater : LaunchedEffect, DisposableEffect, DeltaUpdater(1 / 60F
     private lateinit var meshGenerator: MeshGenerator
     private lateinit var terrainGenerator: TerrainGenerator
     private lateinit var mainScope: CoroutineScope
-    private val shadowUpdater = ShadowUpdater()
 
     @Volatile
     private var isFirstGeneration = true
@@ -218,7 +217,6 @@ class ChunkWorldUpdater : LaunchedEffect, DisposableEffect, DeltaUpdater(1 / 60F
     @BusEvent
     fun chunkDrawResponse(event: ChunkEvent.OnDrawResponse) {
         lifecycleScope.launch {
-            precomputeShadowsForChunks(event.generationData.chunkPositionsToCreate)
             val meshJobs = coroutineScope {
                 event.generationData.chunkPositionsToCreate.map { position ->
                     async(Dispatchers.Default) {
@@ -231,7 +229,6 @@ class ChunkWorldUpdater : LaunchedEffect, DisposableEffect, DeltaUpdater(1 / 60F
                 }
             }
             meshJobs.awaitAll()
-            rebuildNeighbourChunkMeshes(event.generationData.chunkPositionsToCreate)
             chunkEventBus.sendEvent(ChunkEvent.OnFinalizeResponse(event.generationData))
         }
     }
@@ -387,66 +384,6 @@ class ChunkWorldUpdater : LaunchedEffect, DisposableEffect, DeltaUpdater(1 / 60F
             mainEventBus.sendEvent(GameEvent.OnCreateChunkMeshData(meshEntityId, meshData))
             physicsEventBus.sendEvent(GameEvent.OnCreateChunkRigidBody(meshEntityId, chunkData))
         }.await()
-    }
-
-    private suspend fun rebuildNeighbourChunkMeshes(createdChunkPositions: List<IntVector3>) {
-        if (createdChunkPositions.isEmpty()) return
-
-        val createdSet = createdChunkPositions.toHashSet()
-        val neighboursToRebuild = hashSetOf<IntVector3>()
-        val directions = buildList {
-            for (dx in -1..1) {
-                for (dy in -1..1) {
-                    for (dz in -1..1) {
-                        if (dx == 0 && dy == 0 && dz == 0) continue
-                        add(IntVector3(dx, dy, dz))
-                    }
-                }
-            }
-        }
-
-        for (chunkPos in createdSet) {
-            for (offset in directions) {
-                val neighbourPos = IntVector3(
-                    chunkPos.x + offset.x,
-                    chunkPos.y + offset.y,
-                    chunkPos.z + offset.z
-                )
-                if (neighbourPos in createdSet) continue
-                val neighbourChunk = chunkDataMap[neighbourPos] ?: continue
-                if (neighbourChunk.status == ChunkStatus.GENERATION) continue
-                if (meshDataMap[neighbourPos] == null) continue
-                neighboursToRebuild.add(neighbourPos)
-            }
-        }
-
-        if (neighboursToRebuild.isEmpty()) return
-
-        coroutineScope {
-            neighboursToRebuild.map { chunkPos ->
-                async(Dispatchers.Default) {
-                    parallelismMesh.withPermit {
-                        val updateChunkData = chunkDataMap[chunkPos] ?: return@withPermit
-                        val updateChunkEntityId = chunkDataPositionToEntityId[chunkPos] ?: return@withPermit
-                        val rawMeshData = meshGenerator.createMesh(chunkDataMap, updateChunkData)
-                        val meshData = withContext(mainScope.coroutineContext) {
-                            rawMeshData.createMeshData(chunkMeshParams)
-                        }
-                        meshDataMap[chunkPos] = meshData
-                        physicsEventBus.sendEvent(GameEvent.OnUpdateChunkData(updateChunkEntityId, updateChunkData))
-                        mainEventBus.sendEvent(GameEvent.OnUpdateChunkMeshData(updateChunkEntityId, meshData))
-                    }
-                }
-            }.awaitAll()
-        }
-    }
-
-    private fun precomputeShadowsForChunks(chunkPositions: List<IntVector3>) {
-        for (chunkPos in chunkPositions) {
-            val chunkData = chunkDataMap[chunkPos] ?: continue
-            if (chunkData.status == ChunkStatus.GENERATION) continue
-            shadowUpdater.updateShadow(chunkDataMap, chunkData)
-        }
     }
 
     private fun getWorldGenerationData(playerPosition: IntVector3): WorldGenerationData {

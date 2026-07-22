@@ -4,18 +4,8 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="df78e54d-8fbf-4f78-86ee-f370d7368d41" name="Changes" comment="update">
-      <change afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/chunk/ShadowUpdater.kt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/mesh/ChunkShadowSampler.kt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/mesh/ShadowCompilerSmooth.kt" afterDir="false" />
+    <list default="true" id="df78e54d-8fbf-4f78-86ee-f370d7368d41" name="Changes" comment="fixed shadow compiler">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/core/chunk/ChunkData.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/chunk/ChunkData.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/core/chunk/ChunkWorldUpdater.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/chunk/ChunkWorldUpdater.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/core/mesh/MeshHelper.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/mesh/MeshHelper.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/core/mesh/MeshUtils.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/mesh/MeshUtils.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/core/mesh/ShadowCompilerAO.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/mesh/ShadowCompiler.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/resources/shaders/chunk/fragment_shader_chunk.glsl" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/resources/shaders/chunk/fragment_shader_chunk.glsl" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/resources/shaders/chunk/vertex_shader_chunk.glsl" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/resources/shaders/chunk/vertex_shader_chunk.glsl" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -60,9 +50,11 @@
   </component>
   <component name="PropertiesComponent">{
   &quot;keyToString&quot;: {
+    &quot;Gradle.Build GDX-3D-TEST.executor&quot;: &quot;Run&quot;,
     &quot;Gradle.GDX-3D-TEST [:desktop:com.gigcreator.MainKt.main()].executor&quot;: &quot;Run&quot;,
     &quot;Gradle.GDX-3D-TEST [:desktop:windowsShadowDist].executor&quot;: &quot;Run&quot;,
     &quot;Gradle.GDX-3D-TEST [desktop:shadowJar].executor&quot;: &quot;Run&quot;,
+    &quot;Kotlin.MainKt.executor&quot;: &quot;Run&quot;,
     &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
@@ -243,7 +235,15 @@
       <option name="project" value="LOCAL" />
       <updated>1784539881408</updated>
     </task>
-    <option name="localTasksCounter" value="13" />
+    <task id="LOCAL-00013" summary="fixed shadow compiler">
+      <option name="closed" value="true" />
+      <created>1784559439334</created>
+      <option name="number" value="00013" />
+      <option name="presentableId" value="LOCAL-00013" />
+      <option name="project" value="LOCAL" />
+      <updated>1784559439334</updated>
+    </task>
+    <option name="localTasksCounter" value="14" />
     <servers />
   </component>
   <component name="VcsManagerConfiguration">
@@ -254,6 +254,7 @@
     <MESSAGE value="added vlc windows" />
     <MESSAGE value="removed vlc windows" />
     <MESSAGE value="update" />
-    <option name="LAST_COMMIT_MESSAGE" value="update" />
+    <MESSAGE value="fixed shadow compiler" />
+    <option name="LAST_COMMIT_MESSAGE" value="fixed shadow compiler" />
   </component>
 </project>

@@ -2,6 +2,7 @@ attribute vec3 a_Position;
 attribute vec3 a_Normal;
 attribute vec2 a_TexCoord;
 
+attribute float a_AO;
 attribute float a_Shadow;
 
 uniform mat4 modelViewProjection;
@@ -15,6 +16,7 @@ varying vec3 v_Normal;
 varying vec3 v_WorldPos;
 varying float v_FogFactor;
 
+varying float v_AO;
 varying float v_Shadow;
 
 void main() {
@@ -22,6 +24,7 @@ void main() {
     v_WorldPos = worldPosition.xyz;
     v_Normal   = normalize(mat3(transform) * a_Normal);
     v_TexCoord = a_TexCoord;
+    v_AO       = a_AO;
     v_Shadow   = a_Shadow;
 
     float fogStart = 0.7;

@@ -16,9 +16,10 @@ val chunkMeshParams = MeshParams(
         VertexAttribute(VertexAttributes.Usage.Position, 3, "a_Position"),
         VertexAttribute(VertexAttributes.Usage.Normal, 3, "a_Normal"),
         VertexAttribute(VertexAttributes.Usage.TextureCoordinates, 2, "a_TexCoord"),
+        VertexAttribute(VertexAttributes.Usage.Generic, 1, "a_AO"),
         VertexAttribute(VertexAttributes.Usage.Generic, 1, "a_Shadow")
     ),
-    stride = 9
+    stride = 10
 )
 
 data class Direction(
@@ -212,9 +213,9 @@ object MeshUtils {
         indicesList: ArrayList<Short>,
         bx: Int, by: Int, bz: Int,
         normal: VertexAttribute3.Normal,
-        shadowPerVertex: FloatArray,
         blockType: BlockType,
         directionType: DirectionType,
+        shadow: Float,
         blockExists: (Int, Int, Int) -> Boolean
     ) {
         val x = bx.toFloat()
@@ -264,8 +265,8 @@ object MeshUtils {
             else -> error("Invalid normal")
         }
 
-        val aoBase = ShadowCompiler.computeFaceAO(bx, by, bz, nx, ny, nz, blockExists)
-        val ao = ShadowCompiler.applyDirectionalAO(aoBase, nx, ny, nz)
+        val ao = ShadowCompilerAO.computeFaceAO(bx, by, bz, nx, ny, nz, blockExists)
+
         val flip = ao[0] + ao[2] < ao[1] + ao[3]
 
         val uvs = blockDataManager.faceUVs(directionType, blockType)
@@ -275,7 +276,6 @@ object MeshUtils {
         for (i in quadVertices.indices) {
             val v = quadVertices[i]
             val uv = uvs[i]
-            val shadow = shadowPerVertex.getOrElse(i) { shadowPerVertex.lastOrNull() ?: 1f }
             verticesList.add(x + v[0])
             verticesList.add(y + v[1])
             verticesList.add(z + v[2])
@@ -284,7 +284,8 @@ object MeshUtils {
             verticesList.add(nz)
             verticesList.add(uv.x)
             verticesList.add(uv.y)
-            verticesList.add((shadow * ao[i]).coerceIn(0f, 1f))
+            verticesList.add(ao[i])
+            verticesList.add(shadow)
         }
 
         if (flip) {

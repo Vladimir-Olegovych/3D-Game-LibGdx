@@ -36,7 +36,7 @@ class ChunkData(
             chunkHeight: Int
         ): ChunkData {
             val blocks = ByteArray(chunkWidth * chunkHeight * chunkWidth) { BlockType.AIR.id }
-            val shadows = ByteArray(chunkWidth * chunkHeight * chunkWidth) { 0 }
+            val shadows = ByteArray(chunkWidth * chunkHeight * chunkWidth) { 15 }
             return ChunkData(position, chunkWidth, chunkHeight, blocks, shadows)
         }
     }
