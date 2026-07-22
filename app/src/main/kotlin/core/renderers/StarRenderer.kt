@@ -24,6 +24,7 @@ class StarRenderer : LaunchedEffect, DisposableEffect {
 
     private val invViewProj = Matrix4()
     private var disposed = false
+    private var elapsedTime = 0f
 
     override fun launch(context: Context) {
         starShader = context.getObject(ShaderTypes.STAR_SHADER)
@@ -37,6 +38,7 @@ class StarRenderer : LaunchedEffect, DisposableEffect {
         val nightFactor = timeState.starVisibility()
         if (nightFactor < 0.001f) return
 
+        elapsedTime += Gdx.graphics.deltaTime
         invViewProj.set(camera.combined).inv()
 
         Gdx.gl.glEnable(GL20.GL_BLEND)
@@ -49,6 +51,7 @@ class StarRenderer : LaunchedEffect, DisposableEffect {
         starShader.setUniformMatrix("u_invViewProj", invViewProj)
         starShader.setUniformf("u_nightFactor", nightFactor)
         starShader.setUniformf("u_skyRotation", timeState.skyRotation())
+        starShader.setUniformf("u_time", elapsedTime)
 
         mesh.render(starShader, GL20.GL_TRIANGLE_FAN)
 

@@ -15,7 +15,7 @@ class TimeState {
     var timeOfDay = 0.25f
         private set
 
-    var cycleDuration = 30f
+    var cycleDuration = 600f
 
     var maxShadowThreshold = 0.5f
         set(value) { field = value.coerceIn(0f, 1f) }
