@@ -14,7 +14,10 @@ import com.badlogic.gdx.math.Vector3
 import com.gigapi.texture.DefaultsTextures
 import core.chunk.ChunkWorldUpdater
 import core.defaults.CameraTypes
+import core.renderers.StarRenderer
+import core.renderers.SkyPlanetRenderer
 import core.shaders.ShaderTypes
+import core.time.TimeState
 
 @One(MeshComponent::class, BlenderModelComponent::class)
 class DrawSystem: BaseEntitySystem() {
@@ -30,14 +33,23 @@ class DrawSystem: BaseEntitySystem() {
     private lateinit var camera: PerspectiveCamera
     @Wire(name = ShaderTypes.CHUNK_SHADER)
     private lateinit var chunkShader: ShaderProgram
+    @Wire
+    private lateinit var timeState: TimeState
+    @Wire
+    private lateinit var starRenderer: StarRenderer
+    @Wire
+    private lateinit var skyPlanetRenderer: SkyPlanetRenderer
     //@Wire(name = ShaderTypes.MODEL_SHADER)
     //private lateinit var modelShader: ShaderProgram
 
     private val drawTasks = arrayOf(DrawTaskChunks())
 
     override fun begin() {
-        Gdx.gl.glClearColor(135 / 255f, 206 / 255f, 235 / 255f, 1f)
+        val fog = timeState.fogColor()
+        Gdx.gl.glClearColor(fog[0], fog[1], fog[2], 1f)
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT or GL20.GL_DEPTH_BUFFER_BIT)
+        starRenderer.render()
+        skyPlanetRenderer.render()
         Gdx.gl.glEnable(GL20.GL_CULL_FACE)
         Gdx.gl.glEnable(GL20.GL_DEPTH_TEST)
     }
@@ -66,11 +78,14 @@ class DrawSystem: BaseEntitySystem() {
             chunkShader.bind()
             chunkShader.setUniformi("u_texture", 0)
             chunkShader.setUniformMatrix("modelViewProjection", camera.combined)
-            //Fog
             chunkShader.setUniformf("viewPosition", camera.position)
             chunkShader.setUniformf("horizontalRadius", camera.far)
             chunkShader.setUniformf("verticalRadius", fogVerticalRadius)
-            chunkShader.setUniformf("fogColor", 135 / 255f, 206 / 255f, 240 / 255f)
+            val fog = timeState.fogColor()
+            chunkShader.setUniformf("fogColor", fog[0], fog[1], fog[2])
+            chunkShader.setUniformf("u_dayPhase", timeState.dayPhase)
+            chunkShader.setUniformf("u_maxShadowThreshold", timeState.maxShadowThreshold)
+            chunkShader.setUniformf("u_nightBlueFilter", timeState.nightBlueFilter)
 
             for (i in 0 until entities.size()) {
                 val entityId = entities[i]

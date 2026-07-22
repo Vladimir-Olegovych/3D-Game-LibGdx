@@ -13,6 +13,7 @@ import com.gigapi.viewport.UnfairViewport
 import core.blocks.BlockDataManager
 import core.chunk.ChunkWorldUpdater
 import core.mesh.MeshHelper
+import core.chunk.ShadowUpdater
 import core.scope.DispatcherTypes
 import core.terrain.TerrainGenerator
 import core.viewport.ViewportTypes
@@ -48,6 +49,8 @@ object DefaultGameSetupManager: Executor, LaunchedEffect {
         context.setObject(BlockDataManager())
         //---
         context.setObject(MeshHelper())
+        //---
+        context.setObject(ShadowUpdater())
         //---
         context.setObject<CoroutineDispatcher>(DispatcherTypes.MAIN, asCoroutineDispatcher())
     }

@@ -52,9 +52,14 @@ object AssetsSetupManager: LaunchedEffect {
         )
         context.setObject(ShaderTypes.MODEL_SHADER, modelShader)
         val sunShader = ShaderProgram(
-            Gdx.files.local("$ASSETS_PATH/shaders/sun/vertex_shader_sun.glsl").readString(),
-            Gdx.files.local("$ASSETS_PATH/shaders/sun/fragment_shader_sun.glsl").readString()
+            Gdx.files.local("$ASSETS_PATH/shaders/sky_planet/vertex_shader_sky_planet.glsl").readString(),
+            Gdx.files.local("$ASSETS_PATH/shaders/sky_planet/fragment_shader_sky_planet.glsl").readString()
         )
-        context.setObject(ShaderTypes.SUN_SHADER, sunShader)
+        context.setObject(ShaderTypes.SKY_PLANET_SHADER, sunShader)
+        val starShader = ShaderProgram(
+            Gdx.files.local("$ASSETS_PATH/shaders/stars/vertex_shader_stars.glsl").readString(),
+            Gdx.files.local("$ASSETS_PATH/shaders/stars/fragment_shader_stars.glsl").readString()
+        )
+        context.setObject(ShaderTypes.STAR_SHADER, starShader)
     }
 }

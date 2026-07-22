@@ -18,11 +18,13 @@ void main() {
     float dist = length(diff);
 
     float alpha = 1.0 - smoothstep(u_radius - 0.005, u_radius, dist);
+    alpha *= u_sunColor.a;
 
     if (alpha < 0.001) discard;
 
     float glow = 1.0 - smoothstep(u_radius, u_radius * 2.5, dist);
-    vec4 glowColor = vec4(u_sunColor.rgb, glow * 0.25);
+    vec4 glowColor = vec4(u_sunColor.rgb, glow * 0.25 * u_sunColor.a);
+    vec4 coreColor = vec4(u_sunColor.rgb, alpha);
 
-    gl_FragColor = mix(glowColor, u_sunColor, alpha);
+    gl_FragColor = mix(glowColor, coreColor, alpha);
 }

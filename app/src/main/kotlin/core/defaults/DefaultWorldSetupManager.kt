@@ -4,7 +4,7 @@ import app.feature.game.dialogs.InventoryDialog
 import app.feature.game.dialogs.PauseDialog
 import app.feature.game.event.EventBusTypes
 import app.feature.game.ui.AimUI
-import app.feature.game.ui.FpsUI
+import app.feature.game.ui.DataUI
 import app.feature.game.ui.InventoryUI
 import com.badlogic.gdx.InputMultiplexer
 import com.badlogic.gdx.scenes.scene2d.Stage
@@ -17,8 +17,10 @@ import core.chunk.ChunkWorldUpdater
 import core.controls.PlayerInputProcessor
 import core.controls.UiInputProcessor
 import core.items.InventoryManager
-import core.renderers.SunRenderer
+import core.renderers.StarRenderer
+import core.renderers.SkyPlanetRenderer
 import core.terrain.TerrainGenerator
+import core.time.TimeState
 
 object DefaultWorldSetupManager: LaunchedEffect {
 
@@ -37,7 +39,10 @@ object DefaultWorldSetupManager: LaunchedEffect {
         val musicPlayer = MusicPlayer(context.getObject())
         context.setObject(musicPlayer)
         //---
-        context.setObject(SunRenderer())
+        context.setObject(SkyPlanetRenderer())
+        context.setObject(StarRenderer())
+        //---
+        context.setObject(TimeState())
         //---
         context.setObject(EventBusTypes.MAIN_EVENT_BUS, EventBus())
         context.setObject(EventBusTypes.CHUNK_EVENT_BUS, EventBus())
@@ -47,7 +52,7 @@ object DefaultWorldSetupManager: LaunchedEffect {
         context.setObject(InventoryDialog())
         //UI
         context.setObject(AimUI())
-        context.setObject(FpsUI())
+        context.setObject(DataUI())
         context.setObject(InventoryUI())
         //---
         context.setObject(PhysicsWorldUpdater())

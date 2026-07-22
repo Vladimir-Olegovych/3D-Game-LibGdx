@@ -16,8 +16,8 @@ class ChunkData(
     val pendingBlocks = ConcurrentHashMap<IntVector3, BlockType>()
 
     companion object {
-        const val SHADOW_MIN: Byte = 0
         const val SHADOW_MAX: Byte = 30
+        const val SHADOW_MIN: Byte = 0
 
         fun floatToShadowByte(value: Float): Byte {
             val clamped = value.coerceIn(0f, 1f)

@@ -67,11 +67,11 @@ class PhysicsWorldUpdater: LaunchedEffect, DeltaUpdater(1 / 60F, Dispatchers.Def
     fun onUpdateChunkData(event: GameEvent.OnUpdateChunkData) {
         val entityId = event.chunkEntityId
         lastUpdate[entityId] = event
-        val physicalData = physicBodies[entityId]?: return
-        val body = physicalData.getBody()
-
-        physicBodies.remove(entityId)
-        physicsWorld.world.removeRigidBody(body)
+        val physicalData = physicBodies.remove(entityId) ?: return
+        val body = physicalData.getBodyOrNull() ?: return
+        if (!body.isDisposed) {
+            physicsWorld.world.removeRigidBody(body)
+        }
         physicalData.dispose()
     }
 
@@ -110,9 +110,11 @@ class PhysicsWorldUpdater: LaunchedEffect, DeltaUpdater(1 / 60F, Dispatchers.Def
     @BusEvent
     fun onBodyRemoved(event: GameEvent.OnRemoveRigidBody) {
         val entityId = event.entityId
-        val physicalData = physicBodies[entityId]?: return
-        physicBodies.remove(entityId)
-        physicsWorld.world.removeRigidBody(physicalData.getBody())
+        val physicalData = physicBodies.remove(entityId) ?: return
+        val body = physicalData.getBodyOrNull() ?: return
+        if (!body.isDisposed) {
+            physicsWorld.world.removeRigidBody(body)
+        }
         physicalData.dispose()
     }
 
@@ -156,8 +158,10 @@ class PhysicsWorldUpdater: LaunchedEffect, DeltaUpdater(1 / 60F, Dispatchers.Def
 
     override fun dispose() {
         for ((_, data) in physicBodies) {
-            val body = data.getBody()
-            physicsWorld.world.removeRigidBody(body)
+            val body = data.getBodyOrNull()
+            if (body != null && !body.isDisposed) {
+                physicsWorld.world.removeRigidBody(body)
+            }
             data.dispose()
         }
         physicBodies.clear()

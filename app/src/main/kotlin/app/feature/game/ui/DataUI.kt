@@ -8,22 +8,28 @@ import com.badlogic.gdx.scenes.scene2d.ui.Table
 import com.gigapi.effects.LaunchedEffect
 import com.gigapi.general.Context
 import core.assets.SkinID
+import core.time.TimeState
 import core.ui.UIGetter
 
-class FpsUI : LaunchedEffect, UIGetter {
+class DataUI : LaunchedEffect, UIGetter {
 
     private val layout = Table().apply {
         setFillParent(true)
         right()
         top()
     }
+    private lateinit var timeState: TimeState
     private lateinit var fpsLabel: Label
+    private lateinit var timeLabel: Label
 
     override fun launch(context: Context) {
+        timeState = context.getObject()
         val assetManager = context.getObject<AssetManager>()
         val skin = assetManager.get<Skin>(SkinID.BUTTON.skin)
         fpsLabel = Label("FPS: Not updated", skin)
-        layout.add(fpsLabel)
+        timeLabel = Label("Time: ", skin)
+        layout.add(fpsLabel).row()
+        layout.add(timeLabel)
     }
 
     private var frameCount = 0
@@ -31,6 +37,15 @@ class FpsUI : LaunchedEffect, UIGetter {
     private var currentFps = 0
 
     fun update(deltaTime: Float) {
+        updateTime()
+        updateFPS(deltaTime)
+    }
+
+    private fun updateTime() {
+        timeLabel.setText("Time: ${String.format("%.1f", timeState.dayPhase)}")
+    }
+
+    private fun updateFPS(deltaTime: Float) {
         frameCount++
         elapsedTime += deltaTime
 

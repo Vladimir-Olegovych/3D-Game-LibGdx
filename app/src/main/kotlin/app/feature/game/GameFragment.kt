@@ -73,6 +73,7 @@ class GameFragment(
 
         arrayOf(
             WorldSystem(),
+            TimeSystem(),
             PlayerSystem(),
             MoveSystem(),
             ChunkSystem(),
@@ -108,6 +109,7 @@ class GameFragment(
         inputMultiplexer.clear()
         artemisWorld.disposeALL()
         eventBus.clear()
+        gameContext.getObject<EventBus>(EventBusTypes.PHYSICS_EVENT_BUS).process()
         gameContext.removeContext(context)
         gameContext.dispose()
     }

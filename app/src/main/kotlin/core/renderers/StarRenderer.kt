@@ -1,57 +1,60 @@
 package core.renderers
 
 import com.badlogic.gdx.Gdx
-import com.badlogic.gdx.graphics.*
+import com.badlogic.gdx.graphics.GL20
+import com.badlogic.gdx.graphics.Mesh
+import com.badlogic.gdx.graphics.PerspectiveCamera
+import com.badlogic.gdx.graphics.VertexAttribute
+import com.badlogic.gdx.graphics.VertexAttributes
 import com.badlogic.gdx.graphics.glutils.ShaderProgram
-import com.badlogic.gdx.math.Vector3
+import com.badlogic.gdx.math.Matrix4
 import com.gigapi.effects.DisposableEffect
 import com.gigapi.effects.LaunchedEffect
 import com.gigapi.general.Context
 import core.defaults.CameraTypes
 import core.shaders.ShaderTypes
+import core.time.TimeState
 
-class SunRenderer : LaunchedEffect, DisposableEffect {
+class StarRenderer : LaunchedEffect, DisposableEffect {
 
-    private lateinit var sunShader: ShaderProgram
+    private lateinit var starShader: ShaderProgram
     private lateinit var camera: PerspectiveCamera
+    private lateinit var timeState: TimeState
     private lateinit var mesh: Mesh
 
-    private val sunColor = floatArrayOf(1.0f, 0.95f, 0.3f, 1.0f)
-    private val sunRadius = 0.06f
-    private val tmpVec = Vector3()
+    private val invViewProj = Matrix4()
+    private var disposed = false
 
     override fun launch(context: Context) {
-        sunShader = context.getObject(ShaderTypes.SUN_SHADER)
+        starShader = context.getObject(ShaderTypes.STAR_SHADER)
         camera = context.getObject(CameraTypes.GL_3D)
+        timeState = context.getObject()
         mesh = createFullscreenQuad()
     }
-    fun render(lightPosition: Vector3) {
-        val sunPosition = lightPosition.cpy()
-        val screenPos = camera.project(sunPosition)
 
-        val screenX = (screenPos.x / Gdx.graphics.width) * 2f - 1f
-        val screenY = (screenPos.y / Gdx.graphics.height) * 2f - 1f
+    fun render() {
+        if (disposed) return
+        val nightFactor = timeState.starVisibility()
+        if (nightFactor < 0.001f) return
 
-        val aspectRatio = Gdx.graphics.width.toFloat() / Gdx.graphics.height.toFloat()
+        invViewProj.set(camera.combined).inv()
 
         Gdx.gl.glEnable(GL20.GL_BLEND)
-        Gdx.gl.glEnable(GL20.GL_DEPTH_TEST)
         Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA)
+        Gdx.gl.glEnable(GL20.GL_DEPTH_TEST)
         Gdx.gl.glDepthFunc(GL20.GL_LEQUAL)
         Gdx.gl.glDepthMask(false)
 
-        sunShader.bind()
-        sunShader.setUniform2fv("u_sunScreenPos", floatArrayOf(screenX, screenY), 0, 2)
-        sunShader.setUniformf("u_radius", sunRadius)
-        sunShader.setUniformf("u_aspectRatio", aspectRatio)
-        sunShader.setUniform4fv("u_sunColor", sunColor, 0, 4)
+        starShader.bind()
+        starShader.setUniformMatrix("u_invViewProj", invViewProj)
+        starShader.setUniformf("u_nightFactor", nightFactor)
+        starShader.setUniformf("u_skyRotation", timeState.skyRotation())
 
-        mesh.render(sunShader, GL20.GL_TRIANGLE_FAN)
+        mesh.render(starShader, GL20.GL_TRIANGLE_FAN)
 
-        Gdx.gl.glDisable(GL20.GL_BLEND)
-        Gdx.gl.glDisable(GL20.GL_DEPTH_TEST)
-        Gdx.gl.glDepthFunc(GL20.GL_LESS)
         Gdx.gl.glDepthMask(true)
+        Gdx.gl.glDepthFunc(GL20.GL_LESS)
+        Gdx.gl.glDisable(GL20.GL_BLEND)
     }
 
     private fun createFullscreenQuad(): Mesh {
@@ -70,6 +73,8 @@ class SunRenderer : LaunchedEffect, DisposableEffect {
     }
 
     override fun dispose() {
+        if (disposed) return
+        disposed = true
         mesh.dispose()
     }
 }

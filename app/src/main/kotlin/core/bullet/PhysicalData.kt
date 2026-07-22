@@ -28,9 +28,9 @@ class PhysicalData(val isStatic: Boolean) : Disposable {
     override fun dispose() {
         rigidBodies.forEach { if (!it.isDisposed) it.dispose() }
         motionStates.forEach { if (!it.isDisposed) it.dispose() }
-        collisionShapes.forEach { if (!it.isDisposed) it.dispose() }
-        shapes.forEach { if (!it.isDisposed) it.dispose() }
         compounds.forEach { if (!it.isDisposed) it.dispose() }
+        shapes.forEach { if (!it.isDisposed) it.dispose() }
+        collisionShapes.forEach { if (!it.isDisposed) it.dispose() }
         triangleMeshes.forEach { if (!it.isDisposed) it.dispose() }
 
         rigidBodies.clear()

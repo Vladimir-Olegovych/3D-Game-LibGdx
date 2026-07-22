@@ -55,6 +55,7 @@ class ChunkWorldUpdater : LaunchedEffect, DisposableEffect, DeltaUpdater(1 / 60F
     private lateinit var mainEventBus: EventBus
     private lateinit var chunkEventBus: EventBus
     private lateinit var physicsEventBus: EventBus
+    private lateinit var shadowUpdater: ShadowUpdater
     private lateinit var meshGenerator: MeshGenerator
     private lateinit var terrainGenerator: TerrainGenerator
     private lateinit var mainScope: CoroutineScope
@@ -71,6 +72,7 @@ class ChunkWorldUpdater : LaunchedEffect, DisposableEffect, DeltaUpdater(1 / 60F
         chunkEventBus = context.getObject(EventBusTypes.CHUNK_EVENT_BUS)
         physicsEventBus = context.getObject(EventBusTypes.PHYSICS_EVENT_BUS)
         meshGenerator = context.getObject<MeshHelper>()
+        shadowUpdater = context.getObject()
         terrainGenerator = context.getObject()
         mainScope = CoroutineScope(context.getObject<CoroutineDispatcher>(DispatcherTypes.MAIN))
         chunkEventBus.registerHandler(this)
@@ -267,8 +269,17 @@ class ChunkWorldUpdater : LaunchedEffect, DisposableEffect, DeltaUpdater(1 / 60F
         chunkData.setBlockByLocal(event.blockType, blockPosition)
 
         lifecycleScope.launch {
+            val shadowChunksToUpdate = shadowUpdater.updateShadow(
+                chunkMap = chunkDataMap,
+                chunkData = chunkData,
+                updateChunksBelow = true
+            )
             val neighboursToUpdate = WorldDataHelper.getEdgeNeighbourChunks(chunkData, blockPosition, chunkDataMap)
-            val chunksToUpdate = (listOf(chunkData.position) + neighboursToUpdate.map { it.position }).toSet()
+            val chunksToUpdate = (
+                listOf(chunkData.position) +
+                    shadowChunksToUpdate +
+                    neighboursToUpdate.map { it.position }
+                ).toSet()
 
             for (chunkPos in chunksToUpdate) {
                 val updateChunkData = chunkDataMap[chunkPos] ?: continue
@@ -375,6 +386,7 @@ class ChunkWorldUpdater : LaunchedEffect, DisposableEffect, DeltaUpdater(1 / 60F
         if (removedChunkDates.contains(position) || removedChunkMeshes.contains(position)) return
         val chunkData = chunkDataMap[position]?: return
         val meshEntityId = chunkMeshPositionToEntityId[position]?: return
+        shadowUpdater.updateShadow(chunkDataMap, chunkData)
         val rawMeshData = meshGenerator.createMesh(chunkDataMap, chunkData)
         if (rawMeshData.isEmpty()) return
 
