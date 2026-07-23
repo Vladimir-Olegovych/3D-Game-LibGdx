@@ -8,7 +8,8 @@ enum class BlockType(val id: Byte) {
     STONE(4),
     WOOD(5),
     LEAVES(6),
-    SAND(7);
+    SAND(7),
+    CACTUS(8);
 
     companion object {
         private val map = entries.associateBy(BlockType::id)

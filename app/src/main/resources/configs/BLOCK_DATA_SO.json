@@ -1,33 +1,33 @@
 {
   "textureDataList" : [ {
     "blockType" : "GRASS",
-    "regionNameUp" : "tile_grass_block_top",
-    "regionNameSide" : "tile_grass_block_side",
-    "regionNameDown" : "tile_dirt_block",
+    "regionNameUp" : "tile_grass_top",
+    "regionNameSide" : "tile_grass_side",
+    "regionNameDown" : "tile_dirt",
     "solid" : true,
     "generateAllSides" : false,
     "generateCollider" : true
   }, {
     "blockType" : "DIRT",
-    "regionNameUp" : "tile_dirt_block",
-    "regionNameSide" : "tile_dirt_block",
-    "regionNameDown" : "tile_dirt_block",
+    "regionNameUp" : "tile_dirt",
+    "regionNameSide" : "tile_dirt",
+    "regionNameDown" : "tile_dirt",
     "solid" : true,
     "generateAllSides" : false,
     "generateCollider" : true
   }, {
     "blockType" : "STONE",
-    "regionNameUp" : "tile_stone_block",
-    "regionNameSide" : "tile_stone_block",
-    "regionNameDown" : "tile_stone_block",
+    "regionNameUp" : "tile_stone",
+    "regionNameSide" : "tile_stone",
+    "regionNameDown" : "tile_stone",
     "solid" : true,
     "generateAllSides" : false,
     "generateCollider" : true
   }, {
     "blockType" : "SAND",
-    "regionNameUp" : "tile_sand_block",
-    "regionNameSide" : "tile_sand_block",
-    "regionNameDown" : "tile_sand_block",
+    "regionNameUp" : "tile_sand",
+    "regionNameSide" : "tile_sand",
+    "regionNameDown" : "tile_sand",
     "solid" : true,
     "generateAllSides" : false,
     "generateCollider" : true
@@ -46,6 +46,14 @@
     "regionNameDown" : "tile_oak_wood_leaves",
     "solid" : true,
     "generateAllSides" : true,
+    "generateCollider" : true
+  }, {
+    "blockType" : "CACTUS",
+    "regionNameUp" : "tile_cactus_top",
+    "regionNameSide" : "tile_cactus_side",
+    "regionNameDown" : "tile_cactus_top",
+    "solid" : true,
+    "generateAllSides" : false,
     "generateCollider" : true
   } ]
 }

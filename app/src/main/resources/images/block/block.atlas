@@ -20,7 +20,7 @@ tile_0ef72701-3e02-4f05-9b2f-795e1078287d
 bounds:640,512,128,128
 tile_0ff6f330-0570-4263-aa96-dbafb3557cfe
 bounds:128,768,128,128
-tile_12c3de34-2429-4401-a5f5-7aa5d6c54eac
+tile_cactus_side
 bounds:128,640,128,128
 tile_178ca7fe-1a93-44d7-bb09-bc7a52320183
 bounds:384,256,128,128
@@ -140,7 +140,7 @@ tile_d04bc4fc-9b55-40c0-be2a-47019bf2fe3a
 bounds:128,512,128,128
 tile_dba0bd22-4a70-4f4f-8f9a-893d3c223a86
 bounds:1024,896,128,128
-tile_dirt_block
+tile_dirt
 bounds:1152,768,128,128
 tile_e635fba4-ea95-486c-a8b4-8c6a32aa56c0
 bounds:384,0,128,128
@@ -148,7 +148,7 @@ tile_f341e6f6-5f21-4431-acb1-cbd4bd5e6ab7
 bounds:896,512,128,128
 tile_f3478486-359a-49e6-9ea8-cc9fc1b6ffa7
 bounds:128,128,128,128
-tile_f64eaa9c-c4c9-466c-b60c-cf373ddb3f48
+tile_cactus_top
 bounds:256,640,128,128
 tile_f850fa72-0ca2-4a47-949b-40908e94577f
 bounds:1152,1152,128,128
@@ -158,9 +158,9 @@ tile_fc16ce2b-962b-4f31-838a-798062c1ca10
 bounds:512,256,128,128
 tile_fe7437a4-9b3d-4553-8c10-9d1155afe7b9
 bounds:256,256,128,128
-tile_grass_block_side
+tile_grass_side
 bounds:0,1152,128,128
-tile_grass_block_top
+tile_grass_top
 bounds:768,384,128,128
 tile_oak_wood_leaves
 bounds:512,896,128,128
@@ -168,7 +168,7 @@ tile_oak_wood_side
 bounds:640,1024,128,128
 tile_oak_wood_top
 bounds:128,1152,128,128
-tile_sand_block
+tile_sand
 bounds:640,256,128,128
-tile_stone_block
+tile_stone
 bounds:128,0,128,128

@@ -4,19 +4,14 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="df78e54d-8fbf-4f78-86ee-f370d7368d41" name="Changes" comment="update">
-      <change afterPath="$PROJECT_DIR$/app/src/main/kotlin/app/feature/game/ecs/states/TimeState.kt" afterDir="false" />
+    <list default="true" id="df78e54d-8fbf-4f78-86ee-f370d7368d41" name="Changes" comment="model drawing update">
+      <change afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/terrain/structures/CactusStructure.kt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/app/feature/game/ecs/systems/DrawSystem.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/app/feature/game/ecs/systems/DrawSystem.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/app/feature/game/ecs/systems/TimeSystem.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/app/feature/game/ecs/systems/TimeSystem.kt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/app/feature/game/ecs/systems/WorldSystem.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/app/feature/game/ecs/systems/WorldSystem.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/app/feature/game/ui/DataUI.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/app/feature/game/ui/DataUI.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/core/defaults/DefaultWorldSetupManager.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/defaults/DefaultWorldSetupManager.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/core/renderers/SkyPlanetRenderer.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/renderers/SkyPlanetRenderer.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/core/renderers/StarRenderer.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/renderers/StarRenderer.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/core/time/TimeState.kt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/resources/shaders/model/fragment_shader_model.glsl" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/resources/shaders/model/fragment_shader_model.glsl" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/resources/shaders/stars/fragment_shader_stars.glsl" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/resources/shaders/stars/fragment_shader_stars.glsl" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/core/blocks/BlockType.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/blocks/BlockType.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/core/terrain/biome/biomes/DesertBiomeGenerator.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/terrain/biome/biomes/DesertBiomeGenerator.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/resources/configs/BLOCK_DATA_SO.json" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/resources/configs/BLOCK_DATA_SO.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/resources/images/block/block.atlas" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/resources/images/block/block.atlas" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -85,6 +80,7 @@
       <recent name="$PROJECT_DIR$/app/src/main/resources/shaders/chunk" />
     </key>
     <key name="CopyKotlinDeclarationDialog.RECENTS_KEY">
+      <recent name="core.terrain.structures" />
       <recent name="app.feature.game.ecs.systems" />
       <recent name="app.feature.game.ui" />
       <recent name="app.feature.game.ecs.components" />
@@ -315,7 +311,15 @@
       <option name="project" value="LOCAL" />
       <updated>1784729865186</updated>
     </task>
-    <option name="localTasksCounter" value="21" />
+    <task id="LOCAL-00021" summary="model drawing update">
+      <option name="closed" value="true" />
+      <created>1784812958690</created>
+      <option name="number" value="00021" />
+      <option name="presentableId" value="LOCAL-00021" />
+      <option name="project" value="LOCAL" />
+      <updated>1784812958690</updated>
+    </task>
+    <option name="localTasksCounter" value="22" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -346,6 +350,7 @@
     <MESSAGE value="fixed shadow compiler back" />
     <MESSAGE value="night update - day-cycle" />
     <MESSAGE value="update" />
-    <option name="LAST_COMMIT_MESSAGE" value="update" />
+    <MESSAGE value="model drawing update" />
+    <option name="LAST_COMMIT_MESSAGE" value="model drawing update" />
   </component>
 </project>
