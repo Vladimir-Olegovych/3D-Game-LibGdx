@@ -8,7 +8,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Table
 import com.gigapi.effects.LaunchedEffect
 import com.gigapi.general.Context
 import core.assets.SkinID
-import core.time.TimeState
+import app.feature.game.ecs.states.TimeState
 import core.ui.UIGetter
 
 class DataUI : LaunchedEffect, UIGetter {

@@ -110,10 +110,6 @@ float meteors(vec2 uv, float time) {
     float result = 0.0;
     result += meteorStreak(uv, 0.0, time);
     result += meteorStreak(uv, 1.0, time + 1.3);
-    result += meteorStreak(uv, 2.0, time + 2.7);
-    result += meteorStreak(uv, 3.0, time + 4.1);
-    result += meteorStreak(uv, 4.0, time + 5.9);
-    result += meteorStreak(uv, 5.0, time + 7.2);
     return min(result, 1.5);
 }
 

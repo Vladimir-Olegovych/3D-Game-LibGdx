@@ -28,9 +28,8 @@ void main() {
 
     float lit = ambient + (1.0 - ambient) * dirLight;
 
-    vec3 litColor   = albedo * clamp(lit, 0.0, 1.5);
-    vec3 finalColor = mix(litColor, 1.0 - v_FogFactor);
+    vec3 litColor = albedo * clamp(lit, 0.0, 1.5);
 
     float outAlpha = mix(1.0, texSample.a, u_useTexture);
-    gl_FragColor = vec4(finalColor, outAlpha);
+    gl_FragColor = vec4(litColor, outAlpha);
 }

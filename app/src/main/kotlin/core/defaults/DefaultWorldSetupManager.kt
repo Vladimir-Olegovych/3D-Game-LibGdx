@@ -20,7 +20,7 @@ import core.items.InventoryManager
 import core.renderers.StarRenderer
 import core.renderers.SkyPlanetRenderer
 import core.terrain.TerrainGenerator
-import core.time.TimeState
+import app.feature.game.ecs.states.TimeState
 
 object DefaultWorldSetupManager: LaunchedEffect {
 

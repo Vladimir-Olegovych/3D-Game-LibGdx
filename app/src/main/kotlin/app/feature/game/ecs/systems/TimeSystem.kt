@@ -2,7 +2,7 @@ package app.feature.game.ecs.systems
 
 import com.artemis.BaseSystem
 import com.artemis.annotations.Wire
-import core.time.TimeState
+import app.feature.game.ecs.states.TimeState
 
 class TimeSystem : BaseSystem() {
 

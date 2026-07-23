@@ -1,4 +1,4 @@
-package core.time
+package app.feature.game.ecs.states
 
 import com.badlogic.gdx.math.MathUtils
 import com.badlogic.gdx.math.Vector3

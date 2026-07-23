@@ -9,7 +9,7 @@ import com.gigapi.effects.LaunchedEffect
 import com.gigapi.general.Context
 import core.defaults.CameraTypes
 import core.shaders.ShaderTypes
-import core.time.TimeState
+import app.feature.game.ecs.states.TimeState
 
 class SkyPlanetRenderer : LaunchedEffect, DisposableEffect {
 
