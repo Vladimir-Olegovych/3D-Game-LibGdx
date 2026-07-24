@@ -18,14 +18,15 @@ import core.terrain.layers.ShadowLayerHandler
 import core.terrain.layers.StructureLayerHandler
 import core.terrain.layers.SurfaceLayerHandler
 import core.terrain.layers.UndergroundLayerHandler
+import core.terrain.structures.OakTreeStructure
 import core.terrain.structures.RockStructure
-import core.terrain.structures.TreeStructure
+import core.terrain.structures.SpruceTreeStructure
 import math.noice.FastNoise
 
 class ForestBiomeGenerator : LaunchedEffect, BiomeGenerator() {
 
     private val baseNoiseSettings = NoiseSettings(
-        noiseZoom = 0.005f,
+        noiseZoom = 0.004f,
         octaves = 5,
         persistance = 0.5f,
         redistributionModifier = 1.6f,
@@ -49,7 +50,8 @@ class ForestBiomeGenerator : LaunchedEffect, BiomeGenerator() {
             .setNext(StructureLayerHandler(
                 seed = perlinNoise.seed,
                 structureList = listOf(
-                    TreeStructure(), RockStructure(), //TestStructure()
+                    OakTreeStructure(),
+                    RockStructure(),
                 )
             ))
     }

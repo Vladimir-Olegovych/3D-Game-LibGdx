@@ -15,6 +15,7 @@ import core.terrain.biome.BiomeSelector
 import core.terrain.biome.biomes.DesertBiomeGenerator
 import core.terrain.biome.biomes.ForestBiomeGenerator
 import core.terrain.biome.biomes.MountainBiomeGenerator
+import core.terrain.biome.biomes.SpruceBiomeGenerator
 import core.terrain.biome.models.BiomeType
 import core.terrain.layers.CaveLayerHandler
 import core.terrain.level.StructureSelector
@@ -40,13 +41,15 @@ class TerrainGenerator: LaunchedEffect {
         context.setObject(BiomeSelector(worldSeed))
 
         context.setObject(ForestBiomeGenerator())
+        context.setObject(SpruceBiomeGenerator())
         context.setObject(DesertBiomeGenerator())
         context.setObject(MountainBiomeGenerator())
 
         biomeGenerators = mapOf(
-            BiomeType.FOREST    to context.getObject<ForestBiomeGenerator>(),
-            BiomeType.DESERT    to context.getObject<DesertBiomeGenerator>(),
-            BiomeType.MOUNTAINS to context.getObject<MountainBiomeGenerator>()
+            BiomeType.FOREST        to context.getObject<ForestBiomeGenerator>(),
+            BiomeType.SPRUCE_FOREST to context.getObject<SpruceBiomeGenerator>(),
+            BiomeType.DESERT        to context.getObject<DesertBiomeGenerator>(),
+            BiomeType.MOUNTAINS     to context.getObject<MountainBiomeGenerator>()
         )
 
         biomeSelector = context.getObject()

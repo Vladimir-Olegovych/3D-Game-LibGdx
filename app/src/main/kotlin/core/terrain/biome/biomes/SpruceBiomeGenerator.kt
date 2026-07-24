@@ -8,21 +8,17 @@ import com.gigapi.math.noice.domain.DomainWarping2D
 import com.gigapi.math.noice.models.NoiceUtils
 import com.gigapi.math.noice.models.NoiseSettings
 import com.gigapi.math.vector.IntVector3
-import core.blocks.BlockType
 import core.chunk.ChunkData
 import core.noice.NoiceTypes
 import core.noice.asGenerator
 import core.terrain.TerrainGenerator
 import core.terrain.biome.BiomeGenerator
-import core.terrain.layers.CaveLayerHandler
-import core.terrain.layers.ShadowLayerHandler
-import core.terrain.layers.StructureLayerHandler
-import core.terrain.layers.SurfaceLayerHandler
-import core.terrain.layers.UndergroundLayerHandler
-import core.terrain.structures.CactusStructure
+import core.terrain.layers.*
+import core.terrain.structures.RockStructure
+import core.terrain.structures.SpruceTreeStructure
 import math.noice.FastNoise
 
-class DesertBiomeGenerator : LaunchedEffect, BiomeGenerator() {
+class SpruceBiomeGenerator : LaunchedEffect, BiomeGenerator() {
 
     private val baseNoiseSettings = NoiseSettings(
         noiseZoom = 0.004f,
@@ -33,9 +29,7 @@ class DesertBiomeGenerator : LaunchedEffect, BiomeGenerator() {
     )
 
     private lateinit var baseDomainWarping: DomainWarping2D
-    override val startLayerHandler = SurfaceLayerHandler(
-        surfaceBlockType = BlockType.SAND, underSurfaceBlockType = BlockType.SAND
-    )
+    override val startLayerHandler = SurfaceLayerHandler()
 
     override fun launch(context: Context) {
         val perlinNoise = context.getObject<PerlinNoise>(NoiceTypes.PERLIN_WORLD)
@@ -51,7 +45,8 @@ class DesertBiomeGenerator : LaunchedEffect, BiomeGenerator() {
             .setNext(StructureLayerHandler(
                 seed = perlinNoise.seed,
                 structureList = listOf(
-                    CactusStructure()
+                    SpruceTreeStructure(),
+                    RockStructure(),
                 )
             ))
     }

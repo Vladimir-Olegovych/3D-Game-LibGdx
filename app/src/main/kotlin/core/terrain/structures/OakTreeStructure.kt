@@ -7,7 +7,7 @@ import core.terrain.level.StructureGenerator
 import kotlin.math.sqrt
 import kotlin.random.Random
 
-class TreeStructure: StructureGenerator() {
+class OakTreeStructure: StructureGenerator() {
 
     override fun handling(
         seed: Int,
@@ -23,7 +23,7 @@ class TreeStructure: StructureGenerator() {
             seed + worldPosition.x * 31 + worldPosition.y * 7919 + worldPosition.z * 104729
         )
 
-        if (random.nextFloat() > 0.008f) return false
+        if (random.nextFloat() > 0.02f) return false
         generateTree(chunkData, localPosition, worldPosition, random)
         return true
     }

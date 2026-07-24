@@ -4,17 +4,16 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="df78e54d-8fbf-4f78-86ee-f370d7368d41" name="Changes" comment="added cactus in DesertBiomeGenerator.kt">
+    <list default="true" id="df78e54d-8fbf-4f78-86ee-f370d7368d41" name="Changes" comment="added caves level">
+      <change afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/terrain/biome/biomes/SpruceBiomeGenerator.kt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/terrain/structures/SpruceTreeStructure.kt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/app/feature/game/ecs/states/TimeState.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/app/feature/game/ecs/states/TimeState.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/app/feature/game/ui/DataUI.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/app/feature/game/ui/DataUI.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/core/noice/NoiceTypes.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/noice/NoiceTypes.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/core/renderers/StarRenderer.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/renderers/StarRenderer.kt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/core/terrain/TerrainGenerator.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/terrain/TerrainGenerator.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/core/terrain/biome/BiomeSelector.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/terrain/biome/BiomeSelector.kt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/core/terrain/biome/biomes/DesertBiomeGenerator.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/terrain/biome/biomes/DesertBiomeGenerator.kt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/core/terrain/biome/biomes/ForestBiomeGenerator.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/terrain/biome/biomes/ForestBiomeGenerator.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/core/terrain/biome/biomes/MountainBiomeGenerator.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/terrain/biome/biomes/MountainBiomeGenerator.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/core/terrain/layers/CaveLayerHandler.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/terrain/layers/CaveLayerHandler.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/core/terrain/biome/models/BiomeType.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/terrain/biome/models/BiomeType.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/core/terrain/structures/TreeStructure.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/terrain/structures/OakTreeStructure.kt" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -83,6 +82,7 @@
       <recent name="$PROJECT_DIR$/app/src/main/resources/shaders/chunk" />
     </key>
     <key name="CopyKotlinDeclarationDialog.RECENTS_KEY">
+      <recent name="core.terrain.biome.biomes" />
       <recent name="core.terrain.structures" />
       <recent name="app.feature.game.ecs.systems" />
       <recent name="app.feature.game.ui" />
@@ -330,7 +330,15 @@
       <option name="project" value="LOCAL" />
       <updated>1784815536334</updated>
     </task>
-    <option name="localTasksCounter" value="23" />
+    <task id="LOCAL-00023" summary="added caves level">
+      <option name="closed" value="true" />
+      <created>1784888184958</created>
+      <option name="number" value="00023" />
+      <option name="presentableId" value="LOCAL-00023" />
+      <option name="project" value="LOCAL" />
+      <updated>1784888184958</updated>
+    </task>
+    <option name="localTasksCounter" value="24" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -363,6 +371,7 @@
     <MESSAGE value="update" />
     <MESSAGE value="model drawing update" />
     <MESSAGE value="added cactus in DesertBiomeGenerator.kt" />
-    <option name="LAST_COMMIT_MESSAGE" value="added cactus in DesertBiomeGenerator.kt" />
+    <MESSAGE value="added caves level" />
+    <option name="LAST_COMMIT_MESSAGE" value="added caves level" />
   </component>
 </project>

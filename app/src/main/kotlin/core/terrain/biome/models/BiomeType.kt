@@ -15,8 +15,15 @@ enum class BiomeType(val id: Byte, val config: Array<BiomeConfig>) {
             BiomeConfig(start = 0.2f, end = 0.4f) //Wetness
         )
     ),
-    MOUNTAINS(
+    SPRUCE_FOREST(
         id = 2,
+        config = arrayOf(
+            BiomeConfig(start = -0.5f, end = 0.4f),  //Temperature
+            BiomeConfig(start = 0.2f, end = 0.7f) //Wetness
+        )
+    ),
+    MOUNTAINS(
+        id = 3,
         config = arrayOf(
             BiomeConfig(start = 0.2f, end = 0.4f),//Temperature
             BiomeConfig(start = 0.2f, end = 0.6f) //Wetness
