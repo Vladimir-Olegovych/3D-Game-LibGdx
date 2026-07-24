@@ -2,7 +2,6 @@ package core.chunk
 
 import com.gigapi.math.vector.IntVector3
 import core.blocks.BlockType
-import java.util.concurrent.ConcurrentHashMap
 
 class ChunkData(
     val position: IntVector3,
@@ -13,7 +12,8 @@ class ChunkData(
 ) {
     var status = ChunkStatus.GENERATION
 
-    val pendingBlocks = ConcurrentHashMap<IntVector3, BlockType>()
+    @Volatile
+    var worldPending: WorldPendingBlocks? = null
 
     companion object {
         const val SHADOW_MAX: Byte = 30
@@ -41,10 +41,6 @@ class ChunkData(
         }
     }
 
-    fun addPending(worldPosition: IntVector3, blockType: BlockType) {
-        pendingBlocks[worldPosition] = blockType
-    }
-
     fun isAllBlock(blockType: BlockType): Boolean {
         blocks.forEach { if (blockType != BlockType.fromByte(it)) return false }
         return true
@@ -58,26 +54,27 @@ class ChunkData(
         return setBlockByLocal(blockType, localPosition.x, localPosition.y, localPosition.z)
     }
 
+    /**
+     * Writes [blockType] at local+offset. If outside this chunk, routes to [worldPending]
+     * for the target chunk (apply-before-mesh / dirty remesh).
+     */
     fun setBlockPending(
         blockType: BlockType,
         offset: IntVector3,
         localPosition: IntVector3,
         worldPosition: IntVector3
     ) {
-        val localOffset = IntVector3(
-            x = localPosition.x + offset.x,
-            y = localPosition.y + offset.y,
-            z = localPosition.z + offset.z,
-        )
-        if (setBlockByLocal(blockType, localOffset)) return
+        val lx = localPosition.x + offset.x
+        val ly = localPosition.y + offset.y
+        val lz = localPosition.z + offset.z
+        if (setBlockByLocal(blockType, lx, ly, lz)) return
 
-        val worldOffset = IntVector3(
-            x = worldPosition.x + offset.x,
-            y = worldPosition.y + offset.y,
-            z = worldPosition.z + offset.z,
+        worldPending?.offer(
+            worldPosition.x + offset.x,
+            worldPosition.y + offset.y,
+            worldPosition.z + offset.z,
+            blockType
         )
-        addPending(worldOffset, blockType)
-
     }
 
     fun setBlockByLocal(blockType: BlockType, x: Int, y: Int, z: Int): Boolean {

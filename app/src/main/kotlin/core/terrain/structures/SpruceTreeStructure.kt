@@ -24,7 +24,7 @@ class SpruceTreeStructure : StructureGenerator() {
             seed + worldPosition.x * 31 + worldPosition.y * 7919 + worldPosition.z * 104729
         )
 
-        if (random.nextFloat() > 0.02f) return false
+        if (random.nextFloat() > 0.04f) return false
         generateTree(chunkData, localPosition, worldPosition, random)
         return true
     }
