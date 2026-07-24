@@ -46,6 +46,13 @@ class ChunkData(
         return true
     }
 
+    fun hasNonAirBlock(): Boolean {
+        for (id in blocks) {
+            if (BlockType.fromByte(id) != BlockType.AIR) return true
+        }
+        return false
+    }
+
     fun setBlockByIndex(blockType: BlockType, index: Int){
         blocks[index] = blockType.id
     }

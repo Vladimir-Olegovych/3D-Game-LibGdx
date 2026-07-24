@@ -105,13 +105,13 @@ class ChunkSystem: BaseSystem() {
     @BusEvent
     fun onMeshDataCreated(event: GameEvent.OnCreateChunkMeshData) {
         val entityId = event.chunkEntityId
-        if (meshMapper[entityId] != null) return
-        val meshComponent = meshMapper.create(entityId)
         val mesh = event.meshData.mesh ?: return
-        val radius = MeshUtils.getBoundRadius(mesh)
+        val meshComponent = meshMapper[entityId] ?: meshMapper.create(entityId)
+        meshComponent.dispose()
         meshComponent.meshData = event.meshData
         meshComponent.meshTextureData = chunkMeshTextureData
-        boundMapper.create(entityId).boundingRadius = radius
+        val boundComponent = boundMapper[entityId] ?: boundMapper.create(entityId)
+        boundComponent.boundingRadius = MeshUtils.getBoundRadius(mesh)
     }
 
     @BusEvent

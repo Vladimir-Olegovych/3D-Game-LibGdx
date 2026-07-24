@@ -204,18 +204,41 @@ class ChunkWorldUpdater : LaunchedEffect, DisposableEffect, DeltaUpdater(1 / 60F
     @BusEvent
     fun chunkDrawResponse(event: ChunkEvent.OnDrawResponse) {
         lifecycleScope.launch {
+            val shadowDirty = ConcurrentHashMap.newKeySet<IntVector3>()
             val meshJobs = coroutineScope {
                 event.generationData.chunkPositionsToCreate.map { position ->
                     async(Dispatchers.Default) {
                         if (isFirstGeneration) parallelismStart.withPermit {
-                            drawChunkData(position)
+                            drawChunkData(position, shadowDirty)
                         } else parallelismMesh.withPermit {
-                            drawChunkData(position)
+                            drawChunkData(position, shadowDirty)
                         }
                     }
                 }
             }
             meshJobs.awaitAll()
+
+            // Remesh neighbors only after all new meshes are created — avoids Create/Update races
+            // from structure overhangs and updateChunksBelow during parallel draw.
+            val creating = event.generationData.chunkPositionsToCreate.toHashSet()
+            val toRemesh = shadowDirty.filter { pos ->
+                pos !in creating &&
+                    meshDataMap[pos]?.mesh != null &&
+                    chunkDataMap[pos]?.status != ChunkStatus.GENERATION &&
+                    !removedChunkMeshes.contains(pos) &&
+                    !removedChunkDates.contains(pos)
+            }
+            val remeshJobs = coroutineScope {
+                toRemesh.map { chunkPos ->
+                    async(Dispatchers.Default) {
+                        parallelismMesh.withPermit {
+                            remeshChunk(chunkPos)
+                        }
+                    }
+                }
+            }
+            remeshJobs.awaitAll()
+
             chunkEventBus.sendEvent(ChunkEvent.OnFinalizeResponse(event.generationData))
         }
     }
@@ -375,6 +398,12 @@ class ChunkWorldUpdater : LaunchedEffect, DisposableEffect, DeltaUpdater(1 / 60F
         val updateChunkEntityId = chunkDataPositionToEntityId[chunkPos] ?: return
 
         val rawMeshData = meshGenerator.createMesh(chunkDataMap, updateChunkData)
+        // Never replace an existing mesh with an empty one when the chunk still has blocks
+        // (can happen during structure/neighbor races and makes the chunk "disappear").
+        if (rawMeshData.isEmpty()) {
+            if (updateChunkData.hasNonAirBlock()) return
+        }
+
         val meshData = withContext(mainScope.coroutineContext) {
             rawMeshData.createMeshData(chunkMeshParams)
         }
@@ -383,15 +412,30 @@ class ChunkWorldUpdater : LaunchedEffect, DisposableEffect, DeltaUpdater(1 / 60F
         mainEventBus.sendEvent(GameEvent.OnUpdateChunkMeshData(updateChunkEntityId, meshData))
     }
 
-    private suspend fun drawChunkData(position: IntVector3) {
+    private suspend fun drawChunkData(
+        position: IntVector3,
+        shadowDirty: MutableSet<IntVector3>,
+    ) {
         if (removedChunkDates.contains(position) || removedChunkMeshes.contains(position)) return
         val chunkData = chunkDataMap[position]?: return
         // Catch any pending that arrived after CREATED (neighbor still generating).
         worldPendingBlocks.applyTo(chunkData)
         val meshEntityId = chunkMeshPositionToEntityId[position]?: return
-        shadowUpdater.updateShadow(chunkDataMap, chunkData)
+        val shadowUpdated = shadowUpdater.updateShadow(
+            chunkMap = chunkDataMap,
+            chunkData = chunkData,
+            updateChunksBelow = true
+        )
+        shadowDirty.addAll(shadowUpdated)
+
         val rawMeshData = meshGenerator.createMesh(chunkDataMap, chunkData)
-        if (rawMeshData.isEmpty()) return
+        if (rawMeshData.isEmpty()) {
+            // Placeholder MeshData(null) would block future reloads; drop it if chunk has blocks.
+            if (chunkData.hasNonAirBlock()) {
+                meshDataMap.remove(position)
+            }
+            return
+        }
 
         mainScope.async {
             val meshData = rawMeshData.createMeshData(chunkMeshParams)
