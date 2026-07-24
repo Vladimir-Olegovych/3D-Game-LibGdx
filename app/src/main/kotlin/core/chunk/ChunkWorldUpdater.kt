@@ -38,7 +38,7 @@ class ChunkWorldUpdater : LaunchedEffect, DisposableEffect, DeltaUpdater(1 / 60F
         const val CHUNK_HEIGHT = 16
     }
 
-    private val workerCount = Runtime.getRuntime().availableProcessors().coerceAtLeast(2)
+    private val workerCount = (Runtime.getRuntime().availableProcessors() / 2).coerceAtLeast(2)
     private val parallelismMesh = Semaphore(workerCount)
     private val parallelismChunk = Semaphore(workerCount)
     private val parallelismStart = Semaphore(1000)
