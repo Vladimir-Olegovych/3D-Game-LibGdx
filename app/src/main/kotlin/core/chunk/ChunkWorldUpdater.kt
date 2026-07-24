@@ -201,6 +201,7 @@ class ChunkWorldUpdater : LaunchedEffect, DisposableEffect, DeltaUpdater(1 / 60F
             chunkEventBus.sendEvent(ChunkEvent.OnDrawResponse(event.generationData))
         }
     }
+
     @BusEvent
     fun chunkDrawResponse(event: ChunkEvent.OnDrawResponse) {
         lifecycleScope.launch {

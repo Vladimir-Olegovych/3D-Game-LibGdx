@@ -8,7 +8,6 @@ import core.blocks.BlockDataManager
 import core.blocks.BlockType
 import core.blocks.TextureData
 import core.chunk.ChunkData
-import kotlin.math.min
 
 class MeshHelper: MeshGenerator, LaunchedEffect {
 
@@ -77,14 +76,7 @@ class MeshHelper: MeshGenerator, LaunchedEffect {
                             (neighborBlockData?.generateAllSides == true && !blockData.generateAllSides)
                         if (!shouldRenderFace) continue
 
-                        val neighborShadow = getNeighborShadow(chunkData, chunkMap, nx, ny, nz, w, h)
-                        // Faces on chunk seams must not pick up false full-sky light from a
-                        // missing/unready neighbor; keep the darker of this cell and outside.
-                        val shadow = if (nx !in 0 until w || ny !in 0 until h || nz !in 0 until w) {
-                            min(chunkData.getDefaultShadowValue(x, y, z), neighborShadow)
-                        } else {
-                            neighborShadow
-                        }
+                        val shadow = getNeighborShadow(chunkData, chunkMap, nx, ny, nz, w, h)
                         MeshUtils.addChunkFace(
                             blockDataManager = blockDataManager,
                             verticesList = verticesList,
