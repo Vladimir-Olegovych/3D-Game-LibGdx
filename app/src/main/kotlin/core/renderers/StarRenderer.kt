@@ -39,7 +39,8 @@ class StarRenderer : LaunchedEffect, DisposableEffect {
         if (nightFactor < 0.001f) return
 
         elapsedTime += Gdx.graphics.deltaTime
-        invViewProj.set(camera.combined).inv()
+        val invMatrix = invViewProj.set(camera.combined)
+        runCatching { invMatrix.inv() }
 
         Gdx.gl.glEnable(GL20.GL_BLEND)
         Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA)

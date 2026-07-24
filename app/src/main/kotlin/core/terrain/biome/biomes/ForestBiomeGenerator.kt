@@ -13,12 +13,14 @@ import core.noice.NoiceTypes
 import core.noice.asGenerator
 import core.terrain.TerrainGenerator
 import core.terrain.biome.BiomeGenerator
+import core.terrain.layers.CaveLayerHandler
 import core.terrain.layers.ShadowLayerHandler
 import core.terrain.layers.StructureLayerHandler
 import core.terrain.layers.SurfaceLayerHandler
 import core.terrain.layers.UndergroundLayerHandler
 import core.terrain.structures.RockStructure
 import core.terrain.structures.TreeStructure
+import math.noice.FastNoise
 
 class ForestBiomeGenerator : LaunchedEffect, BiomeGenerator() {
 
@@ -35,6 +37,7 @@ class ForestBiomeGenerator : LaunchedEffect, BiomeGenerator() {
 
     override fun launch(context: Context) {
         val perlinNoise = context.getObject<PerlinNoise>(NoiceTypes.PERLIN_WORLD)
+        val caveNoise = context.getObject<FastNoise>(NoiceTypes.FAST_CAVE)
         val noiceGenerator = perlinNoise.asGenerator()
 
         baseDomainWarping = getSurfaceDomainWarping(noiceGenerator)
@@ -42,6 +45,7 @@ class ForestBiomeGenerator : LaunchedEffect, BiomeGenerator() {
         startLayerHandler
             .setNext(ShadowLayerHandler())
             .setNext(UndergroundLayerHandler())
+            .setNext(CaveLayerHandler(caveNoise))
             .setNext(StructureLayerHandler(
                 seed = perlinNoise.seed,
                 structureList = listOf(

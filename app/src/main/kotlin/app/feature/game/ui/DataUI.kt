@@ -1,35 +1,45 @@
 package app.feature.game.ui
 
+import app.feature.game.ecs.states.TimeState
 import com.badlogic.gdx.assets.AssetManager
+import com.badlogic.gdx.graphics.PerspectiveCamera
 import com.badlogic.gdx.scenes.scene2d.Actor
 import com.badlogic.gdx.scenes.scene2d.ui.Label
 import com.badlogic.gdx.scenes.scene2d.ui.Skin
 import com.badlogic.gdx.scenes.scene2d.ui.Table
+import com.badlogic.gdx.utils.Align
 import com.gigapi.effects.LaunchedEffect
 import com.gigapi.general.Context
 import core.assets.SkinID
-import app.feature.game.ecs.states.TimeState
+import core.defaults.CameraTypes
 import core.ui.UIGetter
+import kotlin.math.floor
 
 class DataUI : LaunchedEffect, UIGetter {
 
     private val layout = Table().apply {
         setFillParent(true)
-        right()
         top()
+        right()
+        defaults().right()
     }
     private lateinit var timeState: TimeState
+    private lateinit var camera: PerspectiveCamera
     private lateinit var fpsLabel: Label
     private lateinit var timeLabel: Label
+    private lateinit var positionLabel: Label
 
     override fun launch(context: Context) {
         timeState = context.getObject()
+        camera = context.getObject(CameraTypes.GL_3D)
         val assetManager = context.getObject<AssetManager>()
         val skin = assetManager.get<Skin>(SkinID.BUTTON.skin)
-        fpsLabel = Label("FPS: Not updated", skin)
-        timeLabel = Label("Time: ", skin)
-        layout.add(fpsLabel).row()
-        layout.add(timeLabel)
+        fpsLabel = Label("FPS: Not updated", skin).apply { setAlignment(Align.right) }
+        timeLabel = Label("Time: ", skin).apply { setAlignment(Align.right) }
+        positionLabel = Label("XYZ: ", skin).apply { setAlignment(Align.right) }
+        layout.add(fpsLabel).right().row()
+        layout.add(timeLabel).right().row()
+        layout.add(positionLabel).right()
     }
 
     private var frameCount = 0
@@ -39,6 +49,14 @@ class DataUI : LaunchedEffect, UIGetter {
     fun update(deltaTime: Float) {
         updateTime()
         updateFPS(deltaTime)
+        updatePosition()
+    }
+
+    private fun updatePosition() {
+        val pos = camera.position
+        positionLabel.setText(
+            "XYZ: ${floor(pos.x).toInt()}|${floor(pos.y).toInt()}|${floor(pos.z).toInt()}"
+        )
     }
 
     private fun updateTime() {

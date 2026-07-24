@@ -16,6 +16,7 @@ import core.terrain.biome.biomes.DesertBiomeGenerator
 import core.terrain.biome.biomes.ForestBiomeGenerator
 import core.terrain.biome.biomes.MountainBiomeGenerator
 import core.terrain.biome.models.BiomeType
+import core.terrain.layers.CaveLayerHandler
 import core.terrain.level.StructureSelector
 import math.noice.FastNoise
 import kotlin.random.Random
@@ -31,6 +32,9 @@ class TerrainGenerator: LaunchedEffect {
         val worldSeed = Random.nextInt()
         context.setObject(NoiceTypes.PERLIN_WORLD, PerlinNoise(worldSeed))
         context.setObject(NoiceTypes.FAST_PERLIN, FastNoise(worldSeed))
+        context.setObject(NoiceTypes.FAST_CAVE, FastNoise(worldSeed).apply {
+            SetFrequency(CaveLayerHandler.CAVE_NOISE_FREQUENCY)
+        })
         context.setObject(NoiceTypes.RANDOM_WORLD, RandomNoise(worldSeed))
 
         context.setObject(BiomeSelector(worldSeed))
@@ -104,9 +108,9 @@ class TerrainGenerator: LaunchedEffect {
     }
 
     companion object {
-        const val CAVE_THRESHOLD = 0.2F
-        const val CAVE_LEVEL = -120
         const val UNDERGROUND_HEIGHT = 80
+        const val CAVE_THRESHOLD = 0.025f
+        const val CAVE_LEVEL = -UNDERGROUND_HEIGHT
         const val WORLD_HEIGHT = 300
         const val WORLD_SURFACE = WORLD_HEIGHT / 1.5
     }
