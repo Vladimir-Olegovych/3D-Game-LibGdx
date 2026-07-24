@@ -6,6 +6,7 @@ import com.gigapi.math.vector.IntVector3
 import com.gigapi.mesh.RawMeshData
 import core.blocks.BlockDataManager
 import core.blocks.BlockType
+import core.blocks.TextureData
 import core.chunk.ChunkData
 
 class MeshHelper: MeshGenerator, LaunchedEffect {
@@ -33,6 +34,7 @@ class MeshHelper: MeshGenerator, LaunchedEffect {
     ): RawMeshData {
         val w = chunkData.chunkWidth
         val h = chunkData.chunkHeight
+        val textureMap = blockDataManager.getBlockTextureDataMap()
 
         val verticesList = ArrayList<Float>()
         val indicesList = ArrayList<Short>()
@@ -42,6 +44,20 @@ class MeshHelper: MeshGenerator, LaunchedEffect {
                 for (z in 0 until w) {
                     val block = chunkData.getBlockByLocal(x, y, z)
                     if (block == BlockType.AIR) continue
+                    val blockData = textureMap[block] ?: continue
+
+                    val currentAllSides = hasActiveAllSides(
+                        block = block,
+                        blockData = blockData,
+                        textureMap = textureMap,
+                        chunkData = chunkData,
+                        chunkMap = chunkMap,
+                        x = x,
+                        y = y,
+                        z = z,
+                        w = w,
+                        h = h,
+                    )
 
                     for (dir in directions) {
                         val nx = x + dir.dx
@@ -51,13 +67,13 @@ class MeshHelper: MeshGenerator, LaunchedEffect {
                             chunkData, chunkMap,
                             nx, ny, nz, w, h
                         )
-                        val blockData = blockDataManager.getBlockTextureDataMap()[block] ?: continue
-                        val neighborBlockData = blockDataManager.getBlockTextureDataMap()[neighborBlock]
+                        val neighborBlockData = textureMap[neighborBlock]
 
                         val shouldRenderFace =
                             neighborBlock == BlockType.AIR ||
                             neighborBlock == BlockType.NOTHING ||
-                            blockData.generateAllSides || neighborBlockData?.generateAllSides == true
+                            currentAllSides ||
+                            (neighborBlockData?.generateAllSides == true && !blockData.generateAllSides)
                         if (!shouldRenderFace) continue
 
                         val shadow = getNeighborShadow(chunkData, chunkMap, nx, ny, nz, w, h)
@@ -86,6 +102,52 @@ class MeshHelper: MeshGenerator, LaunchedEffect {
         val indices = indicesList.toShortArray()
 
         return RawMeshData(vertices, indices)
+    }
+
+    private fun hasActiveAllSides(
+        block: BlockType,
+        blockData: TextureData,
+        textureMap: Map<BlockType, TextureData>,
+        chunkData: ChunkData,
+        chunkMap: Map<IntVector3, ChunkData>,
+        x: Int,
+        y: Int,
+        z: Int,
+        w: Int,
+        h: Int,
+    ): Boolean {
+        if (!blockData.generateAllSides) return false
+
+        val worldX = chunkData.position.x * w + x
+        val worldY = chunkData.position.y * h + y
+        val worldZ = chunkData.position.z * w + z
+
+        for (dir in directions) {
+            val nx = x + dir.dx
+            val ny = y + dir.dy
+            val nz = z + dir.dz
+            val neighbor = getNeighborBlock(chunkData, chunkMap, nx, ny, nz, w, h)
+            if (neighbor != block) continue
+            val neighborData = textureMap[neighbor] ?: continue
+            if (!neighborData.generateAllSides) continue
+
+            val nWorldX = chunkData.position.x * w + nx
+            val nWorldY = chunkData.position.y * h + ny
+            val nWorldZ = chunkData.position.z * w + nz
+            if (compareWorldPos(nWorldX, nWorldY, nWorldZ, worldX, worldY, worldZ) < 0) {
+                return false
+            }
+        }
+        return true
+    }
+
+    private fun compareWorldPos(
+        ax: Int, ay: Int, az: Int,
+        bx: Int, by: Int, bz: Int,
+    ): Int {
+        if (ax != bx) return ax.compareTo(bx)
+        if (ay != by) return ay.compareTo(by)
+        return az.compareTo(bz)
     }
 
     private fun getNeighborBlock(

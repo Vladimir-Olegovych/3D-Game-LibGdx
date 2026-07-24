@@ -35,7 +35,7 @@ class SpruceTreeStructure : StructureGenerator() {
         worldPosition: IntVector3,
         random: Random,
     ) {
-        val treeHeight = random.nextInt(19, 24)
+        val treeHeight = random.nextInt(32, 42)
 
         for (y in 0 until treeHeight) {
             chunkData.setBlockPending(

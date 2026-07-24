@@ -4,11 +4,11 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="df78e54d-8fbf-4f78-86ee-f370d7368d41" name="Changes" comment="added new forest">
-      <change afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/chunk/WorldPendingBlocks.kt" afterDir="false" />
+    <list default="true" id="df78e54d-8fbf-4f78-86ee-f370d7368d41" name="Changes" comment="added optimized pending blocks">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/core/chunk/ChunkData.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/chunk/ChunkData.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/core/chunk/ChunkWorldUpdater.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/chunk/ChunkWorldUpdater.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/core/mesh/MeshHelper.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/mesh/MeshHelper.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/core/terrain/structures/SpruceTreeStructure.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/terrain/structures/SpruceTreeStructure.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/resources/configs/BLOCK_DATA_SO.json" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/resources/configs/BLOCK_DATA_SO.json" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -341,7 +341,15 @@
       <option name="project" value="LOCAL" />
       <updated>1784889775292</updated>
     </task>
-    <option name="localTasksCounter" value="25" />
+    <task id="LOCAL-00025" summary="added optimized pending blocks">
+      <option name="closed" value="true" />
+      <created>1784890652114</created>
+      <option name="number" value="00025" />
+      <option name="presentableId" value="LOCAL-00025" />
+      <option name="project" value="LOCAL" />
+      <updated>1784890652114</updated>
+    </task>
+    <option name="localTasksCounter" value="26" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -376,6 +384,7 @@
     <MESSAGE value="added cactus in DesertBiomeGenerator.kt" />
     <MESSAGE value="added caves level" />
     <MESSAGE value="added new forest" />
-    <option name="LAST_COMMIT_MESSAGE" value="added new forest" />
+    <MESSAGE value="added optimized pending blocks" />
+    <option name="LAST_COMMIT_MESSAGE" value="added optimized pending blocks" />
   </component>
 </project>
