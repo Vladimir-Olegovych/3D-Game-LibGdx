@@ -12,7 +12,7 @@ class TimeState {
     var dayPhase = 1f
         private set
 
-    var timeOfDay = 0.7f
+    var timeOfDay = 0.25f
         private set
 
     var cycleDuration = 600f

@@ -1,6 +1,7 @@
 package core.terrain.layers
 
 import com.gigapi.math.vector.IntVector3
+import core.blocks.BlockType
 import core.chunk.ChunkData
 import core.terrain.BlockLayerHandler
 import core.terrain.TerrainGenerator
@@ -16,6 +17,7 @@ class ShadowLayerHandler: BlockLayerHandler() {
         if (worldPosition.y < TerrainGenerator.CAVE_LEVEL) return
         val heightNoice = heightNoice.second
         if (worldPosition.y <= heightNoice) return
+        if (chunkData.getBlockByLocal(localPosition) != BlockType.AIR) return
         chunkData.setDefaultShadowValue(1f, localPosition)
     }
 

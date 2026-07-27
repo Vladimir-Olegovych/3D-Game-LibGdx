@@ -55,6 +55,9 @@ class ChunkData(
 
     fun setBlockByIndex(blockType: BlockType, index: Int){
         blocks[index] = blockType.id
+        if (ShadowUpdater.isOpaque(blockType)) {
+            shadows[index] = 15
+        }
     }
 
     fun setBlockByLocal(blockType: BlockType, localPosition: IntVector3): Boolean {
@@ -89,6 +92,9 @@ class ChunkData(
         val index: Int = getIndex(x, y, z)
         if (index < 0 || index >= blocks.size) return false
         blocks[index] = blockType.id
+        if (ShadowUpdater.isOpaque(blockType)) {
+            shadows[index] = 15
+        }
         return true
     }
 

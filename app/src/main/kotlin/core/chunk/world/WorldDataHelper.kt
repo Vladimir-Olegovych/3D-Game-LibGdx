@@ -3,6 +3,7 @@ package core.chunk.world
 import com.badlogic.gdx.math.Vector3
 import com.gigapi.math.vector.IntVector3
 import com.gigapi.mesh.MeshData
+import core.blocks.BlockType
 import core.chunk.ChunkData
 import core.chunk.ChunkWorldUpdater
 import kotlin.math.floor
@@ -94,8 +95,8 @@ object WorldDataHelper {
         val centerChunk = chunkPositionFromBlockCoords(playerPosition)
         val chunkPositionsToCreate = mutableListOf<IntVector3>()
 
-        val radiusXZ = chunkDrawingRangeX + 1
-        val radiusY = chunkDrawingRangeY + 1
+        val radiusXZ = chunkDrawingRangeX + 2
+        val radiusY = chunkDrawingRangeY + 2
 
         val centerX = centerChunk.x
         val centerY = centerChunk.y
@@ -179,6 +180,139 @@ object WorldDataHelper {
                 dx * dx + dy * dy + dz * dz
             }
             .toList()
+    }
+
+    fun getExistingNeighboursNeedingBorderRemesh(
+        chunkData: ChunkData,
+        chunkMap: Map<IntVector3, ChunkData>,
+        existingMeshedPositions: Set<IntVector3>,
+    ): Set<IntVector3> {
+        val w = chunkData.chunkWidth
+        val h = chunkData.chunkHeight
+        val pos = chunkData.position
+        val neighbours = mutableSetOf<IntVector3>()
+
+        val westPos = IntVector3(pos.x - 1, pos.y, pos.z)
+        if (westPos in existingMeshedPositions) {
+            val neighbor = chunkMap[westPos]
+            if (neighbor != null && hasExposedFaceOnXBorder(neighbor, chunkData, neighborX = w - 1, chunkX = 0)) {
+                neighbours.add(westPos)
+            }
+        }
+
+        val eastPos = IntVector3(pos.x + 1, pos.y, pos.z)
+        if (eastPos in existingMeshedPositions) {
+            val neighbor = chunkMap[eastPos]
+            if (neighbor != null && hasExposedFaceOnXBorder(neighbor, chunkData, neighborX = 0, chunkX = w - 1)) {
+                neighbours.add(eastPos)
+            }
+        }
+
+        val bottomPos = IntVector3(pos.x, pos.y - 1, pos.z)
+        if (bottomPos in existingMeshedPositions) {
+            val neighbor = chunkMap[bottomPos]
+            if (neighbor != null && hasExposedFaceOnYBorder(neighbor, chunkData, neighborY = h - 1, chunkY = 0)) {
+                neighbours.add(bottomPos)
+            }
+        }
+
+        val topPos = IntVector3(pos.x, pos.y + 1, pos.z)
+        if (topPos in existingMeshedPositions) {
+            val neighbor = chunkMap[topPos]
+            if (neighbor != null && hasExposedFaceOnYBorder(neighbor, chunkData, neighborY = 0, chunkY = h - 1)) {
+                neighbours.add(topPos)
+            }
+        }
+
+        val northPos = IntVector3(pos.x, pos.y, pos.z - 1)
+        if (northPos in existingMeshedPositions) {
+            val neighbor = chunkMap[northPos]
+            if (neighbor != null && hasExposedFaceOnZBorder(neighbor, chunkData, neighborZ = w - 1, chunkZ = 0)) {
+                neighbours.add(northPos)
+            }
+        }
+
+        val southPos = IntVector3(pos.x, pos.y, pos.z + 1)
+        if (southPos in existingMeshedPositions) {
+            val neighbor = chunkMap[southPos]
+            if (neighbor != null && hasExposedFaceOnZBorder(neighbor, chunkData, neighborZ = 0, chunkZ = w - 1)) {
+                neighbours.add(southPos)
+            }
+        }
+
+        return neighbours
+    }
+
+    private fun hasExposedFaceOnXBorder(
+        neighbor: ChunkData,
+        chunk: ChunkData,
+        neighborX: Int,
+        chunkX: Int,
+    ): Boolean {
+        val w = chunk.chunkWidth
+        val h = chunk.chunkHeight
+        for (y in 0 until h) {
+            for (z in 0 until w) {
+                if (exposesFaceToward(
+                        neighbor.getBlockByLocal(neighborX, y, z),
+                        chunk.getBlockByLocal(chunkX, y, z)
+                    )) {
+                    return true
+                }
+            }
+        }
+        return false
+    }
+
+    private fun hasExposedFaceOnYBorder(
+        neighbor: ChunkData,
+        chunk: ChunkData,
+        neighborY: Int,
+        chunkY: Int,
+    ): Boolean {
+        val w = chunk.chunkWidth
+        val h = chunk.chunkHeight
+        for (x in 0 until w) {
+            for (z in 0 until w) {
+                if (exposesFaceToward(
+                        neighbor.getBlockByLocal(x, neighborY, z),
+                        chunk.getBlockByLocal(x, chunkY, z)
+                    )) {
+                    return true
+                }
+            }
+        }
+        return false
+    }
+
+    private fun hasExposedFaceOnZBorder(
+        neighbor: ChunkData,
+        chunk: ChunkData,
+        neighborZ: Int,
+        chunkZ: Int,
+    ): Boolean {
+        val w = chunk.chunkWidth
+        val h = chunk.chunkHeight
+        for (x in 0 until w) {
+            for (y in 0 until h) {
+                if (exposesFaceToward(
+                        neighbor.getBlockByLocal(x, y, neighborZ),
+                        chunk.getBlockByLocal(x, y, chunkZ)
+                    )) {
+                    return true
+                }
+            }
+        }
+        return false
+    }
+
+    /** Neighbor renders a face into [acrossBlock] (e.g. air) — its mesh baked wrong border shadows. */
+    private fun exposesFaceToward(neighborBlock: BlockType, acrossBlock: BlockType): Boolean {
+        return isMeshRelevantBlock(neighborBlock) && !isMeshRelevantBlock(acrossBlock)
+    }
+
+    private fun isMeshRelevantBlock(blockType: BlockType): Boolean {
+        return blockType != BlockType.AIR && blockType != BlockType.NOTHING
     }
 
     fun getEdgeNeighbourChunks(

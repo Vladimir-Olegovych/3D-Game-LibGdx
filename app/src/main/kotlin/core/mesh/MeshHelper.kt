@@ -71,9 +71,9 @@ class MeshHelper: MeshGenerator, LaunchedEffect {
 
                         val shouldRenderFace =
                             neighborBlock == BlockType.AIR ||
-                            neighborBlock == BlockType.NOTHING ||
-                            currentAllSides ||
-                            (neighborBlockData?.generateAllSides == true && !blockData.generateAllSides)
+                                    neighborBlock == BlockType.NOTHING ||
+                                    currentAllSides ||
+                                    (neighborBlockData?.generateAllSides == true && !blockData.generateAllSides)
                         if (!shouldRenderFace) continue
 
                         val shadow = getNeighborShadow(chunkData, chunkMap, nx, ny, nz, w, h)
