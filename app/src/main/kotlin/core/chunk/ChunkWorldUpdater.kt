@@ -32,13 +32,13 @@ import java.util.concurrent.ConcurrentHashMap
 class ChunkWorldUpdater : LaunchedEffect, DisposableEffect, DeltaUpdater(1 / 60F, Dispatchers.Default) {
 
     companion object {
-        const val DRAW_RADIUS_X = 14
+        const val DRAW_RADIUS_X = 16
         const val DRAW_RADIUS_Y = 8
         const val CHUNK_SIZE = 16
         const val CHUNK_HEIGHT = 16
     }
 
-    private val workerCount = Runtime.getRuntime().availableProcessors().coerceAtLeast(2)
+    private val workerCount = (Runtime.getRuntime().availableProcessors() / 2 + 1).coerceAtLeast(2)
     private val parallelismMesh = Semaphore(workerCount)
     private val parallelismChunk = Semaphore(workerCount)
     private val parallelismStart = Semaphore(1000)
@@ -208,9 +208,7 @@ class ChunkWorldUpdater : LaunchedEffect, DisposableEffect, DeltaUpdater(1 / 60F
             val pendingJobs = coroutineScope {
                 event.generationData.chunkPositionsToCreate.map { position ->
                     async(Dispatchers.Default) {
-                        if (isFirstGeneration) parallelismStart.withPermit {
-                            updatePending(position)
-                        } else parallelismMesh.withPermit {
+                        parallelismMesh.withPermit {
                             updatePending(position)
                         }
                     }
@@ -222,9 +220,7 @@ class ChunkWorldUpdater : LaunchedEffect, DisposableEffect, DeltaUpdater(1 / 60F
                     .sortedByDescending { it.y }
                     .map { position ->
                         async(Dispatchers.Default) {
-                            if (isFirstGeneration) parallelismStart.withPermit {
-                                updateShadow(position, shadowDirty)
-                            } else parallelismMesh.withPermit {
+                            parallelismMesh.withPermit {
                                 updateShadow(position, shadowDirty)
                             }
                         }
@@ -265,6 +261,7 @@ class ChunkWorldUpdater : LaunchedEffect, DisposableEffect, DeltaUpdater(1 / 60F
                     !removedChunkMeshes.contains(pos) &&
                     !removedChunkDates.contains(pos)
             }.toSet()
+
             val remeshJobs = coroutineScope {
                 toRemesh.map { chunkPos ->
                     async(Dispatchers.Default) {
