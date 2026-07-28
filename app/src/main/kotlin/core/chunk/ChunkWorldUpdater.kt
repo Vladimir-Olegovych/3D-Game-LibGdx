@@ -32,7 +32,7 @@ import java.util.concurrent.ConcurrentHashMap
 class ChunkWorldUpdater : LaunchedEffect, DisposableEffect, DeltaUpdater(1 / 60F, Dispatchers.Default) {
 
     companion object {
-        const val DRAW_RADIUS_X = 16
+        const val DRAW_RADIUS_X = 8
         const val DRAW_RADIUS_Y = 8
         const val CHUNK_SIZE = 16
         const val CHUNK_HEIGHT = 16

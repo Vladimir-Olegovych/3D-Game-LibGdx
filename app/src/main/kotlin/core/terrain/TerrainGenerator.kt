@@ -30,7 +30,7 @@ class TerrainGenerator: LaunchedEffect {
     private lateinit var biomeGenerators: Map<BiomeType, BiomeGenerator>
 
     override fun launch(context: Context) {
-        val worldSeed = 101
+        val worldSeed = Random.nextInt()
         context.setObject(NoiceTypes.PERLIN_WORLD, PerlinNoise(worldSeed))
         context.setObject(NoiceTypes.FAST_PERLIN, FastNoise(worldSeed))
         context.setObject(NoiceTypes.FAST_CAVE, FastNoise(worldSeed).apply {
