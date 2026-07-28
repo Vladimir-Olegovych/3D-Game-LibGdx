@@ -32,7 +32,7 @@ import java.util.concurrent.ConcurrentHashMap
 class ChunkWorldUpdater : LaunchedEffect, DisposableEffect, DeltaUpdater(1 / 60F, Dispatchers.Default) {
 
     companion object {
-        const val DRAW_RADIUS_X = 8
+        const val DRAW_RADIUS_X = 16
         const val DRAW_RADIUS_Y = 8
         const val CHUNK_SIZE = 16
         const val CHUNK_HEIGHT = 16
@@ -184,8 +184,8 @@ class ChunkWorldUpdater : LaunchedEffect, DisposableEffect, DeltaUpdater(1 / 60F
 
             val dirty = snapshot.map { IntVector3(it.x, it.y, it.z) }.filter { pos ->
                 pos !in creating &&
-                    meshDataMap[pos]?.mesh != null &&
-                    chunkDataMap[pos]?.status != ChunkStatus.GENERATION
+                        meshDataMap[pos]?.mesh != null &&
+                        chunkDataMap[pos]?.status != ChunkStatus.GENERATION
             }
 
             val meshJobs = coroutineScope {
@@ -244,8 +244,8 @@ class ChunkWorldUpdater : LaunchedEffect, DisposableEffect, DeltaUpdater(1 / 60F
             val creating = event.generationData.chunkPositionsToCreate.toHashSet()
             val existingMeshed = chunkDataMap.keys.filterTo(mutableSetOf()) { pos ->
                 pos !in creating &&
-                    meshDataMap[pos]?.mesh != null &&
-                    chunkDataMap[pos]?.status != ChunkStatus.GENERATION
+                        meshDataMap[pos]?.mesh != null &&
+                        chunkDataMap[pos]?.status != ChunkStatus.GENERATION
             }
             val borderRemeshCandidates = creating.flatMap { pos ->
                 chunkDataMap[pos]?.let { chunk ->
@@ -256,10 +256,10 @@ class ChunkWorldUpdater : LaunchedEffect, DisposableEffect, DeltaUpdater(1 / 60F
             }
             val toRemesh = borderRemeshCandidates.filter { pos ->
                 pos !in creating &&
-                    meshDataMap[pos]?.mesh != null &&
-                    chunkDataMap[pos]?.status != ChunkStatus.GENERATION &&
-                    !removedChunkMeshes.contains(pos) &&
-                    !removedChunkDates.contains(pos)
+                        meshDataMap[pos]?.mesh != null &&
+                        chunkDataMap[pos]?.status != ChunkStatus.GENERATION &&
+                        !removedChunkMeshes.contains(pos) &&
+                        !removedChunkDates.contains(pos)
             }.toSet()
 
             val remeshJobs = coroutineScope {
@@ -318,11 +318,11 @@ class ChunkWorldUpdater : LaunchedEffect, DisposableEffect, DeltaUpdater(1 / 60F
             )
             val neighboursToUpdate = WorldDataHelper.getEdgeNeighbourChunks(chunkData, blockPosition, chunkDataMap)
             val chunksToUpdate = (
-                setOf(chunkData.position) +
-                    shadowResult.changedChunks +
-                    shadowResult.remeshNeighbors +
-                    neighboursToUpdate.map { it.position }
-                ).toSet()
+                    setOf(chunkData.position) +
+                            shadowResult.changedChunks +
+                            shadowResult.remeshNeighbors +
+                            neighboursToUpdate.map { it.position }
+                    ).toSet()
 
             for (chunkPos in chunksToUpdate) {
                 val updateChunkData = chunkDataMap[chunkPos] ?: continue

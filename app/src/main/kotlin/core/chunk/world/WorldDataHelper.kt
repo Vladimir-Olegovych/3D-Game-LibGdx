@@ -188,7 +188,6 @@ object WorldDataHelper {
         existingMeshedPositions: Set<IntVector3>,
     ): Set<IntVector3> {
         val w = chunkData.chunkWidth
-        val h = chunkData.chunkHeight
         val pos = chunkData.position
         val neighbours = mutableSetOf<IntVector3>()
 
@@ -205,22 +204,6 @@ object WorldDataHelper {
             val neighbor = chunkMap[eastPos]
             if (neighbor != null && hasExposedFaceOnXBorder(neighbor, chunkData, neighborX = 0, chunkX = w - 1)) {
                 neighbours.add(eastPos)
-            }
-        }
-
-        val bottomPos = IntVector3(pos.x, pos.y - 1, pos.z)
-        if (bottomPos in existingMeshedPositions) {
-            val neighbor = chunkMap[bottomPos]
-            if (neighbor != null && hasExposedFaceOnYBorder(neighbor, chunkData, neighborY = h - 1, chunkY = 0)) {
-                neighbours.add(bottomPos)
-            }
-        }
-
-        val topPos = IntVector3(pos.x, pos.y + 1, pos.z)
-        if (topPos in existingMeshedPositions) {
-            val neighbor = chunkMap[topPos]
-            if (neighbor != null && hasExposedFaceOnYBorder(neighbor, chunkData, neighborY = 0, chunkY = h - 1)) {
-                neighbours.add(topPos)
             }
         }
 
