@@ -3,7 +3,7 @@ package app
 import app.feature.game.GameFragment
 import app.feature.main.MainFragment
 import com.badlogic.gdx.Game
-import com.gigapi.general.Context
+import com.gigapi.general.GContext
 import com.gigapi.navigation.NavHostController
 import core.assets.AssetsSetupManager
 import core.configs.ConfigSetupManager
@@ -12,7 +12,7 @@ import core.navigation.Navigation
 
 class GameApplication :  Game() {
 
-    private val context = Context()
+    private val context = GContext()
 
     override fun dispose() { context.dispose() }
 

@@ -9,7 +9,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Skin
 import com.badlogic.gdx.scenes.scene2d.ui.Table
 import com.badlogic.gdx.utils.Align
 import com.gigapi.effects.LaunchedEffect
-import com.gigapi.general.Context
+import com.gigapi.general.GContext
 import core.assets.SkinID
 import core.defaults.CameraTypes
 import core.ui.UIGetter
@@ -29,7 +29,7 @@ class DataUI : LaunchedEffect, UIGetter {
     private lateinit var timeLabel: Label
     private lateinit var positionLabel: Label
 
-    override fun launch(context: Context) {
+    override fun launch(context: GContext) {
         timeState = context.getObject()
         camera = context.getObject(CameraTypes.GL_3D)
         val assetManager = context.getObject<AssetManager>()

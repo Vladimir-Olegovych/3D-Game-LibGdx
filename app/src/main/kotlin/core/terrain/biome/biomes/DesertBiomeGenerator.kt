@@ -1,7 +1,7 @@
 package core.terrain.biome.biomes
 
 import com.gigapi.effects.LaunchedEffect
-import com.gigapi.general.Context
+import com.gigapi.general.GContext
 import com.gigapi.math.noice.NoiceGenerator
 import com.gigapi.math.noice.PerlinNoise
 import com.gigapi.math.noice.domain.DomainWarping2D
@@ -37,7 +37,7 @@ class DesertBiomeGenerator : LaunchedEffect, BiomeGenerator() {
         surfaceBlockType = BlockType.SAND, underSurfaceBlockType = BlockType.SAND
     )
 
-    override fun launch(context: Context) {
+    override fun launch(context: GContext) {
         val perlinNoise = context.getObject<PerlinNoise>(NoiceTypes.PERLIN_WORLD)
         val caveNoise = context.getObject<FastNoise>(NoiceTypes.FAST_CAVE)
         val noiceGenerator = perlinNoise.asGenerator()

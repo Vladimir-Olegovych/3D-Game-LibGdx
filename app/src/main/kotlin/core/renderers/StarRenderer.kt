@@ -10,7 +10,7 @@ import com.badlogic.gdx.graphics.glutils.ShaderProgram
 import com.badlogic.gdx.math.Matrix4
 import com.gigapi.effects.DisposableEffect
 import com.gigapi.effects.LaunchedEffect
-import com.gigapi.general.Context
+import com.gigapi.general.GContext
 import core.defaults.CameraTypes
 import core.shaders.ShaderTypes
 import app.feature.game.ecs.states.TimeState
@@ -26,7 +26,7 @@ class StarRenderer : LaunchedEffect, DisposableEffect {
     private var disposed = false
     private var elapsedTime = 0f
 
-    override fun launch(context: Context) {
+    override fun launch(context: GContext) {
         starShader = context.getObject(ShaderTypes.STAR_SHADER)
         camera = context.getObject(CameraTypes.GL_3D)
         timeState = context.getObject()

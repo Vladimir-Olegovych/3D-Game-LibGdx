@@ -9,7 +9,7 @@ import com.gigapi.coruntines.DeltaUpdater
 import com.gigapi.effects.LaunchedEffect
 import com.gigapi.eventbus.EventBus
 import com.gigapi.eventbus.annotation.BusEvent
-import com.gigapi.general.Context
+import com.gigapi.general.GContext
 import core.bullet.PhysicalData
 import core.bullet.PhysicsUtils
 import kotlinx.coroutines.Dispatchers
@@ -21,7 +21,7 @@ class PhysicsWorldUpdater: LaunchedEffect, DeltaUpdater(1 / 60F, Dispatchers.Def
     private lateinit var physicsWorld: PhysicsWorld
     private lateinit var physicBodies: HashMap<Int, PhysicalData>
 
-    override fun launch(context: Context) {
+    override fun launch(context: GContext) {
         physicalEventBus = context.getObject(EventBusTypes.PHYSICS_EVENT_BUS)
         mainEventBus = context.getObject(EventBusTypes.MAIN_EVENT_BUS)
         physicalEventBus.registerHandler(this)

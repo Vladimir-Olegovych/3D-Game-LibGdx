@@ -1,7 +1,7 @@
 package core.terrain
 
 import com.gigapi.effects.LaunchedEffect
-import com.gigapi.general.Context
+import com.gigapi.general.GContext
 import com.gigapi.math.noice.NoiceGenerator
 import com.gigapi.math.noice.PerlinNoise
 import com.gigapi.math.noice.RandomNoise
@@ -29,7 +29,7 @@ class TerrainGenerator: LaunchedEffect {
     private lateinit var structureSelector: StructureSelector
     private lateinit var biomeGenerators: Map<BiomeType, BiomeGenerator>
 
-    override fun launch(context: Context) {
+    override fun launch(context: GContext) {
         val worldSeed = Random.nextInt()
         context.setObject(NoiceTypes.PERLIN_WORLD, PerlinNoise(worldSeed))
         context.setObject(NoiceTypes.FAST_PERLIN, FastNoise(worldSeed))

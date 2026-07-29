@@ -7,7 +7,7 @@ import com.badlogic.gdx.Input.Keys
 import com.badlogic.gdx.InputProcessor
 import com.gigapi.effects.LaunchedEffect
 import com.gigapi.eventbus.EventBus
-import com.gigapi.general.Context
+import com.gigapi.general.GContext
 
 class UiInputProcessor: LaunchedEffect, InputProcessor {
 
@@ -45,7 +45,7 @@ class UiInputProcessor: LaunchedEffect, InputProcessor {
         inPause = !inPause
     }
 
-    override fun launch(context: Context) {
+    override fun launch(context: GContext) {
         mainEventBus = context.getObject(EventBusTypes.MAIN_EVENT_BUS)
     }
 

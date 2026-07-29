@@ -9,7 +9,7 @@ import com.gigapi.effects.DisposableEffect
 import com.gigapi.effects.LaunchedEffect
 import com.gigapi.eventbus.EventBus
 import com.gigapi.eventbus.annotation.BusEvent
-import com.gigapi.general.Context
+import com.gigapi.general.GContext
 import com.gigapi.math.vector.IntVector3
 import com.gigapi.math.vector.roundToFloat
 import com.gigapi.mesh.MeshData
@@ -68,7 +68,7 @@ class ChunkWorldUpdater : LaunchedEffect, DisposableEffect, DeltaUpdater(1 / 60F
     @Volatile
     private var queuedGenerationPosition: IntVector3? = null
 
-    override fun launch(context: Context) {
+    override fun launch(context: GContext) {
         mainEventBus = context.getObject(EventBusTypes.MAIN_EVENT_BUS)
         chunkEventBus = context.getObject(EventBusTypes.CHUNK_EVENT_BUS)
         physicsEventBus = context.getObject(EventBusTypes.PHYSICS_EVENT_BUS)

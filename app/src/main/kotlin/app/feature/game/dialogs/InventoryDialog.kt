@@ -17,7 +17,7 @@ import com.gigapi.dialogs.Dialog
 import com.gigapi.effects.LaunchedEffect
 import com.gigapi.eventbus.EventBus
 import com.gigapi.eventbus.annotation.BusEvent
-import com.gigapi.general.Context
+import com.gigapi.general.GContext
 import com.gigapi.texture.ColorDrawable
 import core.assets.SkinID
 import core.items.InventoryManager
@@ -32,7 +32,7 @@ class InventoryDialog: LaunchedEffect, Dialog() {
 
     private var dragActor: Actor? = null
 
-    override fun launch(context: Context) {
+    override fun launch(context: GContext) {
         stage = context.getObject()
         inventoryManager = context.getObject()
         dragAndDrop = DragAndDrop()

@@ -12,7 +12,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Table
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton
 import com.gigapi.fillDraw
 import com.gigapi.fragment.Fragment
-import com.gigapi.general.Context
+import com.gigapi.general.GContext
 import com.gigapi.setOnClickListener
 import com.gigapi.viewport.UnfairViewport
 import core.assets.SkinID
@@ -22,7 +22,7 @@ import core.viewport.ViewportTypes
 
 class MainFragment(
     private val navigation: Navigation.Main,
-    private val context: Context,
+    private val context: GContext,
     private val onGameScreen: () -> Unit
 ): Fragment() {
 

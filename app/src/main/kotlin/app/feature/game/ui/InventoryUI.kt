@@ -10,7 +10,7 @@ import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable
 import com.gigapi.effects.LaunchedEffect
 import com.gigapi.eventbus.EventBus
 import com.gigapi.eventbus.annotation.BusEvent
-import com.gigapi.general.Context
+import com.gigapi.general.GContext
 import core.assets.SkinID
 import core.items.InventoryManager
 import core.ui.UIGetter
@@ -25,7 +25,7 @@ class InventoryUI: LaunchedEffect, UIGetter {
 
     private lateinit var inventoryCells: Array<Stack?>
 
-    override fun launch(context: Context) {
+    override fun launch(context: GContext) {
         val assetManager = context.getObject<AssetManager>()
         val skin = assetManager.get<Skin>(SkinID.BUTTON.skin)
         val itemBox = assetManager.get<TextureAtlas>(SkinID.BUTTON.atlas).findRegion("ic_item_box")

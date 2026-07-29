@@ -8,14 +8,14 @@ import com.badlogic.gdx.graphics.glutils.ShaderProgram
 import com.badlogic.gdx.scenes.scene2d.ui.Skin
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.gigapi.effects.LaunchedEffect
-import com.gigapi.general.Context
+import com.gigapi.general.GContext
 import com.gigapi.mesh.ModelAssetManager
 import com.gigapi.sounds.MusicAssetManager
 import core.shaders.ShaderTypes
 
 object AssetsSetupManager: LaunchedEffect {
 
-    override fun launch(context: Context) {
+    override fun launch(context: GContext) {
         val om = ObjectMapper()
         context.setObject(om)
         //---

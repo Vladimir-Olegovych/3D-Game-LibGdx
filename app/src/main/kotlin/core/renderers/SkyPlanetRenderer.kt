@@ -6,7 +6,7 @@ import com.badlogic.gdx.graphics.glutils.ShaderProgram
 import com.badlogic.gdx.math.Vector3
 import com.gigapi.effects.DisposableEffect
 import com.gigapi.effects.LaunchedEffect
-import com.gigapi.general.Context
+import com.gigapi.general.GContext
 import core.defaults.CameraTypes
 import core.shaders.ShaderTypes
 import app.feature.game.ecs.states.TimeState
@@ -29,7 +29,7 @@ class SkyPlanetRenderer : LaunchedEffect, DisposableEffect {
 
     private var disposed = false
 
-    override fun launch(context: Context) {
+    override fun launch(context: GContext) {
         sunShader = context.getObject(ShaderTypes.SKY_PLANET_SHADER)
         camera = context.getObject(CameraTypes.GL_3D)
         timeState = context.getObject()

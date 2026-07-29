@@ -8,7 +8,7 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch
 import com.badlogic.gdx.math.Vector3
 import com.badlogic.gdx.scenes.scene2d.Stage
 import com.gigapi.effects.LaunchedEffect
-import com.gigapi.general.Context
+import com.gigapi.general.GContext
 import com.gigapi.viewport.UnfairViewport
 import core.blocks.BlockDataManager
 import core.chunk.ChunkWorldUpdater
@@ -22,7 +22,7 @@ import kotlinx.coroutines.asCoroutineDispatcher
 import java.util.concurrent.Executor
 
 object DefaultGameSetupManager: Executor, LaunchedEffect {
-    override fun launch(context: Context) {
+    override fun launch(context: GContext) {
         val perspectiveCamera = PerspectiveCamera(67f, Gdx.graphics.width.toFloat(), Gdx.graphics.height.toFloat())
         perspectiveCamera.position.set(Vector3(0f, TerrainGenerator.WORLD_SURFACE.toFloat(), 0f))
         perspectiveCamera.lookAt(-10f, TerrainGenerator.WORLD_SURFACE.toFloat(), -10f)

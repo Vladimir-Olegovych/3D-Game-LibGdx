@@ -7,7 +7,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Table
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton
 import com.gigapi.dialogs.Dialog
 import com.gigapi.effects.LaunchedEffect
-import com.gigapi.general.Context
+import com.gigapi.general.GContext
 import com.gigapi.setOnClickListener
 import com.gigapi.texture.ColorDrawable
 import core.assets.SkinID
@@ -24,7 +24,7 @@ class PauseDialog: LaunchedEffect, Dialog() {
     private lateinit var stage: Stage
     private lateinit var fullscreenOverlay: Table
 
-    override fun launch(context: Context) {
+    override fun launch(context: GContext) {
         stage = context.getObject()
         val uiInputProcessor = context.getObject<UiInputProcessor>()
         val assetManager = context.getObject<AssetManager>()

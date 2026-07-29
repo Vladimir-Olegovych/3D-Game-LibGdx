@@ -8,7 +8,7 @@ import com.badlogic.gdx.physics.bullet.dynamics.btDiscreteDynamicsWorld
 import com.badlogic.gdx.physics.bullet.dynamics.btSequentialImpulseConstraintSolver
 import com.gigapi.effects.DisposableEffect
 import com.gigapi.effects.LaunchedEffect
-import com.gigapi.general.Context
+import com.gigapi.general.GContext
 
 class PhysicsWorld: LaunchedEffect, DisposableEffect {
     private val collisionConfig = btDefaultCollisionConfiguration()
@@ -21,7 +21,7 @@ class PhysicsWorld: LaunchedEffect, DisposableEffect {
         const val GRAVITY = -98.0665f
     }
 
-    override fun launch(context: Context) {
+    override fun launch(context: GContext) {
         world.gravity = Vector3(0f, -GRAVITY, 0f)
         world.forceUpdateAllAabbs = false
     }

@@ -12,7 +12,7 @@ import com.gigapi.artemis.world.ArtemisWorld
 import com.gigapi.eventbus.EventBus
 import com.gigapi.eventbus.annotation.BusEvent
 import com.gigapi.fragment.Fragment
-import com.gigapi.general.Context
+import com.gigapi.general.GContext
 import com.gigapi.sounds.MusicPlayer
 import com.gigapi.viewport.UnfairViewport
 import core.artemis.disposeALL
@@ -25,10 +25,10 @@ import core.viewport.ViewportTypes
 class GameFragment(
     private val navigation: Navigation.Game,
     private val onMenuScreen: () -> Unit,
-    private val context: Context
+    private val context: GContext
 ): Fragment() {
 
-    private val gameContext = Context()
+    private val gameContext = GContext()
     private lateinit var eventBus: EventBus
     private lateinit var viewport: UnfairViewport
     private lateinit var camera: PerspectiveCamera

@@ -1,7 +1,7 @@
 package core.mesh
 
 import com.gigapi.effects.LaunchedEffect
-import com.gigapi.general.Context
+import com.gigapi.general.GContext
 import com.gigapi.math.vector.IntVector3
 import com.gigapi.mesh.RawMeshData
 import core.blocks.BlockDataManager
@@ -24,7 +24,7 @@ class MeshHelper: MeshGenerator, LaunchedEffect {
 
     private lateinit var blockDataManager: BlockDataManager
 
-    override fun launch(context: Context) {
+    override fun launch(context: GContext) {
         blockDataManager = context.getObject()
     }
 

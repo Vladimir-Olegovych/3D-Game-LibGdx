@@ -10,7 +10,7 @@ import com.badlogic.gdx.InputMultiplexer
 import com.badlogic.gdx.scenes.scene2d.Stage
 import com.gigapi.effects.LaunchedEffect
 import com.gigapi.eventbus.EventBus
-import com.gigapi.general.Context
+import com.gigapi.general.GContext
 import com.gigapi.sounds.MusicPlayer
 import core.bullet.world.PhysicsWorldUpdater
 import core.chunk.ChunkWorldUpdater
@@ -24,7 +24,7 @@ import app.feature.game.ecs.states.TimeState
 
 object DefaultWorldSetupManager: LaunchedEffect {
 
-    override fun launch(context: Context) {
+    override fun launch(context: GContext) {
         val playerInputProcessor = PlayerInputProcessor()
         context.setObject(playerInputProcessor)
         //---

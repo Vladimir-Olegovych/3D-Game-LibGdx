@@ -9,7 +9,7 @@ import com.gigapi.effects.DisposableEffect
 import com.gigapi.effects.LaunchedEffect
 import com.gigapi.eventbus.EventBus
 import com.gigapi.eventbus.annotation.BusEvent
-import com.gigapi.general.Context
+import com.gigapi.general.GContext
 import core.assets.SkinID
 import core.blocks.BlockDataManager
 import core.blocks.BlockType
@@ -26,7 +26,7 @@ class InventoryManager(
     private lateinit var assetManager: AssetManager
     private lateinit var eventBus: EventBus
 
-    override fun launch(context: Context) {
+    override fun launch(context: GContext) {
         blockDataManager = context.getObject()
         assetManager = context.getObject()
         eventBus = context.getObject(EventBusTypes.MAIN_EVENT_BUS)

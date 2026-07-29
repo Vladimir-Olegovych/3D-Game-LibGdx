@@ -5,7 +5,7 @@ import com.badlogic.gdx.graphics.g2d.TextureAtlas
 import com.badlogic.gdx.graphics.g2d.TextureRegion
 import com.badlogic.gdx.math.Vector2
 import com.gigapi.effects.LaunchedEffect
-import com.gigapi.general.Context
+import com.gigapi.general.GContext
 import com.gigapi.storage.json.AppConfig
 import core.assets.SkinID
 import core.configs.ConfigTypes
@@ -18,7 +18,7 @@ class BlockDataManager: LaunchedEffect
 
     fun getBlockTextureDataMap(): Map<BlockType, TextureData> = blockTextureDataMap
 
-    override fun launch(context: Context) {
+    override fun launch(context: GContext) {
         val assetManager = context.getObject<AssetManager>()
         val config = context.getObject<AppConfig<BlockDataSO>>(ConfigTypes.BLOCK_DATA_SO)
         val textureData = config.getConfig()

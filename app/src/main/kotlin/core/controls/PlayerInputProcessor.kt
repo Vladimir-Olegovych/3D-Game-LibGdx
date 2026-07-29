@@ -8,7 +8,7 @@ import com.badlogic.gdx.graphics.PerspectiveCamera
 import com.badlogic.gdx.math.Vector3
 import com.gigapi.effects.LaunchedEffect
 import com.gigapi.eventbus.EventBus
-import com.gigapi.general.Context
+import com.gigapi.general.GContext
 import core.bullet.raycast.RayCastTypes
 import core.defaults.CameraTypes
 import kotlin.math.cos
@@ -28,7 +28,7 @@ class PlayerInputProcessor: LaunchedEffect, InputProcessor {
     private lateinit var physicsEventBus: EventBus
     private lateinit var camera: PerspectiveCamera
 
-    override fun launch(context: Context) {
+    override fun launch(context: GContext) {
         camera = context.getObject(CameraTypes.GL_3D)
         mainEventBus = context.getObject(EventBusTypes.MAIN_EVENT_BUS)
         physicsEventBus = context.getObject(EventBusTypes.PHYSICS_EVENT_BUS)

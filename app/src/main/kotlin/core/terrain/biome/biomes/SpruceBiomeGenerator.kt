@@ -1,7 +1,7 @@
 package core.terrain.biome.biomes
 
 import com.gigapi.effects.LaunchedEffect
-import com.gigapi.general.Context
+import com.gigapi.general.GContext
 import com.gigapi.math.noice.NoiceGenerator
 import com.gigapi.math.noice.PerlinNoise
 import com.gigapi.math.noice.domain.DomainWarping2D
@@ -31,7 +31,7 @@ class SpruceBiomeGenerator : LaunchedEffect, BiomeGenerator() {
     private lateinit var baseDomainWarping: DomainWarping2D
     override val startLayerHandler = SurfaceLayerHandler()
 
-    override fun launch(context: Context) {
+    override fun launch(context: GContext) {
         val perlinNoise = context.getObject<PerlinNoise>(NoiceTypes.PERLIN_WORLD)
         val caveNoise = context.getObject<FastNoise>(NoiceTypes.FAST_CAVE)
         val noiceGenerator = perlinNoise.asGenerator()
