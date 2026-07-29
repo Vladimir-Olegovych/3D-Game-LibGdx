@@ -23,10 +23,11 @@ class StarRenderer : LaunchedEffect, DisposableEffect {
     private lateinit var mesh: Mesh
 
     private val invViewProj = Matrix4()
-    private var disposed = false
+    private var disposed = true
     private var elapsedTime = 0f
 
     override fun launch(gContext: GContext) {
+        disposed = false
         starShader = gContext.getObject(ShaderTypes.STAR_SHADER)
         camera = gContext.getObject(CameraTypes.GL_3D)
         timeState = gContext.getObject()

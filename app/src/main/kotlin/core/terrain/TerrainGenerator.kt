@@ -29,8 +29,10 @@ class TerrainGenerator: LaunchedEffect {
     private lateinit var structureSelector: StructureSelector
     private lateinit var biomeGenerators: Map<BiomeType, BiomeGenerator>
 
+    var worldSeedFromServer: Int? = null
+
     override fun launch(gContext: GContext) {
-        val worldSeed = Random.nextInt()
+        val worldSeed = worldSeedFromServer?: error("worldSeedFromServer is null")
         gContext.setObject(NoiceTypes.PERLIN_WORLD, PerlinNoise(worldSeed))
         gContext.setObject(NoiceTypes.FAST_PERLIN, FastNoise(worldSeed))
         gContext.setObject(NoiceTypes.FAST_CAVE, FastNoise(worldSeed).apply {

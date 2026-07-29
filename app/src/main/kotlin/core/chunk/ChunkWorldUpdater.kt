@@ -54,7 +54,7 @@ class ChunkWorldUpdater : LaunchedEffect, DisposableEffect, DeltaUpdater(1 / 60F
     private val removedChunkMeshes = ConcurrentHashMap.newKeySet<IntVector3>()
 
     private lateinit var mainEventBus: EventBus
-    private lateinit var chunkEventBus: EventBus
+    private var chunkEventBus: EventBus? = null
     private lateinit var physicsEventBus: EventBus
     private lateinit var shadowUpdater: ShadowUpdater
     private lateinit var meshGenerator: MeshGenerator
@@ -80,7 +80,7 @@ class ChunkWorldUpdater : LaunchedEffect, DisposableEffect, DeltaUpdater(1 / 60F
             chunkDataMap = chunkDataMap,
             isMeshDrawn = { pos -> meshDataMap[pos]?.mesh != null }
         )
-        chunkEventBus.registerHandler(this)
+        chunkEventBus?.registerHandler(this)
         mainEventBus.registerHandler(this)
     }
 
@@ -89,7 +89,7 @@ class ChunkWorldUpdater : LaunchedEffect, DisposableEffect, DeltaUpdater(1 / 60F
     }
 
     override fun update(deltaTime: Float) {
-        chunkEventBus.process()
+        chunkEventBus?.process()
     }
 
     override fun dispose() {
@@ -100,7 +100,7 @@ class ChunkWorldUpdater : LaunchedEffect, DisposableEffect, DeltaUpdater(1 / 60F
         worldPendingBlocks.clear()
         activeGenerationPosition = null
         queuedGenerationPosition = null
-        chunkEventBus.clear()
+        chunkEventBus?.clear()
     }
 
     @BusEvent
@@ -152,7 +152,7 @@ class ChunkWorldUpdater : LaunchedEffect, DisposableEffect, DeltaUpdater(1 / 60F
             chunkMeshPositionToEntityId[pos] = entityId
         }
 
-        chunkEventBus.sendEvent(ChunkEvent.OnGenerateResponse(event.generationData))
+        chunkEventBus?.sendEvent(ChunkEvent.OnGenerateResponse(event.generationData))
     }
 
 
@@ -171,7 +171,7 @@ class ChunkWorldUpdater : LaunchedEffect, DisposableEffect, DeltaUpdater(1 / 60F
                 }
             }
             dataJobs.awaitAll()
-            chunkEventBus.sendEvent(ChunkEvent.OnAcceptPendingResponse(event.generationData))
+            chunkEventBus?.sendEvent(ChunkEvent.OnAcceptPendingResponse(event.generationData))
         }
     }
 
@@ -198,7 +198,7 @@ class ChunkWorldUpdater : LaunchedEffect, DisposableEffect, DeltaUpdater(1 / 60F
                 }
             }
             meshJobs.awaitAll()
-            chunkEventBus.sendEvent(ChunkEvent.OnDrawResponse(event.generationData))
+            chunkEventBus?.sendEvent(ChunkEvent.OnDrawResponse(event.generationData))
         }
     }
     @BusEvent
@@ -273,7 +273,7 @@ class ChunkWorldUpdater : LaunchedEffect, DisposableEffect, DeltaUpdater(1 / 60F
             }
             remeshJobs.awaitAll()
 
-            chunkEventBus.sendEvent(ChunkEvent.OnFinalizeResponse(event.generationData))
+            chunkEventBus?.sendEvent(ChunkEvent.OnFinalizeResponse(event.generationData))
         }
     }
 
@@ -354,7 +354,7 @@ class ChunkWorldUpdater : LaunchedEffect, DisposableEffect, DeltaUpdater(1 / 60F
         val currentBlock = chunkData.getBlockByLocal(blockPosition)
 
         if (currentBlock == BlockType.AIR) return
-        chunkEventBus.sendEventNow(ChunkEvent.OnSetBlock(
+        chunkEventBus?.sendEventNow(ChunkEvent.OnSetBlock(
             chunkData, BlockType.AIR, blockPosition
         ))
         mainEventBus.sendEvent(GameEvent.OnBlockRemoved(currentBlock, chunkPosition, blockPosition))

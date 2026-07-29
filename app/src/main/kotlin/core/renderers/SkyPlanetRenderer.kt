@@ -27,9 +27,10 @@ class SkyPlanetRenderer : LaunchedEffect, DisposableEffect {
     private val tmpPosition = Vector3()
     private val screenPosBuffer = floatArrayOf(0f, 0f)
 
-    private var disposed = false
+    private var disposed = true
 
     override fun launch(gContext: GContext) {
+        disposed = false
         sunShader = gContext.getObject(ShaderTypes.SKY_PLANET_SHADER)
         camera = gContext.getObject(CameraTypes.GL_3D)
         timeState = gContext.getObject()
