@@ -25,12 +25,12 @@ class InventoryUI: LaunchedEffect, UIGetter {
 
     private lateinit var inventoryCells: Array<Stack?>
 
-    override fun launch(context: GContext) {
-        val assetManager = context.getObject<AssetManager>()
+    override fun launch(gContext: GContext) {
+        val assetManager = gContext.getObject<AssetManager>()
         val skin = assetManager.get<Skin>(SkinID.BUTTON.skin)
         val itemBox = assetManager.get<TextureAtlas>(SkinID.BUTTON.atlas).findRegion("ic_item_box")
-        val inventoryManager = context.getObject<InventoryManager>()
-        val eventBus = context.getObject<EventBus>(EventBusTypes.MAIN_EVENT_BUS)
+        val inventoryManager = gContext.getObject<InventoryManager>()
+        val eventBus = gContext.getObject<EventBus>(EventBusTypes.MAIN_EVENT_BUS)
         eventBus.registerHandler(this)
 
         inventoryCells = Array(inventoryManager.inventorySize) { null }

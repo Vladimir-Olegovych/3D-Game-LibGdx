@@ -12,23 +12,23 @@ import core.navigation.Navigation
 
 class GameApplication :  Game() {
 
-    private val context = GContext()
+    private val gContext = GContext()
 
-    override fun dispose() { context.dispose() }
+    override fun dispose() { gContext.dispose() }
 
     override fun create() {
         val navHostController = NavHostController<Navigation>(this)
-        AssetsSetupManager.launch(context)
-        ConfigSetupManager.launch(context)
-        DefaultGameSetupManager.launch(context)
-        context.setObject(navHostController)
-        context.launch()
+        AssetsSetupManager.launch(gContext)
+        ConfigSetupManager.launch(gContext)
+        DefaultGameSetupManager.launch(gContext)
+        gContext.setObject(navHostController)
+        gContext.launch()
 
         navHostController.apply {
             fragment<Navigation.Main> {
                 return@fragment MainFragment(
                     navigation = it,
-                    context = context,
+                    gContext = gContext,
                     onGameScreen = {
                         navHostController.navigate(Navigation.Game())
                     }
@@ -37,7 +37,7 @@ class GameApplication :  Game() {
             fragment<Navigation.Game> {
                 return@fragment GameFragment(
                     navigation = it,
-                    context = context,
+                    gContext = gContext,
                     onMenuScreen = {
                         navHostController.navigate(Navigation.Main)
                     }

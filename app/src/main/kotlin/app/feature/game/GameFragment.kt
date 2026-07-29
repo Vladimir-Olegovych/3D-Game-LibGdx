@@ -13,8 +13,10 @@ import com.gigapi.eventbus.EventBus
 import com.gigapi.eventbus.annotation.BusEvent
 import com.gigapi.fragment.Fragment
 import com.gigapi.general.GContext
+import com.gigapi.kryo.GameClient
 import com.gigapi.sounds.MusicPlayer
 import com.gigapi.viewport.UnfairViewport
+import com.gigcreator.registerAllEvents
 import core.artemis.disposeALL
 import core.defaults.CameraTypes
 import core.defaults.DefaultWorldSetupManager
@@ -25,15 +27,16 @@ import core.viewport.ViewportTypes
 class GameFragment(
     private val navigation: Navigation.Game,
     private val onMenuScreen: () -> Unit,
-    private val context: GContext
+    private val gContext: GContext
 ): Fragment() {
 
-    private val gameContext = GContext()
+    private val gameGContext = GContext()
     private lateinit var eventBus: EventBus
     private lateinit var viewport: UnfairViewport
     private lateinit var camera: PerspectiveCamera
     private lateinit var artemisWorld: ArtemisWorld
     private lateinit var inputMultiplexer: InputMultiplexer
+    private lateinit var gameClient: GameClient
 
     @BusEvent
     fun onMenuScreen(event: UiEvent.OnMenuScreen) {
@@ -41,18 +44,19 @@ class GameFragment(
     }
 
     override fun onCreate() {
-        gameContext.addContext(context)
-        gameContext.setObject(dialogManager)
-        DefaultWorldSetupManager.launch(gameContext)
-        gameContext.launch()
+        gameGContext.addContext(gContext)
+        gameGContext.setObject(dialogManager)
+        DefaultWorldSetupManager.launch(gameGContext)
+        gameGContext.launch()
 
-        inputMultiplexer = gameContext.getObject<InputMultiplexer>()
-        viewport = gameContext.getObject(ViewportTypes.UNFAIR)
-        camera = gameContext.getObject(CameraTypes.GL_3D)
-        eventBus = gameContext.getObject(EventBusTypes.MAIN_EVENT_BUS)
+        gameClient = gameGContext.getObject()
+        inputMultiplexer = gameGContext.getObject<InputMultiplexer>()
+        viewport = gameGContext.getObject(ViewportTypes.UNFAIR)
+        camera = gameGContext.getObject(CameraTypes.GL_3D)
+        eventBus = gameGContext.getObject(EventBusTypes.MAIN_EVENT_BUS)
         camera.position.set(Vector3(0f, TerrainGenerator.WORLD_SURFACE.toFloat(), 0f))
 
-        val musicPlayer = gameContext.getObject<MusicPlayer>()
+        val musicPlayer = gameGContext.getObject<MusicPlayer>()
         musicPlayer.setVolume(0.5F)
         //musicPlayer.play(MusicID.MUSIC_1, true)
 
@@ -61,7 +65,7 @@ class GameFragment(
         Gdx.input.inputProcessor = inputMultiplexer
 
         val configuration = WorldConfiguration()
-        for ((key, value) in gameContext.objectMap) {
+        for ((key, value) in gameGContext.objectMap) {
             val anObject = value.anObject
             val customKey = key.customKey
             if(customKey != null) {
@@ -87,6 +91,8 @@ class GameFragment(
 
         configuration.isAlwaysDelayComponentRemoval = false
         artemisWorld = ArtemisWorld(configuration)
+
+        gameClient.start("127.0.0.1", 5551) { it.registerAllEvents() }
     }
 
     override fun onRender(deltaTime: Float) {
@@ -106,11 +112,12 @@ class GameFragment(
         Gdx.input.inputProcessor = null
         Gdx.input.isCursorCatched = false
 
+        gameClient.dispose()
         inputMultiplexer.clear()
         artemisWorld.disposeALL()
         eventBus.clear()
-        gameContext.getObject<EventBus>(EventBusTypes.PHYSICS_EVENT_BUS).process()
-        gameContext.removeContext(context)
-        gameContext.dispose()
+        gameGContext.getObject<EventBus>(EventBusTypes.PHYSICS_EVENT_BUS).process()
+        gameGContext.removeContext(gContext)
+        gameGContext.dispose()
     }
 }

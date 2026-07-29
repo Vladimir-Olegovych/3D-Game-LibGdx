@@ -29,10 +29,10 @@ class DataUI : LaunchedEffect, UIGetter {
     private lateinit var timeLabel: Label
     private lateinit var positionLabel: Label
 
-    override fun launch(context: GContext) {
-        timeState = context.getObject()
-        camera = context.getObject(CameraTypes.GL_3D)
-        val assetManager = context.getObject<AssetManager>()
+    override fun launch(gContext: GContext) {
+        timeState = gContext.getObject()
+        camera = gContext.getObject(CameraTypes.GL_3D)
+        val assetManager = gContext.getObject<AssetManager>()
         val skin = assetManager.get<Skin>(SkinID.BUTTON.skin)
         fpsLabel = Label("FPS: Not updated", skin).apply { setAlignment(Align.right) }
         timeLabel = Label("Time: ", skin).apply { setAlignment(Align.right) }

@@ -11,6 +11,7 @@ repositories {
 
 dependencies {
     implementation(kotlin("reflect"))
+    api(project(":core"))
     api(files("/home/vladimir/Documents/Java/GdxUtils/build/libs/GdxUtils-1.0-SNAPSHOT.jar"))
 
     api("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.1")
@@ -18,7 +19,7 @@ dependencies {
 
     api("com.badlogicgames.gdx:gdx-freetype:1.14.2")
     api("com.badlogicgames.gdx:gdx:1.14.2")
-    
+
     api("com.esotericsoftware:kryonet:2.22.0-RC1")
     api("com.fasterxml.jackson.core:jackson-databind:2.14.2")
     api("com.fasterxml.jackson.core:jackson-core:2.14.2")

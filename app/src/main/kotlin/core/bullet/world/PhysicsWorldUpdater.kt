@@ -21,9 +21,9 @@ class PhysicsWorldUpdater: LaunchedEffect, DeltaUpdater(1 / 60F, Dispatchers.Def
     private lateinit var physicsWorld: PhysicsWorld
     private lateinit var physicBodies: HashMap<Int, PhysicalData>
 
-    override fun launch(context: GContext) {
-        physicalEventBus = context.getObject(EventBusTypes.PHYSICS_EVENT_BUS)
-        mainEventBus = context.getObject(EventBusTypes.MAIN_EVENT_BUS)
+    override fun launch(gContext: GContext) {
+        physicalEventBus = gContext.getObject(EventBusTypes.PHYSICS_EVENT_BUS)
+        mainEventBus = gContext.getObject(EventBusTypes.MAIN_EVENT_BUS)
         physicalEventBus.registerHandler(this)
     }
 

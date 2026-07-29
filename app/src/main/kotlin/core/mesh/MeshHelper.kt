@@ -24,8 +24,8 @@ class MeshHelper: MeshGenerator, LaunchedEffect {
 
     private lateinit var blockDataManager: BlockDataManager
 
-    override fun launch(context: GContext) {
-        blockDataManager = context.getObject()
+    override fun launch(gContext: GContext) {
+        blockDataManager = gContext.getObject()
     }
 
     override fun createMesh(

@@ -26,10 +26,10 @@ class InventoryManager(
     private lateinit var assetManager: AssetManager
     private lateinit var eventBus: EventBus
 
-    override fun launch(context: GContext) {
-        blockDataManager = context.getObject()
-        assetManager = context.getObject()
-        eventBus = context.getObject(EventBusTypes.MAIN_EVENT_BUS)
+    override fun launch(gContext: GContext) {
+        blockDataManager = gContext.getObject()
+        assetManager = gContext.getObject()
+        eventBus = gContext.getObject(EventBusTypes.MAIN_EVENT_BUS)
         eventBus.registerHandler(this)
     }
 

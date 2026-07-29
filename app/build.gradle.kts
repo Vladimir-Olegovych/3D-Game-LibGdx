@@ -9,6 +9,7 @@ plugins {
 
 dependencies {
     implementation(kotlin("reflect"))
+    api(project(":core"))
     api(files("/home/vladimir/Documents/Java/GdxUtils/build/libs/GdxUtils-1.0-SNAPSHOT.jar"))
     api(files("/home/vladimir/Documents/Java/GdxGraphicsUtils/build/libs/GdxGraphicsUtils-1.0-SNAPSHOT.jar"))
 
@@ -20,7 +21,7 @@ dependencies {
     api("com.badlogicgames.gdx:gdx-bullet:1.14.2")
 
     api("de.javagl:obj:0.4.0")
-    api("com.esotericsoftware:kryo:5.5.0")
+    api("com.esotericsoftware:kryonet:2.22.0-RC1")
     api("com.fasterxml.jackson.core:jackson-databind:2.14.2")
     api("com.fasterxml.jackson.core:jackson-core:2.14.2")
     api("com.fasterxml.jackson.core:jackson-annotations:2.14.2")

@@ -33,9 +33,9 @@ class MountainBiomeGenerator : LaunchedEffect, BiomeGenerator() {
     private lateinit var baseDomainWarping: DomainWarping2D
     override val startLayerHandler = SurfaceLayerHandler(surfaceBlockType = BlockType.STONE)
 
-    override fun launch(context: GContext) {
-        val perlinNoise = context.getObject<PerlinNoise>(NoiceTypes.PERLIN_WORLD)
-        val caveNoise = context.getObject<FastNoise>(NoiceTypes.FAST_CAVE)
+    override fun launch(gContext: GContext) {
+        val perlinNoise = gContext.getObject<PerlinNoise>(NoiceTypes.PERLIN_WORLD)
+        val caveNoise = gContext.getObject<FastNoise>(NoiceTypes.FAST_CAVE)
         val noiceGenerator = perlinNoise.asGenerator()
 
         baseDomainWarping = getSurfaceDomainWarping(noiceGenerator)

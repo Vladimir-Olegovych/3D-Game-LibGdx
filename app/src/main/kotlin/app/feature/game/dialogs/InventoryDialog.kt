@@ -32,14 +32,14 @@ class InventoryDialog: LaunchedEffect, Dialog() {
 
     private var dragActor: Actor? = null
 
-    override fun launch(context: GContext) {
-        stage = context.getObject()
-        inventoryManager = context.getObject()
+    override fun launch(gContext: GContext) {
+        stage = gContext.getObject()
+        inventoryManager = gContext.getObject()
         dragAndDrop = DragAndDrop()
-        val assetManager = context.getObject<AssetManager>()
+        val assetManager = gContext.getObject<AssetManager>()
         val skin = assetManager.get<Skin>(SkinID.BUTTON.skin)
         val itemBox = assetManager.get<TextureAtlas>(SkinID.BUTTON.atlas).findRegion("ic_item_box")
-        val eventBus = context.getObject<EventBus>(EventBusTypes.MAIN_EVENT_BUS)
+        val eventBus = gContext.getObject<EventBus>(EventBusTypes.MAIN_EVENT_BUS)
         eventBus.registerHandler(this)
 
         inventoryCells = Array(inventoryManager.inventorySize) { null }

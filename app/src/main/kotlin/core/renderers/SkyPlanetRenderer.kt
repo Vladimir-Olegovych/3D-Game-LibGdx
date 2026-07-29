@@ -29,10 +29,10 @@ class SkyPlanetRenderer : LaunchedEffect, DisposableEffect {
 
     private var disposed = false
 
-    override fun launch(context: GContext) {
-        sunShader = context.getObject(ShaderTypes.SKY_PLANET_SHADER)
-        camera = context.getObject(CameraTypes.GL_3D)
-        timeState = context.getObject()
+    override fun launch(gContext: GContext) {
+        sunShader = gContext.getObject(ShaderTypes.SKY_PLANET_SHADER)
+        camera = gContext.getObject(CameraTypes.GL_3D)
+        timeState = gContext.getObject()
         mesh = createFullscreenQuad()
     }
 

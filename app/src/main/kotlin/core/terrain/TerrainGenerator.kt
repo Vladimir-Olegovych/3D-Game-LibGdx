@@ -29,31 +29,31 @@ class TerrainGenerator: LaunchedEffect {
     private lateinit var structureSelector: StructureSelector
     private lateinit var biomeGenerators: Map<BiomeType, BiomeGenerator>
 
-    override fun launch(context: GContext) {
+    override fun launch(gContext: GContext) {
         val worldSeed = Random.nextInt()
-        context.setObject(NoiceTypes.PERLIN_WORLD, PerlinNoise(worldSeed))
-        context.setObject(NoiceTypes.FAST_PERLIN, FastNoise(worldSeed))
-        context.setObject(NoiceTypes.FAST_CAVE, FastNoise(worldSeed).apply {
+        gContext.setObject(NoiceTypes.PERLIN_WORLD, PerlinNoise(worldSeed))
+        gContext.setObject(NoiceTypes.FAST_PERLIN, FastNoise(worldSeed))
+        gContext.setObject(NoiceTypes.FAST_CAVE, FastNoise(worldSeed).apply {
             SetFrequency(CaveLayerHandler.CAVE_NOISE_FREQUENCY)
         })
-        context.setObject(NoiceTypes.RANDOM_WORLD, RandomNoise(worldSeed))
+        gContext.setObject(NoiceTypes.RANDOM_WORLD, RandomNoise(worldSeed))
 
-        context.setObject(BiomeSelector(worldSeed))
+        gContext.setObject(BiomeSelector(worldSeed))
 
-        context.setObject(ForestBiomeGenerator())
-        context.setObject(SpruceBiomeGenerator())
-        context.setObject(DesertBiomeGenerator())
-        context.setObject(MountainBiomeGenerator())
+        gContext.setObject(ForestBiomeGenerator())
+        gContext.setObject(SpruceBiomeGenerator())
+        gContext.setObject(DesertBiomeGenerator())
+        gContext.setObject(MountainBiomeGenerator())
 
         biomeGenerators = mapOf(
-            BiomeType.FOREST        to context.getObject<ForestBiomeGenerator>(),
-            BiomeType.SPRUCE_FOREST to context.getObject<SpruceBiomeGenerator>(),
-            BiomeType.DESERT        to context.getObject<DesertBiomeGenerator>(),
-            BiomeType.MOUNTAINS     to context.getObject<MountainBiomeGenerator>()
+            BiomeType.FOREST        to gContext.getObject<ForestBiomeGenerator>(),
+            BiomeType.SPRUCE_FOREST to gContext.getObject<SpruceBiomeGenerator>(),
+            BiomeType.DESERT        to gContext.getObject<DesertBiomeGenerator>(),
+            BiomeType.MOUNTAINS     to gContext.getObject<MountainBiomeGenerator>()
         )
 
-        biomeSelector = context.getObject()
-        val noise = context.getObject<PerlinNoise>(NoiceTypes.PERLIN_WORLD)
+        biomeSelector = gContext.getObject()
+        val noise = gContext.getObject<PerlinNoise>(NoiceTypes.PERLIN_WORLD)
         noiseWarp = getNoiseDomainWarping(noise.asGenerator())
     }
 

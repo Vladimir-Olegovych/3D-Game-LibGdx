@@ -68,14 +68,14 @@ class ChunkWorldUpdater : LaunchedEffect, DisposableEffect, DeltaUpdater(1 / 60F
     @Volatile
     private var queuedGenerationPosition: IntVector3? = null
 
-    override fun launch(context: GContext) {
-        mainEventBus = context.getObject(EventBusTypes.MAIN_EVENT_BUS)
-        chunkEventBus = context.getObject(EventBusTypes.CHUNK_EVENT_BUS)
-        physicsEventBus = context.getObject(EventBusTypes.PHYSICS_EVENT_BUS)
-        meshGenerator = context.getObject<MeshHelper>()
-        shadowUpdater = context.getObject()
-        terrainGenerator = context.getObject()
-        mainScope = CoroutineScope(context.getObject<CoroutineDispatcher>(DispatcherTypes.MAIN))
+    override fun launch(gContext: GContext) {
+        mainEventBus = gContext.getObject(EventBusTypes.MAIN_EVENT_BUS)
+        chunkEventBus = gContext.getObject(EventBusTypes.CHUNK_EVENT_BUS)
+        physicsEventBus = gContext.getObject(EventBusTypes.PHYSICS_EVENT_BUS)
+        meshGenerator = gContext.getObject<MeshHelper>()
+        shadowUpdater = gContext.getObject()
+        terrainGenerator = gContext.getObject()
+        mainScope = CoroutineScope(gContext.getObject<CoroutineDispatcher>(DispatcherTypes.MAIN))
         worldPendingBlocks.bind(
             chunkDataMap = chunkDataMap,
             isMeshDrawn = { pos -> meshDataMap[pos]?.mesh != null }

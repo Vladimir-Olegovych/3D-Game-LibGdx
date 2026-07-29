@@ -26,10 +26,10 @@ class StarRenderer : LaunchedEffect, DisposableEffect {
     private var disposed = false
     private var elapsedTime = 0f
 
-    override fun launch(context: GContext) {
-        starShader = context.getObject(ShaderTypes.STAR_SHADER)
-        camera = context.getObject(CameraTypes.GL_3D)
-        timeState = context.getObject()
+    override fun launch(gContext: GContext) {
+        starShader = gContext.getObject(ShaderTypes.STAR_SHADER)
+        camera = gContext.getObject(CameraTypes.GL_3D)
+        timeState = gContext.getObject()
         mesh = createFullscreenQuad()
     }
 

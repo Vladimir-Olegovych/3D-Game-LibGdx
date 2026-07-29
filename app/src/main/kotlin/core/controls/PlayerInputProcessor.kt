@@ -28,10 +28,10 @@ class PlayerInputProcessor: LaunchedEffect, InputProcessor {
     private lateinit var physicsEventBus: EventBus
     private lateinit var camera: PerspectiveCamera
 
-    override fun launch(context: GContext) {
-        camera = context.getObject(CameraTypes.GL_3D)
-        mainEventBus = context.getObject(EventBusTypes.MAIN_EVENT_BUS)
-        physicsEventBus = context.getObject(EventBusTypes.PHYSICS_EVENT_BUS)
+    override fun launch(gContext: GContext) {
+        camera = gContext.getObject(CameraTypes.GL_3D)
+        mainEventBus = gContext.getObject(EventBusTypes.MAIN_EVENT_BUS)
+        physicsEventBus = gContext.getObject(EventBusTypes.PHYSICS_EVENT_BUS)
     }
 
     private var isMouseHold = false

@@ -15,9 +15,9 @@ import core.shaders.ShaderTypes
 
 object AssetsSetupManager: LaunchedEffect {
 
-    override fun launch(context: GContext) {
+    override fun launch(gContext: GContext) {
         val om = ObjectMapper()
-        context.setObject(om)
+        gContext.setObject(om)
         //---
         val assetManager = AssetManager()
         assetManager.load(SkinID.BLOCK.atlas, TextureAtlas::class.java)
@@ -28,40 +28,40 @@ object AssetsSetupManager: LaunchedEffect {
             assetManager.load(it.filePath, Texture::class.java)
         }
         assetManager.finishLoading()
-        context.setObject(assetManager)
+        gContext.setObject(assetManager)
         //---
         val modelAssetManager = ModelAssetManager("textures", assetManager)
         ModelID.entries.forEach {
             modelAssetManager.loadObj(it, it.filePathObj, it.filePathMlt)
         }
-        context.setObject(modelAssetManager)
+        gContext.setObject(modelAssetManager)
         //---
         val musicAssetManager = MusicAssetManager()
         MusicID.entries.forEach {
             musicAssetManager.load(it, it.filePath)
         }
-        context.setObject(musicAssetManager)
+        gContext.setObject(musicAssetManager)
         //---
         //ShaderProgram.pedantic = false
         val chunkShader = ShaderProgram(
             Gdx.files.internal("shaders/chunk/vertex_shader_chunk.glsl").readString(),
             Gdx.files.internal("shaders/chunk/fragment_shader_chunk.glsl").readString()
         )
-        context.setObject(ShaderTypes.CHUNK_SHADER, chunkShader)
+        gContext.setObject(ShaderTypes.CHUNK_SHADER, chunkShader)
         val modelShader = ShaderProgram(
             Gdx.files.internal("shaders/model/vertex_shader_model.glsl").readString(),
             Gdx.files.internal("shaders/model/fragment_shader_model.glsl").readString()
         )
-        context.setObject(ShaderTypes.MODEL_SHADER, modelShader)
+        gContext.setObject(ShaderTypes.MODEL_SHADER, modelShader)
         val sunShader = ShaderProgram(
             Gdx.files.internal("shaders/sky_planet/vertex_shader_sky_planet.glsl").readString(),
             Gdx.files.internal("shaders/sky_planet/fragment_shader_sky_planet.glsl").readString()
         )
-        context.setObject(ShaderTypes.SKY_PLANET_SHADER, sunShader)
+        gContext.setObject(ShaderTypes.SKY_PLANET_SHADER, sunShader)
         val starShader = ShaderProgram(
             Gdx.files.internal("shaders/stars/vertex_shader_stars.glsl").readString(),
             Gdx.files.internal("shaders/stars/fragment_shader_stars.glsl").readString()
         )
-        context.setObject(ShaderTypes.STAR_SHADER, starShader)
+        gContext.setObject(ShaderTypes.STAR_SHADER, starShader)
     }
 }

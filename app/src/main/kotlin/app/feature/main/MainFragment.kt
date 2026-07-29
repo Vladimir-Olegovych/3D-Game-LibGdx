@@ -22,7 +22,7 @@ import core.viewport.ViewportTypes
 
 class MainFragment(
     private val navigation: Navigation.Main,
-    private val context: GContext,
+    private val gContext: GContext,
     private val onGameScreen: () -> Unit
 ): Fragment() {
 
@@ -33,11 +33,11 @@ class MainFragment(
     private lateinit var menuBackground: Texture
 
     override fun onCreate() {
-        spriteBatch = context.getObject()
-        viewport = context.getObject(ViewportTypes.UNFAIR)
-        stage = context.getObject()
-        camera = context.getObject(CameraTypes.GL_2D)
-        val assetManager = context.getObject<AssetManager>()
+        spriteBatch = gContext.getObject()
+        viewport = gContext.getObject(ViewportTypes.UNFAIR)
+        stage = gContext.getObject()
+        camera = gContext.getObject(CameraTypes.GL_2D)
+        val assetManager = gContext.getObject<AssetManager>()
         menuBackground = assetManager.get<Skin>(SkinID.BLOCK.skin).atlas.textures.first()
 
         val skin = assetManager.get<Skin>(SkinID.BUTTON.skin)

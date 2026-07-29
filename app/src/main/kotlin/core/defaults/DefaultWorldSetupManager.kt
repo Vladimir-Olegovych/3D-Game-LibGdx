@@ -21,47 +21,55 @@ import core.renderers.StarRenderer
 import core.renderers.SkyPlanetRenderer
 import core.terrain.TerrainGenerator
 import app.feature.game.ecs.states.TimeState
+import com.gigapi.kryo.GameClient
+import core.client.ClientAcceptor
 
 object DefaultWorldSetupManager: LaunchedEffect {
 
-    override fun launch(context: GContext) {
+    override fun launch(gContext: GContext) {
+        //---
+        val mainEventBus = EventBus()
+        gContext.setObject(EventBusTypes.MAIN_EVENT_BUS, mainEventBus)
+        gContext.setObject(EventBusTypes.CHUNK_EVENT_BUS, EventBus())
+        gContext.setObject(EventBusTypes.PHYSICS_EVENT_BUS, EventBus())
+        //---
+        val gameClient = gContext.getObject<GameClient>()
+        gameClient.prepare()
+        gameClient.addListener(ClientAcceptor(mainEventBus))
+        //---
         val playerInputProcessor = PlayerInputProcessor()
-        context.setObject(playerInputProcessor)
+        gContext.setObject(playerInputProcessor)
         //---
         val uiInputProcessor = UiInputProcessor()
-        context.setObject(uiInputProcessor)
+        gContext.setObject(uiInputProcessor)
         //---
-        val inputMultiplexer = context.getObject<InputMultiplexer>()
-        inputMultiplexer.addProcessor(context.getObject<Stage>())
+        val inputMultiplexer = gContext.getObject<InputMultiplexer>()
+        inputMultiplexer.addProcessor(gContext.getObject<Stage>())
         inputMultiplexer.addProcessor(playerInputProcessor)
         inputMultiplexer.addProcessor(uiInputProcessor)
         //---
-        val musicPlayer = MusicPlayer(context.getObject())
-        context.setObject(musicPlayer)
+        val musicPlayer = MusicPlayer(gContext.getObject())
+        gContext.setObject(musicPlayer)
         //---
-        context.setObject(SkyPlanetRenderer())
-        context.setObject(StarRenderer())
+        gContext.setObject(SkyPlanetRenderer())
+        gContext.setObject(StarRenderer())
         //---
-        context.setObject(TimeState())
-        //---
-        context.setObject(EventBusTypes.MAIN_EVENT_BUS, EventBus())
-        context.setObject(EventBusTypes.CHUNK_EVENT_BUS, EventBus())
-        context.setObject(EventBusTypes.PHYSICS_EVENT_BUS, EventBus())
+        gContext.setObject(TimeState())
         //Dialogs
-        context.setObject(PauseDialog())
-        context.setObject(InventoryDialog())
+        gContext.setObject(PauseDialog())
+        gContext.setObject(InventoryDialog())
         //UI
-        context.setObject(AimUI())
-        context.setObject(DataUI())
-        context.setObject(InventoryUI())
+        gContext.setObject(AimUI())
+        gContext.setObject(DataUI())
+        gContext.setObject(InventoryUI())
         //---
-        context.setObject(PhysicsWorldUpdater())
+        gContext.setObject(PhysicsWorldUpdater())
         //---
-        context.setObject(ChunkWorldUpdater())
+        gContext.setObject(ChunkWorldUpdater())
         //---
-        context.setObject(TerrainGenerator())
+        gContext.setObject(TerrainGenerator())
         //---
-        context.setObject(InventoryManager())
+        gContext.setObject(InventoryManager())
     }
 
 }

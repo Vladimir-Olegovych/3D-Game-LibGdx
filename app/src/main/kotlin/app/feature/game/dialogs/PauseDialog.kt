@@ -24,10 +24,10 @@ class PauseDialog: LaunchedEffect, Dialog() {
     private lateinit var stage: Stage
     private lateinit var fullscreenOverlay: Table
 
-    override fun launch(context: GContext) {
-        stage = context.getObject()
-        val uiInputProcessor = context.getObject<UiInputProcessor>()
-        val assetManager = context.getObject<AssetManager>()
+    override fun launch(gContext: GContext) {
+        stage = gContext.getObject()
+        val uiInputProcessor = gContext.getObject<UiInputProcessor>()
+        val assetManager = gContext.getObject<AssetManager>()
         val skin = assetManager.get<Skin>(SkinID.BUTTON.skin)
         fullscreenOverlay = Table().apply {
             setFillParent(true)

@@ -8,13 +8,13 @@ import com.gigapi.storage.json.AppConfig
 import core.blocks.BlockDataSO
 
 object ConfigSetupManager: LaunchedEffect {
-    override fun launch(context: GContext) {
-        val om = context.getObject<ObjectMapper>()
+    override fun launch(gContext: GContext) {
+        val om = gContext.getObject<ObjectMapper>()
         val default = om.readValue(
             Gdx.files.internal("configs/${ConfigTypes.BLOCK_DATA_SO}.json").read(),
             BlockDataSO::class.java
         )
-        context.setObject(
+        gContext.setObject(
             customKey = ConfigTypes.BLOCK_DATA_SO,
             AppConfig(
                 configName = "configs/${ConfigTypes.BLOCK_DATA_SO}",

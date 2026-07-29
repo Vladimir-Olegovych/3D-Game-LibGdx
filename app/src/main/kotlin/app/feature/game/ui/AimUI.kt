@@ -15,7 +15,7 @@ class AimUI : LaunchedEffect, UIGetter {
         center()
     }
 
-    override fun launch(context: GContext) {
+    override fun launch(gContext: GContext) {
         val texture = DefaultsTextures.WHITE
         layout.add(Image(texture)).size(6f)
     }

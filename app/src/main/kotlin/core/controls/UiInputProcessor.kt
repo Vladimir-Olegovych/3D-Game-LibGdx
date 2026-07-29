@@ -45,8 +45,8 @@ class UiInputProcessor: LaunchedEffect, InputProcessor {
         inPause = !inPause
     }
 
-    override fun launch(context: GContext) {
-        mainEventBus = context.getObject(EventBusTypes.MAIN_EVENT_BUS)
+    override fun launch(gContext: GContext) {
+        mainEventBus = gContext.getObject(EventBusTypes.MAIN_EVENT_BUS)
     }
 
     override fun keyDown(keycode: Int): Boolean {

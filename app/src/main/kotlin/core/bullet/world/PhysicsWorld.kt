@@ -21,7 +21,7 @@ class PhysicsWorld: LaunchedEffect, DisposableEffect {
         const val GRAVITY = -98.0665f
     }
 
-    override fun launch(context: GContext) {
+    override fun launch(gContext: GContext) {
         world.gravity = Vector3(0f, -GRAVITY, 0f)
         world.forceUpdateAllAabbs = false
     }

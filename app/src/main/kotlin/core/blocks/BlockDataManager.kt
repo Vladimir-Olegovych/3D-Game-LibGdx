@@ -18,9 +18,9 @@ class BlockDataManager: LaunchedEffect
 
     fun getBlockTextureDataMap(): Map<BlockType, TextureData> = blockTextureDataMap
 
-    override fun launch(context: GContext) {
-        val assetManager = context.getObject<AssetManager>()
-        val config = context.getObject<AppConfig<BlockDataSO>>(ConfigTypes.BLOCK_DATA_SO)
+    override fun launch(gContext: GContext) {
+        val assetManager = gContext.getObject<AssetManager>()
+        val config = gContext.getObject<AppConfig<BlockDataSO>>(ConfigTypes.BLOCK_DATA_SO)
         val textureData = config.getConfig()
         val atlas = assetManager.get<TextureAtlas>(SkinID.BLOCK.atlas)
 
