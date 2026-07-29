@@ -23,3 +23,4 @@ include(":app")
 
 rootProject.name = "GDX-3D-TEST"
 include("desktop")
+include("server")
