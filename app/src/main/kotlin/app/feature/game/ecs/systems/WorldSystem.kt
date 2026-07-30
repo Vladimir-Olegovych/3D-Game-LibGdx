@@ -15,6 +15,7 @@ import com.gigapi.eventbus.annotation.BusEvent
 import com.gigapi.mesh.ModelAssetManager
 import core.defaults.WorldConstants
 import core.mesh.MeshUtils
+import core.mesh.rawMeshParams
 
 class WorldSystem: BaseSystem() {
 
@@ -62,6 +63,10 @@ class WorldSystem: BaseSystem() {
             //ignoreMeshDrawing.add(0)
         }
          */
+
+        meshMapper.create(playerEntityId).apply {
+            meshData = playerPhysicalModel.createMeshData(rawMeshParams)
+        }
 
         physicsEventBus.sendEvent(
             GameEvent.OnCreateMeshRigidBody(

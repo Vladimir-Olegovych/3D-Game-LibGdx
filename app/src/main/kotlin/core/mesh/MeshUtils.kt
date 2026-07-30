@@ -11,6 +11,14 @@ import com.gigapi.mesh.blender.BlenderParser
 import core.blocks.BlockDataManager
 import core.blocks.BlockType
 
+val rawMeshParams = MeshParams(
+    attributes = arrayOf(
+        VertexAttribute(VertexAttributes.Usage.Position, 3, "a_Position"),
+        VertexAttribute(VertexAttributes.Usage.Normal, 3, "a_Normal"),
+    ),
+    stride = 6
+)
+
 val chunkMeshParams = MeshParams(
     attributes = arrayOf(
         VertexAttribute(VertexAttributes.Usage.Position, 3, "a_Position"),
