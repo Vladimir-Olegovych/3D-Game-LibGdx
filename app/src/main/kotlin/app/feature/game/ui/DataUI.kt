@@ -60,7 +60,7 @@ class DataUI : LaunchedEffect, UIGetter {
     }
 
     private fun updateTime() {
-        timeLabel.setText("Time: ${String.format("%.1f", timeState.dayPhase)}")
+        timeLabel.setText("Time: ${String.format("%.1f", timeState.timeOfDay)}")
     }
 
     private fun updateFPS(deltaTime: Float) {

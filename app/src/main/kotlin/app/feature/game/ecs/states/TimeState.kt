@@ -36,6 +36,11 @@ class TimeState {
         dayPhase = ((cos((timeOfDay - 0.25f) * 2f * PI.toFloat()) + 1f) / 2f)
     }
 
+    fun setTimeOfDay(value: Float) {
+        timeOfDay = ((value % 1f) + 1f) % 1f
+        dayPhase = ((cos((timeOfDay - 0.25f) * 2f * PI.toFloat()) + 1f) / 2f)
+    }
+
     fun starVisibility(): Float = ((1f - dayPhase - 0.15f) / 0.55f).coerceIn(0f, 1f)
 
     /** Celestial rotation around world X axis, radians. Half turn per day cycle. */

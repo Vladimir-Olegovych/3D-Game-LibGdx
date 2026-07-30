@@ -7,7 +7,12 @@ object NetEntityType {
 }
 
 sealed class NetworkEvent {
-    class HelloFromServer(val worldSeed: Int = 0, val playerId: Int = 0): NetworkEvent()
+    class HelloFromServer(
+        val worldSeed: Int = 0,
+        val playerId: Int = 0,
+        val timeOfDay: Float = 0.7f,
+        val cycleDuration: Float = 600f,
+    ): NetworkEvent()
 
     class EntityJoined(
         val entityId: Int = 0,

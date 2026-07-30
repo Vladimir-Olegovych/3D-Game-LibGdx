@@ -27,6 +27,7 @@ import core.navigation.Navigation
 import core.network.ClientNetworkState
 import core.terrain.TerrainGenerator
 import core.viewport.ViewportTypes
+import app.feature.game.ecs.states.TimeState
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.time.Duration.Companion.milliseconds
@@ -56,6 +57,10 @@ class GameFragment(
     fun networkEventReceivedHelloFromServer(received: ClientEvent.OnReceived) {
         val event = received.event as NetworkEvent.HelloFromServer
         gameGContext.getObject<ClientNetworkState>().localPlayerId = event.playerId
+        gameGContext.getObject<TimeState>().apply {
+            setTimeOfDay(event.timeOfDay)
+            this@apply.cycleDuration = event.cycleDuration
+        }
         startWorld(event)
     }
 

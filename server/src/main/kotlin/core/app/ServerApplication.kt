@@ -11,6 +11,7 @@ import com.gigcreator.core.defaults.ServerDefaults
 import com.gigcreator.ecs.systems.ConnectionSystem
 import com.gigcreator.ecs.systems.NetworkRelaySystem
 import com.gigcreator.ecs.systems.SendSystem
+import com.gigcreator.ecs.systems.TimeSystem
 import com.gigcreator.registerAllEvents
 import kotlinx.coroutines.Dispatchers
 
@@ -41,6 +42,7 @@ class ServerApplication(
         }
 
         arrayOf(
+            TimeSystem(),
             ConnectionSystem(),
             NetworkRelaySystem(),
             SendSystem(),
