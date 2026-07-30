@@ -2,53 +2,37 @@ package com.gigcreator
 
 class GamePacket(val events: Array<NetworkEvent> = emptyArray())
 
-sealed class NetworkEvent {
-    class HelloFromServer(val worldSeed: Int = 0): NetworkEvent()
+object NetEntityType {
+    const val PLAYER: Byte = 0
+}
 
-    class PlayerInput(
-        val playerId: Int = 0,
-        val moveDir: NetVector3 = NetVector3.ZERO,
-        val yaw: Float = 0f,
-        val pitch: Float = 0f,
-        val jump: Boolean = false
+sealed class NetworkEvent {
+    class HelloFromServer(val worldSeed: Int = 0, val playerId: Int = 0): NetworkEvent()
+
+    class EntityJoined(
+        val entityId: Int = 0,
+        val entityType: Byte = NetEntityType.PLAYER,
+        val name: String = "",
+        val pos: NetVector3 = NetVector3.ZERO,
     ): NetworkEvent()
 
-    class PlayerStateUpdate(
-        val playerId: Int = 0,
+    class EntityLeft(
+        val entityId: Int = 0,
+        val entityType: Byte = NetEntityType.PLAYER,
+    ): NetworkEvent()
+
+    class EntityStateUpdate(
+        val entityId: Int = 0,
+        val entityType: Byte = NetEntityType.PLAYER,
         val pos: NetVector3 = NetVector3.ZERO,
         val rot: NetQuaternion = NetQuaternion.ZERO,
-        val tick: Long = 0
+        val tick: Long = 0,
     ): NetworkEvent()
 
-    class BlockPlace(
+    class EntityStateSnapshot(
+        val entityId: Int = 0,
+        val entityType: Byte = NetEntityType.PLAYER,
         val pos: NetVector3 = NetVector3.ZERO,
-        val blockId: Int = 0
-    ): NetworkEvent()
-
-    class BlockBreak(
-        val pos: NetVector3 = NetVector3.ZERO
-    ): NetworkEvent()
-
-
-
-    class PlayerJoined(
-        val playerId: Int = 0,
-        val name: String = "",
-        val pos: NetVector3 = NetVector3.ZERO
-    ): NetworkEvent()
-
-    class PlayerLeft(
-        val playerId: Int = 0
-    ): NetworkEvent()
-
-    class PlayerStateSnapshot(
-        val playerId: Int = 0,
-        val pos: NetVector3 = NetVector3.ZERO,
-        val rot: NetQuaternion = NetQuaternion.ZERO
-    ): NetworkEvent()
-
-    class BlockChanged(
-        val pos: NetVector3 = NetVector3.ZERO,
-        val blockId: Int = 0
+        val rot: NetQuaternion = NetQuaternion.ZERO,
     ): NetworkEvent()
 }

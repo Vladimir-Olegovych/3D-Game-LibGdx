@@ -10,12 +10,8 @@ fun Kryo.registerAllEvents() {
     register(NetQuaternion::class.java)
 
     register(NetworkEvent.HelloFromServer::class.java)
-    register(NetworkEvent.PlayerInput::class.java)
-    register(NetworkEvent.PlayerStateUpdate::class.java)
-    register(NetworkEvent.BlockPlace::class.java)
-    register(NetworkEvent.BlockBreak::class.java)
-    register(NetworkEvent.PlayerJoined::class.java)
-    register(NetworkEvent.PlayerLeft::class.java)
-    register(NetworkEvent.PlayerStateSnapshot::class.java)
-    register(NetworkEvent.BlockChanged::class.java)
+    register(NetworkEvent.EntityJoined::class.java)
+    register(NetworkEvent.EntityLeft::class.java)
+    register(NetworkEvent.EntityStateUpdate::class.java)
+    register(NetworkEvent.EntityStateSnapshot::class.java)
 }

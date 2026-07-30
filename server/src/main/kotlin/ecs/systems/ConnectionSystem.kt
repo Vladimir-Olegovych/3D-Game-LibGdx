@@ -4,6 +4,8 @@ import com.artemis.BaseSystem
 import com.artemis.ComponentMapper
 import com.artemis.annotations.Wire
 import com.gigapi.eventbus.annotation.BusEvent
+import com.gigcreator.NetEntityType
+import com.gigcreator.NetVector3
 import com.gigcreator.NetworkEvent
 import com.gigcreator.core.congifs.ServerData
 import com.gigcreator.ecs.components.ClientComponent
@@ -28,21 +30,69 @@ class ConnectionSystem: BaseSystem() {
         val newClient = clientMapper.create(entityId).apply {
             this.connection = connection
         }
-        playerRegistry.connectionToEntity[connection.id] = entityId
+
+        val playerId = playerRegistry.assignPlayer(connection.id, entityId)
+
         newClient.addEvent(
             NetworkEvent.HelloFromServer(
                 worldSeed = serverData.worldSeed,
+                playerId = playerId,
             ),
             sendType = SendType.TCP
+        )
+
+        for ((otherPlayerId, state) in playerRegistry.playerStates) {
+            if (otherPlayerId == playerId) continue
+            newClient.addEvent(
+                NetworkEvent.EntityStateSnapshot(
+                    entityId = otherPlayerId,
+                    entityType = NetEntityType.PLAYER,
+                    pos = state.pos,
+                    rot = state.rot,
+                ),
+                sendType = SendType.TCP
+            )
+        }
+
+        broadcastExcept(
+            senderConnectionId = connection.id,
+            event = NetworkEvent.EntityJoined(
+                entityId = playerId,
+                entityType = NetEntityType.PLAYER,
+                pos = NetVector3.ZERO,
+            ),
+            sendType = SendType.TCP,
         )
     }
 
     @BusEvent
     fun onDisconnected(event: ServerEvent.OnDisconnected) {
-        val entityId = playerRegistry.connectionToEntity.remove(event.connection.id) ?: return
+        val removed = playerRegistry.removeByConnection(event.connection.id) ?: return
+        val (playerId, entityId) = removed
+
+        broadcast(
+            NetworkEvent.EntityLeft(
+                entityId = playerId,
+                entityType = NetEntityType.PLAYER,
+            ),
+            SendType.TCP,
+        )
+
         world.delete(entityId)
     }
 
-    override fun processSystem() {}
+    private fun broadcast(event: NetworkEvent, sendType: SendType) {
+        for ((_, entityId) in playerRegistry.connectionToEntity) {
+            clientMapper[entityId]?.addEvent(event, sendType)
+        }
+    }
 
+    private fun broadcastExcept(senderConnectionId: Int, event: NetworkEvent, sendType: SendType) {
+        for ((connectionId, entityId) in playerRegistry.connectionToEntity) {
+            if (connectionId == senderConnectionId) continue
+            clientMapper[entityId]?.addEvent(event, sendType)
+        }
+    }
+
+    override fun processSystem() {}
 }

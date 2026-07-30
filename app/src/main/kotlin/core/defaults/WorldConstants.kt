@@ -4,12 +4,11 @@ import com.artemis.World
 
 object WorldConstants {
 
-    private val playerIds = ArrayList<Int>()
+    private var localPlayerEntityId = -1
 
-    fun initialize(world: World) {
-        val playerId = world.create()
-        playerIds.add(playerId)
+    fun initializeLocalPlayer(world: World) {
+        localPlayerEntityId = world.create()
     }
 
-    fun getPlayerEntityId(): Int = playerIds[0]
+    fun getLocalPlayerEntityId(): Int = localPlayerEntityId
 }

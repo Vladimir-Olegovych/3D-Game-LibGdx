@@ -9,6 +9,7 @@ import com.gigapi.kryo.GameServer
 import com.gigcreator.core.congifs.ServerData
 import com.gigcreator.core.defaults.ServerDefaults
 import com.gigcreator.ecs.systems.ConnectionSystem
+import com.gigcreator.ecs.systems.NetworkRelaySystem
 import com.gigcreator.ecs.systems.SendSystem
 import com.gigcreator.registerAllEvents
 import kotlinx.coroutines.Dispatchers
@@ -41,6 +42,7 @@ class ServerApplication(
 
         arrayOf(
             ConnectionSystem(),
+            NetworkRelaySystem(),
             SendSystem(),
         ).forEach { system ->
             eventBus.registerHandler(system)

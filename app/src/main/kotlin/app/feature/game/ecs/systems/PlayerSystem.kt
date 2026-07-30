@@ -28,14 +28,14 @@ class PlayerSystem: BaseSystem() {
     private val cameraOffset = Vector3(0f, 0.6f, 0f)
 
     override fun begin() {
-        val playerEntityId = WorldConstants.getPlayerEntityId()
+        val playerEntityId = WorldConstants.getLocalPlayerEntityId()
         val linearMoveComponent = linearMoveMapper[playerEntityId]?: return
         val isJumped = playerInputProcessor.isJumped()
         linearMoveComponent.ignoreYLinear = !isJumped
     }
 
     override fun processSystem() {
-        val playerEntityId = WorldConstants.getPlayerEntityId()
+        val playerEntityId = WorldConstants.getLocalPlayerEntityId()
         playerInputProcessor.update(world.delta)
         cameraUpdate(playerEntityId)
         forceUpdate(playerEntityId)

@@ -24,6 +24,7 @@ import core.artemis.disposeALL
 import core.defaults.CameraTypes
 import core.defaults.DefaultWorldSetupManager
 import core.navigation.Navigation
+import core.network.ClientNetworkState
 import core.terrain.TerrainGenerator
 import core.viewport.ViewportTypes
 import kotlinx.coroutines.delay
@@ -54,6 +55,7 @@ class GameFragment(
     @EventType(NetworkEvent.HelloFromServer::class)
     fun networkEventReceivedHelloFromServer(received: ClientEvent.OnReceived) {
         val event = received.event as NetworkEvent.HelloFromServer
+        gameGContext.getObject<ClientNetworkState>().localPlayerId = event.playerId
         startWorld(event)
     }
 
@@ -115,6 +117,7 @@ class GameFragment(
             MoveSystem(),
             ChunkSystem(),
             PhysicSystem(),
+            NetworkSystem(),
             DrawSystem(),
             UISystem()
         ).forEach { system ->

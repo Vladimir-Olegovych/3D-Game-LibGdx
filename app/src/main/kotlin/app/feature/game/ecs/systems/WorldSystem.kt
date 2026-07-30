@@ -1,6 +1,11 @@
 package app.feature.game.ecs.systems
 
-import app.feature.game.ecs.components.*
+import app.feature.game.ecs.components.BlenderModelComponent
+import app.feature.game.ecs.components.ForceMoveComponent
+import app.feature.game.ecs.components.LinearMoveComponent
+import app.feature.game.ecs.components.MeshComponent
+import app.feature.game.ecs.components.NetworkEntityComponent
+import app.feature.game.ecs.components.TransformComponent
 import app.feature.game.event.ChunkEvent
 import app.feature.game.event.EventBusTypes
 import app.feature.game.event.GameEvent
@@ -28,12 +33,12 @@ class WorldSystem: BaseSystem() {
 
     private lateinit var transformMapper: ComponentMapper<TransformComponent>
     private lateinit var meshMapper: ComponentMapper<MeshComponent>
-    private lateinit var blenderMapper: ComponentMapper<BlenderModelComponent>
     private lateinit var linearMoveMapper: ComponentMapper<LinearMoveComponent>
     private lateinit var forceMoveMapper: ComponentMapper<ForceMoveComponent>
+    private lateinit var networkEntityMapper: ComponentMapper<NetworkEntityComponent>
 
     override fun setWorld(world: World?) {
-        world?.let { WorldConstants.initialize(world) }
+        world?.let { WorldConstants.initializeLocalPlayer(world) }
         super.setWorld(world)
     }
 
@@ -41,7 +46,7 @@ class WorldSystem: BaseSystem() {
 
     @BusEvent
     fun onWorldGenerated(event: ChunkEvent.GameWorldStarted) {
-        val playerEntityId = WorldConstants.getPlayerEntityId()
+        val playerEntityId = WorldConstants.getLocalPlayerEntityId()
 
         /*
         val playerBlenderModel = modelAssetManager.getRenderModel(ModelID.STONE)
@@ -63,6 +68,11 @@ class WorldSystem: BaseSystem() {
             //ignoreMeshDrawing.add(0)
         }
          */
+
+        networkEntityMapper.create(playerEntityId).apply {
+            isLocal = true
+            entityType = com.gigcreator.NetEntityType.PLAYER
+        }
 
         meshMapper.create(playerEntityId).apply {
             meshData = playerPhysicalModel.createMeshData(rawMeshParams)

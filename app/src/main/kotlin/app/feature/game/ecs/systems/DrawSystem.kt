@@ -1,6 +1,12 @@
 package app.feature.game.ecs.systems
 
-import app.feature.game.ecs.components.*
+import app.feature.game.ecs.components.BoundRadiusComponent
+import app.feature.game.ecs.components.BlenderModelComponent
+import app.feature.game.ecs.components.ChunkComponent
+import app.feature.game.ecs.components.MeshComponent
+import app.feature.game.ecs.components.NetworkEntityComponent
+import app.feature.game.ecs.components.StaticComponent
+import app.feature.game.ecs.components.TransformComponent
 import com.artemis.BaseEntitySystem
 import com.artemis.ComponentMapper
 import com.artemis.annotations.One
@@ -28,6 +34,7 @@ class DrawSystem: BaseEntitySystem() {
     private lateinit var transformMapper: ComponentMapper<TransformComponent>
     private lateinit var staticMapper: ComponentMapper<StaticComponent>
     private lateinit var chunkMapper: ComponentMapper<ChunkComponent>
+    private lateinit var networkEntityMapper: ComponentMapper<NetworkEntityComponent>
 
     @Wire(name = CameraTypes.GL_3D)
     private lateinit var camera: PerspectiveCamera
@@ -85,6 +92,8 @@ class DrawSystem: BaseEntitySystem() {
 
         override fun singleCall(entityId: Int) {
             if (chunkMapper[entityId] != null) return
+            val networkEntity = networkEntityMapper[entityId]
+            if (networkEntity?.isLocal == true) return
             val transformComponent = transformMapper[entityId] ?: return
             val transform = transformComponent.transform ?: return
             val boundingRadius = boundMapper[entityId]?.boundingRadius
@@ -99,7 +108,7 @@ class DrawSystem: BaseEntitySystem() {
             modelShader.setUniformMatrix("transform", transform)
 
             blenderMapper[entityId]?.let(::drawModelMesh)
-            meshMapper[entityId]?.let(::drawModelComp)
+            meshMapper[entityId]?.let { drawModelComp(entityId, it) }
         }
 
         private fun drawModelMesh(blenderModelComponent: BlenderModelComponent) {
@@ -129,11 +138,16 @@ class DrawSystem: BaseEntitySystem() {
             }
         }
 
-        private fun drawModelComp(meshComponent: MeshComponent) {
+        private fun drawModelComp(entityId: Int, meshComponent: MeshComponent) {
             val meshTextureData = meshComponent.meshTextureData ?: DefaultsTextures.WHITE
             val mesh = meshComponent.meshData?.mesh ?: return
 
-            modelShader.setUniformf("objectColor", 1f, 1f, 1f)
+            val networkEntity = networkEntityMapper[entityId]
+            if (networkEntity != null && !networkEntity.isLocal) {
+                modelShader.setUniformf("objectColor", 0.2f, 0.8f, 1f)
+            } else {
+                modelShader.setUniformf("objectColor", 1f, 1f, 1f)
+            }
             modelShader.setUniformf("u_useTexture", 1f)
             meshTextureData.bind(0)
 
