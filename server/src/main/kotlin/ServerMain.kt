@@ -7,6 +7,7 @@ fun main() {
     val serverData = ServerData(
         worldName = "Test world",
         serverName = "Dev server",
+        serverPort = 5551,
         worldSeed = 100
     )
     val serverApplication = ServerApplication(serverData)

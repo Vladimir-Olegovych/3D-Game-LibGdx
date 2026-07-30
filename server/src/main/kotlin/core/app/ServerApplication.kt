@@ -15,7 +15,7 @@ import kotlinx.coroutines.Dispatchers
 
 class ServerApplication(
     private val serverData: ServerData
-): DeltaUpdater(1 / 60F, Dispatchers.IO) {
+): DeltaUpdater(1 / 60F, Dispatchers.Default) {
 
     private val gContext = GContext()
 
@@ -53,7 +53,7 @@ class ServerApplication(
         val server = gContext.getObject<GameServer>()
         server.prepare()
         server.addListener(ServerAcceptor(eventBus))
-        server.start(5551) { it.registerAllEvents() }
+        server.start(serverData.serverPort) { it.registerAllEvents() }
     }
 
     override fun update(deltaTime: Float) {
