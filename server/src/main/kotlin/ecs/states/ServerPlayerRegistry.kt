@@ -8,6 +8,7 @@ class ServerPlayerRegistry {
     data class PlayerNetworkState(
         val pos: NetVector3 = NetVector3.ZERO,
         val rot: NetQuaternion = NetQuaternion.identity(),
+        val modelId: Int = 0,
     )
 
     val connectionToEntity = HashMap<Int, Int>()
@@ -40,7 +41,7 @@ class ServerPlayerRegistry {
         return entityToPlayerId[entityId]
     }
 
-    fun updateState(playerId: Int, pos: NetVector3, rot: NetQuaternion) {
-        playerStates[playerId] = PlayerNetworkState(pos, rot)
+    fun updateState(playerId: Int, pos: NetVector3, rot: NetQuaternion, modelId: Int) {
+        playerStates[playerId] = PlayerNetworkState(pos, rot, modelId)
     }
 }

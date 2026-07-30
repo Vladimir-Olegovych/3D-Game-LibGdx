@@ -38,6 +38,7 @@ class NetworkStateUpdater : LaunchedEffect, DisposableEffect, DeltaUpdater(1 / 2
                 pos = NetVector3(state.x, state.y, state.z),
                 rot = NetQuaternion(state.qx, state.qy, state.qz, state.qw),
                 tick = currentTick,
+                modelId = state.modelId,
             )
         }
 

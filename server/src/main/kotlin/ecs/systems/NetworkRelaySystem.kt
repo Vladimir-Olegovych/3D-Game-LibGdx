@@ -29,7 +29,7 @@ class NetworkRelaySystem: BaseSystem() {
         val playerId = playerRegistry.getPlayerIdByConnection(received.connection.id) ?: return
         if (playerId != event.entityId) return
 
-        playerRegistry.updateState(playerId, event.pos, event.rot)
+        playerRegistry.updateState(playerId, event.pos, event.rot, event.modelId)
         broadcastExcept(received.connection.id, event, SendType.UDP)
     }
 

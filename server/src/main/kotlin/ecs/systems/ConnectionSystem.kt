@@ -49,6 +49,7 @@ class ConnectionSystem: BaseSystem() {
                     entityType = NetEntityType.PLAYER,
                     pos = state.pos,
                     rot = state.rot,
+                    modelId = state.modelId,
                 ),
                 sendType = SendType.TCP
             )
@@ -60,6 +61,7 @@ class ConnectionSystem: BaseSystem() {
                 entityId = playerId,
                 entityType = NetEntityType.PLAYER,
                 pos = NetVector3.ZERO,
+                modelId = 0,
             ),
             sendType = SendType.TCP,
         )

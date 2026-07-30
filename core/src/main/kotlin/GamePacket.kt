@@ -14,6 +14,7 @@ sealed class NetworkEvent {
         val entityType: Byte = NetEntityType.PLAYER,
         val name: String = "",
         val pos: NetVector3 = NetVector3.ZERO,
+        val modelId: Int = 0,
     ): NetworkEvent()
 
     class EntityLeft(
@@ -27,6 +28,7 @@ sealed class NetworkEvent {
         val pos: NetVector3 = NetVector3.ZERO,
         val rot: NetQuaternion = NetQuaternion.ZERO,
         val tick: Long = 0,
+        val modelId: Int = 0,
     ): NetworkEvent()
 
     class EntityStateSnapshot(
@@ -34,5 +36,6 @@ sealed class NetworkEvent {
         val entityType: Byte = NetEntityType.PLAYER,
         val pos: NetVector3 = NetVector3.ZERO,
         val rot: NetQuaternion = NetQuaternion.ZERO,
+        val modelId: Int = 0,
     ): NetworkEvent()
 }

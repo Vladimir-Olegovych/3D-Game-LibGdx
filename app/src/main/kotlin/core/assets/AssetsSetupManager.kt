@@ -32,7 +32,8 @@ object AssetsSetupManager: LaunchedEffect {
         //---
         val modelAssetManager = ModelAssetManager("textures", assetManager)
         ModelID.entries.forEach {
-            modelAssetManager.loadObj(it, it.filePathObj, it.filePathMlt)
+            if (it != ModelID.NULL)
+                modelAssetManager.loadObj(it, it.filePathObj, it.filePathMlt)
         }
         gContext.setObject(modelAssetManager)
         //---

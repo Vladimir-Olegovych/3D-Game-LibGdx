@@ -1,9 +1,6 @@
 package app.feature.game.ecs.systems
 
-import app.feature.game.ecs.components.BoundRadiusComponent
-import app.feature.game.ecs.components.MeshComponent
-import app.feature.game.ecs.components.NetworkEntityComponent
-import app.feature.game.ecs.components.TransformComponent
+import app.feature.game.ecs.components.*
 import app.feature.game.ecs.states.RemotePlayerRegistry
 import app.feature.game.event.ClientEvent
 import com.artemis.BaseSystem
@@ -13,20 +10,17 @@ import com.badlogic.gdx.math.Matrix4
 import com.badlogic.gdx.math.Vector3
 import com.gigapi.eventbus.annotation.BusEvent
 import com.gigapi.eventbus.annotation.EventType
+import com.gigapi.mesh.ModelAssetManager
 import com.gigcreator.NetEntityType
 import com.gigcreator.NetQuaternion
 import com.gigcreator.NetVector3
 import com.gigcreator.NetworkEvent
+import core.assets.ModelID
 import core.controls.PlayerInputProcessor
 import core.defaults.WorldConstants
-import core.mesh.MeshUtils
+import core.mesh.defaultPlayerHitBox
 import core.mesh.rawMeshParams
-import core.network.ClientNetworkState
-import core.network.NetworkOutboundState
-import core.network.NetworkStateUpdater
-import core.network.OutboundEntityState
-import core.network.setFromNetTransform
-import core.network.yawToNetQuaternion
+import core.network.*
 
 class NetworkSystem: BaseSystem() {
 
@@ -40,9 +34,12 @@ class NetworkSystem: BaseSystem() {
     private lateinit var remotePlayerRegistry: RemotePlayerRegistry
     @Wire
     private lateinit var playerInputProcessor: PlayerInputProcessor
+    @Wire
+    private lateinit var modelAssetManager: ModelAssetManager
 
     private lateinit var transformMapper: ComponentMapper<TransformComponent>
     private lateinit var meshMapper: ComponentMapper<MeshComponent>
+    private lateinit var blenderMapper: ComponentMapper<BlenderModelComponent>
     private lateinit var boundMapper: ComponentMapper<BoundRadiusComponent>
     private lateinit var networkEntityMapper: ComponentMapper<NetworkEntityComponent>
 
@@ -76,7 +73,7 @@ class NetworkSystem: BaseSystem() {
     fun onEntityJoined(received: ClientEvent.OnReceived) {
         val event = received.event as NetworkEvent.EntityJoined
         if (event.entityType != NetEntityType.PLAYER) return
-        spawnRemotePlayer(event.entityId, event.pos, NetQuaternion.identity())
+        spawnRemotePlayer(event.entityId, event.pos, NetQuaternion.identity(), event.modelId)
     }
 
     @BusEvent
@@ -92,7 +89,7 @@ class NetworkSystem: BaseSystem() {
     fun onEntityStateUpdate(received: ClientEvent.OnReceived) {
         val event = received.event as NetworkEvent.EntityStateUpdate
         if (event.entityType != NetEntityType.PLAYER) return
-        updateRemotePlayer(event.entityId, event.pos, event.rot)
+        updateRemotePlayer(event.entityId, event.pos, event.rot, event.modelId)
     }
 
     @BusEvent
@@ -101,9 +98,9 @@ class NetworkSystem: BaseSystem() {
         val event = received.event as NetworkEvent.EntityStateSnapshot
         if (event.entityType != NetEntityType.PLAYER) return
         if (remotePlayerRegistry.networkIdToEntityId.containsKey(event.entityId)) {
-            updateRemotePlayer(event.entityId, event.pos, event.rot)
+            updateRemotePlayer(event.entityId, event.pos, event.rot, event.modelId)
         } else {
-            spawnRemotePlayer(event.entityId, event.pos, event.rot)
+            spawnRemotePlayer(event.entityId, event.pos, event.rot, event.modelId)
         }
     }
 
@@ -111,8 +108,9 @@ class NetworkSystem: BaseSystem() {
         if (networkState.localPlayerId < 0) return
 
         val localEntityId = WorldConstants.getLocalPlayerEntityId()
-        networkEntityMapper[localEntityId]?.let {
-            if (it.networkId != networkState.localPlayerId) it.networkId = networkState.localPlayerId
+        val networkEntity = networkEntityMapper[localEntityId] ?: return
+        if (networkEntity.networkId != networkState.localPlayerId) {
+            networkEntity.networkId = networkState.localPlayerId
         }
 
         val transform = transformMapper[localEntityId]?.transform ?: return
@@ -124,6 +122,7 @@ class NetworkSystem: BaseSystem() {
             OutboundEntityState(
                 entityId = networkState.localPlayerId,
                 entityType = NetEntityType.PLAYER,
+                modelId = networkEntity.modelId,
                 x = position.x,
                 y = position.y,
                 z = position.z,
@@ -140,7 +139,7 @@ class NetworkSystem: BaseSystem() {
         outboundState.clear()
     }
 
-    private fun spawnRemotePlayer(networkId: Int, pos: NetVector3, rot: NetQuaternion) {
+    private fun spawnRemotePlayer(networkId: Int, pos: NetVector3, rot: NetQuaternion, modelId: Int) {
         if (networkId == networkState.localPlayerId) return
         if (remotePlayerRegistry.networkIdToEntityId.containsKey(networkId)) return
 
@@ -151,30 +150,59 @@ class NetworkSystem: BaseSystem() {
             this.networkId = networkId
             this.entityType = NetEntityType.PLAYER
             this.isLocal = false
+            this.modelId = modelId
         }
 
         transformMapper.create(entityId).transform = Matrix4().setFromNetTransform(pos, rot)
-
-        val hitboxModel = MeshUtils.createHitboxModel(1F, 1.8F)
-        meshMapper.create(entityId).meshData = hitboxModel.createMeshData(rawMeshParams)
-        boundMapper.create(entityId).boundingRadius = 1.8f
+        applyVisual(entityId, modelId)
     }
 
-    private fun updateRemotePlayer(networkId: Int, pos: NetVector3, rot: NetQuaternion) {
+    private fun updateRemotePlayer(networkId: Int, pos: NetVector3, rot: NetQuaternion, modelId: Int) {
         if (networkId == networkState.localPlayerId) return
 
         val entityId = remotePlayerRegistry.networkIdToEntityId[networkId]
             ?: run {
-                spawnRemotePlayer(networkId, pos, rot)
+                spawnRemotePlayer(networkId, pos, rot, modelId)
                 return
             }
 
         transformMapper[entityId]?.transform = Matrix4().setFromNetTransform(pos, rot)
+
+        val networkEntity = networkEntityMapper[entityId] ?: return
+        if (networkEntity.modelId != modelId) {
+            networkEntity.modelId = modelId
+            applyVisual(entityId, modelId)
+        }
+    }
+
+    private fun applyVisual(entityId: Int, modelId: Int) {
+        clearVisual(entityId)
+
+        val model = resolveModelId(modelId)
+        if (model == ModelID.NULL) {
+            meshMapper.create(entityId).meshData = defaultPlayerHitBox.createMeshData(rawMeshParams)
+            boundMapper.create(entityId).boundingRadius = 1.8f
+            return
+        }
+
+        blenderMapper.create(entityId).blenderRenderData = modelAssetManager.getRenderModel(model)
+        boundMapper.create(entityId).boundingRadius = 1.8f
+    }
+
+    private fun clearVisual(entityId: Int) {
+        meshMapper[entityId]?.dispose()
+        meshMapper.remove(entityId)
+        blenderMapper.remove(entityId)
+        boundMapper.remove(entityId)
+    }
+
+    private fun resolveModelId(modelId: Int): ModelID {
+        return ModelID.entries.getOrNull(modelId) ?: ModelID.NULL
     }
 
     private fun despawnRemotePlayer(networkId: Int) {
         val entityId = remotePlayerRegistry.networkIdToEntityId.remove(networkId) ?: return
-        meshMapper[entityId]?.dispose()
+        clearVisual(entityId)
         world.delete(entityId)
     }
 }

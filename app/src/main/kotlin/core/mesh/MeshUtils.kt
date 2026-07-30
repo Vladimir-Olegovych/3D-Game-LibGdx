@@ -10,6 +10,7 @@ import com.gigapi.mesh.RawMeshData
 import com.gigapi.mesh.blender.BlenderParser
 import core.blocks.BlockDataManager
 import core.blocks.BlockType
+import core.mesh.MeshUtils.createHitboxModel
 
 val rawMeshParams = MeshParams(
     attributes = arrayOf(
@@ -29,6 +30,8 @@ val chunkMeshParams = MeshParams(
     ),
     stride = 10
 )
+
+val defaultPlayerHitBox = createHitboxModel(1F, 1.8F)
 
 data class Direction(
     val dx: Int, val dy: Int, val dz: Int,

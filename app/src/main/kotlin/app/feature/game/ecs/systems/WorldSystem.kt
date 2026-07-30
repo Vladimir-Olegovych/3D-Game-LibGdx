@@ -1,11 +1,6 @@
 package app.feature.game.ecs.systems
 
-import app.feature.game.ecs.components.BlenderModelComponent
-import app.feature.game.ecs.components.ForceMoveComponent
-import app.feature.game.ecs.components.LinearMoveComponent
-import app.feature.game.ecs.components.MeshComponent
-import app.feature.game.ecs.components.NetworkEntityComponent
-import app.feature.game.ecs.components.TransformComponent
+import app.feature.game.ecs.components.*
 import app.feature.game.event.ChunkEvent
 import app.feature.game.event.EventBusTypes
 import app.feature.game.event.GameEvent
@@ -18,9 +13,11 @@ import com.badlogic.gdx.physics.bullet.collision.CollisionConstants.DISABLE_DEAC
 import com.gigapi.eventbus.EventBus
 import com.gigapi.eventbus.annotation.BusEvent
 import com.gigapi.mesh.ModelAssetManager
+import com.gigcreator.NetEntityType
+import core.assets.ModelID
 import core.defaults.WorldConstants
 import core.mesh.MeshUtils
-import core.mesh.rawMeshParams
+import core.mesh.defaultPlayerHitBox
 
 class WorldSystem: BaseSystem() {
 
@@ -33,6 +30,7 @@ class WorldSystem: BaseSystem() {
 
     private lateinit var transformMapper: ComponentMapper<TransformComponent>
     private lateinit var meshMapper: ComponentMapper<MeshComponent>
+    private lateinit var blenderMapper: ComponentMapper<BlenderModelComponent>
     private lateinit var linearMoveMapper: ComponentMapper<LinearMoveComponent>
     private lateinit var forceMoveMapper: ComponentMapper<ForceMoveComponent>
     private lateinit var networkEntityMapper: ComponentMapper<NetworkEntityComponent>
@@ -47,6 +45,7 @@ class WorldSystem: BaseSystem() {
     @BusEvent
     fun onWorldGenerated(event: ChunkEvent.GameWorldStarted) {
         val playerEntityId = WorldConstants.getLocalPlayerEntityId()
+        val playerPhysicalModel = defaultPlayerHitBox
 
         /*
         val playerBlenderModel = modelAssetManager.getRenderModel(ModelID.STONE)
@@ -54,28 +53,26 @@ class WorldSystem: BaseSystem() {
             it.mesh.transform(Matrix4().translate(0F, -4.8F, 0F))
             it.mesh.scale(0.2f, 0.2f, 0.2f)
         }
-
-         */
-        val playerPhysicalModel = MeshUtils.createHitboxModel(1F, 1.8F)
-
-        linearMoveMapper.create(playerEntityId).ignoreYLinear = true
-        forceMoveMapper.create(playerEntityId)
-        transformMapper.create(playerEntityId)
-
-        /*
         blenderMapper.create(playerEntityId).apply {
             this@apply.blenderRenderData = playerBlenderModel
             //ignoreMeshDrawing.add(0)
         }
          */
 
+        /*
+       meshMapper.create(playerEntityId).apply {
+           meshData = playerPhysicalModel.createMeshData(rawMeshParams)
+       }
+        */
+
+        linearMoveMapper.create(playerEntityId).ignoreYLinear = true
+        forceMoveMapper.create(playerEntityId)
+        transformMapper.create(playerEntityId)
+
         networkEntityMapper.create(playerEntityId).apply {
             isLocal = true
-            entityType = com.gigcreator.NetEntityType.PLAYER
-        }
-
-        meshMapper.create(playerEntityId).apply {
-            meshData = playerPhysicalModel.createMeshData(rawMeshParams)
+            entityType = NetEntityType.PLAYER
+            modelId = ModelID.NULL.ordinal
         }
 
         physicsEventBus.sendEvent(

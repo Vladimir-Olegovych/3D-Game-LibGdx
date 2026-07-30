@@ -5,6 +5,7 @@ import java.util.concurrent.ConcurrentHashMap
 data class OutboundEntityState(
     val entityId: Int,
     val entityType: Byte,
+    val modelId: Int,
     val x: Float,
     val y: Float,
     val z: Float,
