@@ -24,3 +24,11 @@ fun Matrix4.setFromNetTransform(pos: NetVector3, rot: NetQuaternion): Matrix4 {
     }
     return this
 }
+
+fun Matrix4.setFromPosRot(pos: Vector3, rot: Quaternion): Matrix4 {
+    return set(pos, rot, Vector3(1f, 1f, 1f))
+}
+
+fun Quaternion.setFromNet(rot: NetQuaternion): Quaternion {
+    return set(rot.x, rot.y, rot.z, rot.w).nor()
+}

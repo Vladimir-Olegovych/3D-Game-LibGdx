@@ -42,6 +42,9 @@ class NetworkSystem: BaseSystem() {
     private lateinit var blenderMapper: ComponentMapper<BlenderModelComponent>
     private lateinit var boundMapper: ComponentMapper<BoundRadiusComponent>
     private lateinit var networkEntityMapper: ComponentMapper<NetworkEntityComponent>
+    private lateinit var interpolationMapper: ComponentMapper<NetworkInterpolationComponent>
+
+    private val tmpScale = Vector3(1f, 1f, 1f)
 
     override fun initialize() {
         networkStateUpdater.start()
@@ -105,6 +108,16 @@ class NetworkSystem: BaseSystem() {
     }
 
     override fun processSystem() {
+        interpolateRemotes(world.delta)
+        sendLocalState()
+    }
+
+    override fun dispose() {
+        networkStateUpdater.stop()
+        outboundState.clear()
+    }
+
+    private fun sendLocalState() {
         if (networkState.localPlayerId < 0) return
 
         val localEntityId = WorldConstants.getLocalPlayerEntityId()
@@ -134,9 +147,21 @@ class NetworkSystem: BaseSystem() {
         )
     }
 
-    override fun dispose() {
-        networkStateUpdater.stop()
-        outboundState.clear()
+    private fun interpolateRemotes(delta: Float) {
+        for (entityId in remotePlayerRegistry.networkIdToEntityId.values) {
+            val interp = interpolationMapper[entityId] ?: continue
+            if (!interp.hasTarget) continue
+
+            val transformComponent = transformMapper[entityId] ?: continue
+            val transform = transformComponent.transform ?: Matrix4().also { transformComponent.transform = it }
+
+            interp.elapsed = (interp.elapsed + delta).coerceAtMost(interp.duration)
+            val alpha = if (interp.duration <= 0f) 1f else (interp.elapsed / interp.duration).coerceIn(0f, 1f)
+
+            interp.renderPos.set(interp.fromPos).lerp(interp.toPos, alpha)
+            interp.renderRot.set(interp.fromRot).slerp(interp.toRot, alpha)
+            transform.set(interp.renderPos, interp.renderRot, tmpScale)
+        }
     }
 
     private fun spawnRemotePlayer(networkId: Int, pos: NetVector3, rot: NetQuaternion, modelId: Int) {
@@ -153,7 +178,9 @@ class NetworkSystem: BaseSystem() {
             this.modelId = modelId
         }
 
-        transformMapper.create(entityId).transform = Matrix4().setFromNetTransform(pos, rot)
+        val interp = interpolationMapper.create(entityId)
+        resetInterpolation(interp, pos, rot)
+        transformMapper.create(entityId).transform = Matrix4().setFromPosRot(interp.renderPos, interp.renderRot)
         applyVisual(entityId, modelId)
     }
 
@@ -166,13 +193,48 @@ class NetworkSystem: BaseSystem() {
                 return
             }
 
-        transformMapper[entityId]?.transform = Matrix4().setFromNetTransform(pos, rot)
+        val interp = interpolationMapper[entityId] ?: interpolationMapper.create(entityId)
+        pushInterpolationTarget(interp, pos, rot)
 
         val networkEntity = networkEntityMapper[entityId] ?: return
         if (networkEntity.modelId != modelId) {
             networkEntity.modelId = modelId
             applyVisual(entityId, modelId)
         }
+    }
+
+    private fun resetInterpolation(interp: NetworkInterpolationComponent, pos: NetVector3, rot: NetQuaternion) {
+        interp.fromPos.set(pos.x, pos.y, pos.z)
+        interp.toPos.set(pos.x, pos.y, pos.z)
+        interp.fromRot.setFromNet(rot)
+        interp.toRot.setFromNet(rot)
+        interp.renderPos.set(interp.toPos)
+        interp.renderRot.set(interp.toRot)
+        interp.elapsed = interp.duration
+        interp.hasTarget = true
+    }
+
+    private fun pushInterpolationTarget(interp: NetworkInterpolationComponent, pos: NetVector3, rot: NetQuaternion) {
+        if (interp.hasTarget) {
+            val alpha = if (interp.duration <= 0f) 1f else (interp.elapsed / interp.duration).coerceIn(0f, 1f)
+            interp.fromPos.set(interp.fromPos).lerp(interp.toPos, alpha)
+            interp.fromRot.set(interp.fromRot).slerp(interp.toRot, alpha)
+        } else {
+            interp.fromPos.set(pos.x, pos.y, pos.z)
+            interp.fromRot.setFromNet(rot)
+        }
+
+        interp.toPos.set(pos.x, pos.y, pos.z)
+        interp.toRot.setFromNet(rot)
+
+        if (interp.fromPos.dst2(interp.toPos) > NetworkInterpolationComponent.SNAP_DISTANCE * NetworkInterpolationComponent.SNAP_DISTANCE) {
+            interp.fromPos.set(interp.toPos)
+            interp.fromRot.set(interp.toRot)
+        }
+
+        interp.elapsed = 0f
+        interp.duration = NetworkInterpolationComponent.DEFAULT_DURATION
+        interp.hasTarget = true
     }
 
     private fun applyVisual(entityId: Int, modelId: Int) {
