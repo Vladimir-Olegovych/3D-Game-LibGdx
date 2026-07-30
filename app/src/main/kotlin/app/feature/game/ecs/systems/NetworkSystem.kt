@@ -10,27 +10,32 @@ import com.artemis.BaseSystem
 import com.artemis.ComponentMapper
 import com.artemis.annotations.Wire
 import com.badlogic.gdx.math.Matrix4
+import com.badlogic.gdx.math.Vector3
 import com.gigapi.eventbus.annotation.BusEvent
 import com.gigapi.eventbus.annotation.EventType
-import com.gigapi.kryo.GameClient
-import com.gigcreator.GamePacket
 import com.gigcreator.NetEntityType
+import com.gigcreator.NetQuaternion
+import com.gigcreator.NetVector3
 import com.gigcreator.NetworkEvent
 import core.controls.PlayerInputProcessor
 import core.defaults.WorldConstants
 import core.mesh.MeshUtils
 import core.mesh.rawMeshParams
 import core.network.ClientNetworkState
+import core.network.NetworkOutboundState
+import core.network.NetworkStateUpdater
+import core.network.OutboundEntityState
 import core.network.setFromNetTransform
-import core.network.toNetVector3
 import core.network.yawToNetQuaternion
 
 class NetworkSystem: BaseSystem() {
 
     @Wire
-    private lateinit var gameClient: GameClient
+    private lateinit var networkStateUpdater: NetworkStateUpdater
     @Wire
     private lateinit var networkState: ClientNetworkState
+    @Wire
+    private lateinit var outboundState: NetworkOutboundState
     @Wire
     private lateinit var remotePlayerRegistry: RemotePlayerRegistry
     @Wire
@@ -41,7 +46,9 @@ class NetworkSystem: BaseSystem() {
     private lateinit var boundMapper: ComponentMapper<BoundRadiusComponent>
     private lateinit var networkEntityMapper: ComponentMapper<NetworkEntityComponent>
 
-    private var tick: Long = 0
+    override fun initialize() {
+        networkStateUpdater.start()
+    }
 
     @BusEvent
     fun onConnected(event: ClientEvent.OnConnected) {
@@ -51,6 +58,7 @@ class NetworkSystem: BaseSystem() {
     @BusEvent
     fun onDisconnected(event: ClientEvent.OnDisconnected) {
         networkState.connection = null
+        outboundState.clear()
     }
 
     @BusEvent
@@ -68,7 +76,7 @@ class NetworkSystem: BaseSystem() {
     fun onEntityJoined(received: ClientEvent.OnReceived) {
         val event = received.event as NetworkEvent.EntityJoined
         if (event.entityType != NetEntityType.PLAYER) return
-        spawnRemotePlayer(event.entityId, event.pos, com.gigcreator.NetQuaternion.identity())
+        spawnRemotePlayer(event.entityId, event.pos, NetQuaternion.identity())
     }
 
     @BusEvent
@@ -108,25 +116,31 @@ class NetworkSystem: BaseSystem() {
         }
 
         val transform = transformMapper[localEntityId]?.transform ?: return
-        val position = com.badlogic.gdx.math.Vector3()
+        val position = Vector3()
         transform.getTranslation(position)
+        val rot = yawToNetQuaternion(playerInputProcessor.getYaw())
 
-        gameClient.sendUDP(
-            GamePacket(
-                events = arrayOf(
-                    NetworkEvent.EntityStateUpdate(
-                        entityId = networkState.localPlayerId,
-                        entityType = NetEntityType.PLAYER,
-                        pos = position.toNetVector3(),
-                        rot = yawToNetQuaternion(playerInputProcessor.getYaw()),
-                        tick = tick++,
-                    )
-                )
+        outboundState.put(
+            OutboundEntityState(
+                entityId = networkState.localPlayerId,
+                entityType = NetEntityType.PLAYER,
+                x = position.x,
+                y = position.y,
+                z = position.z,
+                qx = rot.x,
+                qy = rot.y,
+                qz = rot.z,
+                qw = rot.w,
             )
         )
     }
 
-    private fun spawnRemotePlayer(networkId: Int, pos: com.gigcreator.NetVector3, rot: com.gigcreator.NetQuaternion) {
+    override fun dispose() {
+        networkStateUpdater.stop()
+        outboundState.clear()
+    }
+
+    private fun spawnRemotePlayer(networkId: Int, pos: NetVector3, rot: NetQuaternion) {
         if (networkId == networkState.localPlayerId) return
         if (remotePlayerRegistry.networkIdToEntityId.containsKey(networkId)) return
 
@@ -146,7 +160,7 @@ class NetworkSystem: BaseSystem() {
         boundMapper.create(entityId).boundingRadius = 1.8f
     }
 
-    private fun updateRemotePlayer(networkId: Int, pos: com.gigcreator.NetVector3, rot: com.gigcreator.NetQuaternion) {
+    private fun updateRemotePlayer(networkId: Int, pos: NetVector3, rot: NetQuaternion) {
         if (networkId == networkState.localPlayerId) return
 
         val entityId = remotePlayerRegistry.networkIdToEntityId[networkId]

@@ -22,6 +22,8 @@ import core.renderers.SkyPlanetRenderer
 import core.terrain.TerrainGenerator
 import app.feature.game.ecs.states.RemotePlayerRegistry
 import core.network.ClientNetworkState
+import core.network.NetworkOutboundState
+import core.network.NetworkStateUpdater
 import app.feature.game.ecs.states.TimeState
 import com.gigapi.kryo.GameClient
 import core.client.ClientAcceptor
@@ -70,6 +72,8 @@ object DefaultWorldSetupManager: LaunchedEffect {
         gContext.setObject(ChunkWorldUpdater())
         //---
         gContext.setObject(ClientNetworkState())
+        gContext.setObject(NetworkOutboundState())
+        gContext.setObject(NetworkStateUpdater())
         gContext.setObject(RemotePlayerRegistry())
         //---
         gContext.setObject(TerrainGenerator())
