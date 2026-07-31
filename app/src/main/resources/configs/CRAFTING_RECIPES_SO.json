@@ -1,0 +1,24 @@
+{
+  "recipes" : [ {
+    "result" : {
+      "item" : "DIAMOND_PICKAXE",
+      "count" : 1
+    },
+    "ingredients" : [ {
+      "item" : "DIRT",
+      "count" : 1
+    }, {
+      "item" : "WOOD",
+      "count" : 4
+    } ]
+  }, {
+    "result" : {
+      "item" : "IRON_AXE",
+      "count" : 1
+    },
+    "ingredients" : [ {
+      "item" : "DIAMOND_PICKAXE",
+      "count" : 1
+    } ]
+  } ]
+}

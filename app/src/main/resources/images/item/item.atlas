@@ -1,0 +1,8 @@
+item.png
+size:720,360
+filter:Linear,Linear
+repeat:none
+tile_diamond_pickaxe
+bounds:0,0,360,360
+tile_iron_axe
+bounds:360,0,360,360

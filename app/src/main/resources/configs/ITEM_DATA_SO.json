@@ -1,0 +1,22 @@
+{
+  "items": [
+    {
+      "id": "IRON_AXE",
+      "name": "Iron Axe",
+      "description": "Strong axe from Germany",
+      "skinID": "ITEM",
+      "regionName": "tile_iron_axe",
+      "maxStack": 1,
+      "stackable": false
+    },
+    {
+      "id": "DIAMOND_PICKAXE",
+      "name": "Diamond Pickaxe",
+      "description": "Strong pickaxe from Germany",
+      "skinID": "ITEM",
+      "regionName": "tile_diamond_pickaxe",
+      "maxStack": 1,
+      "stackable": false
+    }
+  ]
+}

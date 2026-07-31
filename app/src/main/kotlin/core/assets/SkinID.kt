@@ -2,6 +2,7 @@ package core.assets
 
 enum class SkinID {
 
+    ITEM,
     BLOCK,
     BUTTON;
 

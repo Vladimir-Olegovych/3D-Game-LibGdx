@@ -18,6 +18,7 @@ import core.bullet.raycast.RayCastTypes
 import core.chunk.world.ChunkHelper
 import core.chunk.world.WorldDataHelper
 import core.chunk.world.WorldGenerationData
+import core.items.InventoryManager
 import core.math.createMatrixForChunk
 import core.mesh.MeshGenerator
 import core.mesh.MeshHelper
@@ -59,6 +60,7 @@ class ChunkWorldUpdater : LaunchedEffect, DisposableEffect, DeltaUpdater(1 / 60F
     private lateinit var shadowUpdater: ShadowUpdater
     private lateinit var meshGenerator: MeshGenerator
     private lateinit var terrainGenerator: TerrainGenerator
+    private lateinit var inventoryManager: InventoryManager
     private lateinit var mainScope: CoroutineScope
 
     @Volatile
@@ -74,6 +76,7 @@ class ChunkWorldUpdater : LaunchedEffect, DisposableEffect, DeltaUpdater(1 / 60F
         physicsEventBus = gContext.getObject(EventBusTypes.PHYSICS_EVENT_BUS)
         meshGenerator = gContext.getObject<MeshHelper>()
         shadowUpdater = gContext.getObject()
+        inventoryManager = gContext.getObject()
         terrainGenerator = gContext.getObject()
         mainScope = CoroutineScope(gContext.getObject<CoroutineDispatcher>(DispatcherTypes.MAIN))
         worldPendingBlocks.bind(
@@ -354,6 +357,7 @@ class ChunkWorldUpdater : LaunchedEffect, DisposableEffect, DeltaUpdater(1 / 60F
         val currentBlock = chunkData.getBlockByLocal(blockPosition)
 
         if (currentBlock == BlockType.AIR) return
+        if (!inventoryManager.hasSpaceFor(currentBlock.name)) return
         chunkEventBus?.sendEventNow(ChunkEvent.OnSetBlock(
             chunkData, BlockType.AIR, blockPosition
         ))
