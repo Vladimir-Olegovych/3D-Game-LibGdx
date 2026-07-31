@@ -24,7 +24,7 @@ import core.artemis.disposeALL
 import core.defaults.CameraTypes
 import core.defaults.DefaultWorldSetupManager
 import core.navigation.Navigation
-import core.network.ClientNetworkState
+import app.feature.game.ecs.states.ClientNetworkState
 import core.terrain.TerrainGenerator
 import core.viewport.ViewportTypes
 import app.feature.game.ecs.states.TimeState

@@ -1,6 +1,9 @@
 package app.feature.game.ecs.systems
 
 import app.feature.game.ecs.components.*
+import app.feature.game.ecs.states.ClientNetworkState
+import app.feature.game.ecs.states.NetworkOutboundState
+import app.feature.game.ecs.states.OutboundEntityState
 import app.feature.game.ecs.states.RemotePlayerRegistry
 import app.feature.game.event.ClientEvent
 import com.artemis.BaseSystem

@@ -1,5 +1,6 @@
 package core.network
 
+import app.feature.game.ecs.states.NetworkOutboundState
 import com.gigapi.coruntines.DeltaUpdater
 import com.gigapi.effects.DisposableEffect
 import com.gigapi.effects.LaunchedEffect

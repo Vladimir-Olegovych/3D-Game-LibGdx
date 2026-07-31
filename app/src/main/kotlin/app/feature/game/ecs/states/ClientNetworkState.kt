@@ -1,4 +1,4 @@
-package core.network
+package app.feature.game.ecs.states
 
 import com.esotericsoftware.kryonet.Connection
 

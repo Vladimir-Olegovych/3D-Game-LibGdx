@@ -21,8 +21,8 @@ import core.renderers.StarRenderer
 import core.renderers.SkyPlanetRenderer
 import core.terrain.TerrainGenerator
 import app.feature.game.ecs.states.RemotePlayerRegistry
-import core.network.ClientNetworkState
-import core.network.NetworkOutboundState
+import app.feature.game.ecs.states.ClientNetworkState
+import app.feature.game.ecs.states.NetworkOutboundState
 import core.network.NetworkStateUpdater
 import app.feature.game.ecs.states.TimeState
 import com.gigapi.kryo.GameClient
