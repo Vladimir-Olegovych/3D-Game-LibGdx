@@ -21,7 +21,7 @@ import kotlin.math.sin
 class PlayerSystem: BaseSystem() {
 
     companion object {
-        private const val FREE_CAM_SPEED = 25f
+        private const val FREE_CAM_SPEED = 90f
         private const val THIRD_PERSON_DISTANCE = 4f
     }
 

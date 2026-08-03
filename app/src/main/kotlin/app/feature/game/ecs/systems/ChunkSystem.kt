@@ -15,12 +15,14 @@ import com.badlogic.gdx.assets.AssetManager
 import com.badlogic.gdx.graphics.PerspectiveCamera
 import com.badlogic.gdx.graphics.Texture
 import com.badlogic.gdx.graphics.g2d.TextureAtlas
+import com.badlogic.gdx.math.Vector3
 import com.gigapi.eventbus.EventBus
 import com.gigapi.eventbus.annotation.BusEvent
 import com.gigapi.math.vector.IntVector3
 import core.assets.SkinID
 import core.chunk.ChunkWorldUpdater
 import core.defaults.CameraTypes
+import core.defaults.WorldConstants
 import core.mesh.MeshUtils
 
 @All(MeshComponent::class)
@@ -30,12 +32,12 @@ class ChunkSystem: BaseSystem() {
     private lateinit var chunkWorldUpdater: ChunkWorldUpdater
     @Wire
     private lateinit var assetManager: AssetManager
-    @Wire(name = CameraTypes.GL_3D)
-    private lateinit var camera: PerspectiveCamera
     @Wire(name = EventBusTypes.MAIN_EVENT_BUS)
     private lateinit var mainEventBus: EventBus
     @Wire(name = EventBusTypes.CHUNK_EVENT_BUS)
     private lateinit var chunkEventBus: EventBus
+    @Wire(name = CameraTypes.GL_3D)
+    private lateinit var camera: PerspectiveCamera
 
     private lateinit var boundMapper: ComponentMapper<BoundRadiusComponent>
     private lateinit var transformMapper: ComponentMapper<TransformComponent>
@@ -44,23 +46,35 @@ class ChunkSystem: BaseSystem() {
 
     private lateinit var chunkMeshTextureData: Texture
 
+    private val playerPosition = Vector3(0f, 0f, 0f)
+    private var lastPlayerBlockPosition = IntVector3()
+    private var timeSinceLastUpdate = 0f
+
     override fun initialize() {
+        playerPosition.set(camera.position)
         chunkWorldUpdater.start()
         chunkMeshTextureData = assetManager.get<TextureAtlas>(SkinID.BLOCK.atlas).textures.first()
         chunkMeshTextureData.setWrap(Texture.TextureWrap.ClampToEdge, Texture.TextureWrap.ClampToEdge)
     }
 
-    private var lastCameraPosition = IntVector3()
-    private var timeSinceLastUpdate = 0f
-
     override fun processSystem() {
+        val playerEntityId = WorldConstants.getLocalPlayerEntityId()
+        val playerTransform = transformMapper[playerEntityId]?.transform
+
         timeSinceLastUpdate += world.delta
         if (timeSinceLastUpdate < 0.3f) return
         timeSinceLastUpdate = 0f
-        val currentCameraPosition = IntVector3.roundToInt(camera.position)
-        if (currentCameraPosition == lastCameraPosition) return
-        lastCameraPosition = currentCameraPosition
-        chunkEventBus.sendEvent(ChunkEvent.LoadAdditionalChunksRequest(currentCameraPosition))
+
+        if (playerTransform == null) {
+            playerPosition.set(camera.position)
+        } else {
+            playerTransform.getTranslation(playerPosition)
+        }
+
+        val currentPlayerBlockPosition = IntVector3.roundToInt(playerPosition)
+        if (currentPlayerBlockPosition == lastPlayerBlockPosition) return
+        lastPlayerBlockPosition = currentPlayerBlockPosition
+        chunkEventBus.sendEvent(ChunkEvent.LoadAdditionalChunksRequest(currentPlayerBlockPosition))
     }
 
     override fun dispose() {
