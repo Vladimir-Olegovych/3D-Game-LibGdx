@@ -20,13 +20,18 @@ import com.gigcreator.NetVector3
 import com.gigcreator.NetworkEvent
 import core.animator.ModelAnimator
 import core.assets.ModelID
-import core.controls.PlayerInputProcessor
 import core.defaults.WorldConstants
 import core.mesh.defaultPlayerHitBox
 import core.mesh.rawMeshParams
 import core.network.*
+import kotlin.math.cos
+import kotlin.math.sin
 
 class NetworkSystem: BaseSystem() {
+
+    companion object {
+        private const val MOVE_EPS2 = 0.05f * 0.05f
+    }
 
     @Wire
     private lateinit var networkStateUpdater: NetworkStateUpdater
@@ -37,19 +42,16 @@ class NetworkSystem: BaseSystem() {
     @Wire
     private lateinit var remotePlayerRegistry: RemotePlayerRegistry
     @Wire
-    private lateinit var playerInputProcessor: PlayerInputProcessor
-    @Wire
     private lateinit var modelAssetManager: ModelAssetManager
 
     private lateinit var transformMapper: ComponentMapper<TransformComponent>
     private lateinit var meshMapper: ComponentMapper<MeshComponent>
     private lateinit var blenderMapper: ComponentMapper<BlenderModelComponent>
     private lateinit var animatorMapper: ComponentMapper<AnimatorComponent>
+    private lateinit var lookDirectionMapper: ComponentMapper<LookDirectionComponent>
     private lateinit var boundMapper: ComponentMapper<BoundRadiusComponent>
     private lateinit var networkEntityMapper: ComponentMapper<NetworkEntityComponent>
     private lateinit var interpolationMapper: ComponentMapper<NetworkInterpolationComponent>
-
-    private val tmpScale = Vector3(1f, 1f, 1f)
 
     override fun initialize() {
         networkStateUpdater.start()
@@ -132,9 +134,10 @@ class NetworkSystem: BaseSystem() {
         }
 
         val transform = transformMapper[localEntityId]?.transform ?: return
+        val look = lookDirectionMapper[localEntityId] ?: return
         val position = Vector3()
         transform.getTranslation(position)
-        val rot = yawToNetQuaternion(playerInputProcessor.getYaw())
+        val rot = lookToNetQuaternion(look.yaw, look.pitch)
 
         outboundState.put(
             OutboundEntityState(
@@ -165,7 +168,10 @@ class NetworkSystem: BaseSystem() {
 
             interp.renderPos.set(interp.fromPos).lerp(interp.toPos, alpha)
             interp.renderRot.set(interp.fromRot).slerp(interp.toRot, alpha)
-            transform.set(interp.renderPos, interp.renderRot, tmpScale)
+
+            transform.idt().setTranslation(interp.renderPos)
+            applyLookDirection(entityId, interp.renderRot.toYawDegrees(), interp.renderRot.toPitchDegrees())
+            updateRemoteAnimation(entityId, isMoving(interp))
         }
     }
 
@@ -185,8 +191,11 @@ class NetworkSystem: BaseSystem() {
 
         val interp = interpolationMapper.create(entityId)
         resetInterpolation(interp, pos, rot)
-        transformMapper.create(entityId).transform = Matrix4().setFromPosRot(interp.renderPos, interp.renderRot)
+        transformMapper.create(entityId).transform = Matrix4().setTranslation(interp.renderPos)
+        lookDirectionMapper.create(entityId)
+        applyLookDirection(entityId, rot.toYawDegrees(), rot.toPitchDegrees())
         applyVisual(entityId, modelId)
+        updateRemoteAnimation(entityId, moving = false)
     }
 
     private fun updateRemotePlayer(networkId: Int, pos: NetVector3, rot: NetQuaternion, modelId: Int) {
@@ -206,6 +215,7 @@ class NetworkSystem: BaseSystem() {
             networkEntity.modelId = modelId
             applyVisual(entityId, modelId)
         }
+        updateRemoteAnimation(entityId, isMoving(interp))
     }
 
     private fun resetInterpolation(interp: NetworkInterpolationComponent, pos: NetVector3, rot: NetQuaternion) {
@@ -242,6 +252,29 @@ class NetworkSystem: BaseSystem() {
         interp.hasTarget = true
     }
 
+    private fun applyLookDirection(entityId: Int, yaw: Float, pitch: Float) {
+        val look = lookDirectionMapper[entityId] ?: return
+        look.yaw = yaw
+        look.pitch = pitch
+
+        val pitchRad = Math.toRadians(pitch.toDouble())
+        val yawRad = Math.toRadians(yaw.toDouble())
+        look.direction.set(
+            (cos(pitchRad) * sin(yawRad)).toFloat(),
+            sin(pitchRad).toFloat(),
+            (cos(pitchRad) * cos(yawRad)).toFloat()
+        ).nor()
+    }
+
+    private fun updateRemoteAnimation(entityId: Int, moving: Boolean) {
+        val animator = animatorMapper[entityId]?.animator ?: return
+        animator.playAnimation(if (moving) ModelAnimator.ANIM_MOVE else ModelAnimator.ANIM_IDLE)
+    }
+
+    private fun isMoving(interp: NetworkInterpolationComponent): Boolean {
+        return interp.fromPos.dst2(interp.toPos) > MOVE_EPS2
+    }
+
     private fun applyVisual(entityId: Int, modelId: Int) {
         clearVisual(entityId)
 
@@ -251,9 +284,13 @@ class NetworkSystem: BaseSystem() {
             boundMapper.create(entityId).boundingRadius = 1.8f
             return
         }
-        val blenderModel = modelAssetManager.getRenderModel(model)
 
+        val blenderModel = modelAssetManager.getRenderModel(model)
         if (model == ModelID.M_PLAYER_MODEL) {
+            blenderModel.subMeshes.forEach {
+                it.mesh.transform(Matrix4().translate(0F, 0F, 0F))
+                it.mesh.scale(0.35f, 0.35f, 0.35f)
+            }
             animatorMapper.create(entityId).animator = ModelAnimator(blenderModel)
         }
         blenderMapper.create(entityId).blenderRenderData = blenderModel
@@ -264,7 +301,8 @@ class NetworkSystem: BaseSystem() {
         meshMapper[entityId]?.dispose()
         meshMapper.remove(entityId)
         animatorMapper.remove(entityId)
-        blenderMapper.apply { dispose(); remove(entityId) }
+        blenderMapper[entityId]?.dispose()
+        blenderMapper.remove(entityId)
         boundMapper.remove(entityId)
     }
 

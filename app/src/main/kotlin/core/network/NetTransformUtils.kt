@@ -5,17 +5,23 @@ import com.badlogic.gdx.math.Quaternion
 import com.badlogic.gdx.math.Vector3
 import com.gigcreator.NetQuaternion
 import com.gigcreator.NetVector3
-import kotlin.math.cos
-import kotlin.math.sin
 
 fun Vector3.toNetVector3() = NetVector3(x, y, z)
 
 fun NetVector3.toVector3() = Vector3(x, y, z)
 
-fun yawToNetQuaternion(yaw: Float): NetQuaternion {
-    val halfYaw = Math.toRadians(yaw.toDouble()) / 2.0
-    return NetQuaternion(0f, sin(halfYaw).toFloat(), 0f, cos(halfYaw).toFloat())
+fun lookToNetQuaternion(yaw: Float, pitch: Float): NetQuaternion {
+    val q = Quaternion().setEulerAngles(yaw, pitch, 0f)
+    return NetQuaternion(q.x, q.y, q.z, q.w)
 }
+
+fun NetQuaternion.toYawDegrees(): Float = Quaternion(x, y, z, w).nor().yaw
+
+fun NetQuaternion.toPitchDegrees(): Float = Quaternion(x, y, z, w).nor().pitch
+
+fun Quaternion.toYawDegrees(): Float = yaw
+
+fun Quaternion.toPitchDegrees(): Float = pitch
 
 fun Matrix4.setFromNetTransform(pos: NetVector3, rot: NetQuaternion): Matrix4 {
     idt().setTranslation(pos.x, pos.y, pos.z)
