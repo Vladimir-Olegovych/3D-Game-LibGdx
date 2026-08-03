@@ -79,7 +79,7 @@ class WorldSystem: BaseSystem() {
         networkEntityMapper.create(playerEntityId).apply {
             isLocal = true
             entityType = NetEntityType.PLAYER
-            modelId = ModelID.NULL.ordinal
+            modelId = ModelID.M_PLAYER_MODEL.ordinal
         }
 
         physicsEventBus.sendEvent(

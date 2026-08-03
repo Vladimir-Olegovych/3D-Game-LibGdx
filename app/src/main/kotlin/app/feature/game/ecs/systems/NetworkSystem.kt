@@ -18,6 +18,7 @@ import com.gigcreator.NetEntityType
 import com.gigcreator.NetQuaternion
 import com.gigcreator.NetVector3
 import com.gigcreator.NetworkEvent
+import core.animator.ModelAnimator
 import core.assets.ModelID
 import core.controls.PlayerInputProcessor
 import core.defaults.WorldConstants
@@ -43,6 +44,7 @@ class NetworkSystem: BaseSystem() {
     private lateinit var transformMapper: ComponentMapper<TransformComponent>
     private lateinit var meshMapper: ComponentMapper<MeshComponent>
     private lateinit var blenderMapper: ComponentMapper<BlenderModelComponent>
+    private lateinit var animatorMapper: ComponentMapper<AnimatorComponent>
     private lateinit var boundMapper: ComponentMapper<BoundRadiusComponent>
     private lateinit var networkEntityMapper: ComponentMapper<NetworkEntityComponent>
     private lateinit var interpolationMapper: ComponentMapper<NetworkInterpolationComponent>
@@ -249,15 +251,20 @@ class NetworkSystem: BaseSystem() {
             boundMapper.create(entityId).boundingRadius = 1.8f
             return
         }
+        val blenderModel = modelAssetManager.getRenderModel(model)
 
-        blenderMapper.create(entityId).blenderRenderData = modelAssetManager.getRenderModel(model)
+        if (model == ModelID.M_PLAYER_MODEL) {
+            animatorMapper.create(entityId).animator = ModelAnimator(blenderModel)
+        }
+        blenderMapper.create(entityId).blenderRenderData = blenderModel
         boundMapper.create(entityId).boundingRadius = 1.8f
     }
 
     private fun clearVisual(entityId: Int) {
         meshMapper[entityId]?.dispose()
         meshMapper.remove(entityId)
-        blenderMapper.remove(entityId)
+        animatorMapper.remove(entityId)
+        blenderMapper.apply { dispose(); remove(entityId) }
         boundMapper.remove(entityId)
     }
 

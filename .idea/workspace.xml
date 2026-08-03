@@ -4,13 +4,13 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="df78e54d-8fbf-4f78-86ee-f370d7368d41" name="Changes" comment="added animation and physics bugfix">
-      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/app/feature/game/ecs/systems/PlayerSystem.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/app/feature/game/ecs/systems/PlayerSystem.kt" afterDir="false" />
+    <list default="true" id="df78e54d-8fbf-4f78-86ee-f370d7368d41" name="Changes" comment="added player position to generate chunks">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/app/feature/game/ecs/components/BlenderModelComponent.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/app/feature/game/ecs/components/BlenderModelComponent.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/app/feature/game/ecs/systems/NetworkSystem.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/app/feature/game/ecs/systems/NetworkSystem.kt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/app/feature/game/ecs/systems/WorldSystem.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/app/feature/game/ecs/systems/WorldSystem.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/core/bullet/PhysicalData.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/bullet/PhysicalData.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/core/bullet/PhysicsUtils.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/bullet/PhysicsUtils.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/core/bullet/world/PhysicsWorldUpdater.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/bullet/world/PhysicsWorldUpdater.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/core/chunk/ChunkWorldUpdater.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/chunk/ChunkWorldUpdater.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/core/artemis/Utils.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/artemis/Utils.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/desktop/src/main/kotlin/DesktopMain.kt" beforeDir="false" afterPath="$PROJECT_DIR$/desktop/src/main/kotlin/DesktopMain.kt" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -84,29 +84,29 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "Gradle.Build GDX-3D-TEST.executor": "Run",
-    "Gradle.GDX-3D-TEST [:desktop:com.gigcreator.DesktopMainKt.main()].executor": "Run",
-    "Gradle.GDX-3D-TEST [:desktop:com.gigcreator.MainKt.main()].executor": "Run",
-    "Gradle.GDX-3D-TEST [:desktop:windowsShadowDist].executor": "Run",
-    "Gradle.GDX-3D-TEST [:server:com.gigcreator.ServerMainKt.main()].executor": "Run",
-    "Gradle.GDX-3D-TEST [app:assemble].executor": "Run",
-    "Gradle.GDX-3D-TEST [desktop:shadowJar].executor": "Run",
-    "Kotlin.MainKt.executor": "Run",
-    "ModuleVcsDetector.initialDetectionPerformed": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
-    "RunOnceActivity.git.unshallow": "true",
-    "git-widget-placeholder": "main",
-    "kotlin-language-version-configured": "true",
-    "last_opened_file_path": "/home/vladimir/Documents/Java/GDX-3D-TEST/app/src/main/resources/models",
-    "onboarding.tips.debug.path": "/home/vladimir/Documents/Java/GDX-3D-TEST/core/src/main/kotlin/Main.kt",
-    "project.structure.last.edited": "Modules",
-    "project.structure.proportion": "0.0",
-    "project.structure.side.proportion": "0.0"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;Gradle.Build GDX-3D-TEST.executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.GDX-3D-TEST [:desktop:com.gigcreator.DesktopMainKt.main()].executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.GDX-3D-TEST [:desktop:com.gigcreator.MainKt.main()].executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.GDX-3D-TEST [:desktop:windowsShadowDist].executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.GDX-3D-TEST [:server:com.gigcreator.ServerMainKt.main()].executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.GDX-3D-TEST [app:assemble].executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.GDX-3D-TEST [desktop:shadowJar].executor&quot;: &quot;Run&quot;,
+    &quot;Kotlin.MainKt.executor&quot;: &quot;Run&quot;,
+    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
+    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;/home/vladimir/Documents/Java/GDX-3D-TEST/app/src/main/resources/models&quot;,
+    &quot;onboarding.tips.debug.path&quot;: &quot;/home/vladimir/Documents/Java/GDX-3D-TEST/core/src/main/kotlin/Main.kt&quot;,
+    &quot;project.structure.last.edited&quot;: &quot;Modules&quot;,
+    &quot;project.structure.proportion&quot;: &quot;0.0&quot;,
+    &quot;project.structure.side.proportion&quot;: &quot;0.0&quot;
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/app/src/main/resources/models" />
@@ -134,7 +134,7 @@
       <recent name="core.chunk" />
     </key>
   </component>
-  <component name="RunManager" selected="Kotlin.DesktopMainKt">
+  <component name="RunManager" selected="Gradle.GDX-3D-TEST [app:assemble]">
     <configuration name="GDX-3D-TEST [app:assemble]" type="GradleRunConfiguration" factoryName="Gradle" nameIsGenerated="true">
       <ExternalSystemSettings>
         <option name="executionName" />
@@ -228,22 +228,6 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1783090102890</updated>
-    </task>
-    <task id="LOCAL-00002" summary="update 2">
-      <option name="closed" value="true" />
-      <created>1783152393380</created>
-      <option name="number" value="00002" />
-      <option name="presentableId" value="LOCAL-00002" />
-      <option name="project" value="LOCAL" />
-      <updated>1783152393380</updated>
-    </task>
-    <task id="LOCAL-00003" summary="added fast chunk manager">
-      <option name="closed" value="true" />
-      <created>1783172266988</created>
-      <option name="number" value="00003" />
-      <option name="presentableId" value="LOCAL-00003" />
-      <option name="project" value="LOCAL" />
-      <updated>1783172266988</updated>
     </task>
     <task id="LOCAL-00004" summary="added easy tiled">
       <option name="closed" value="true" />
@@ -621,7 +605,23 @@
       <option name="project" value="LOCAL" />
       <updated>1785752737872</updated>
     </task>
-    <option name="localTasksCounter" value="51" />
+    <task id="LOCAL-00051" summary="critical bugfix physics world">
+      <option name="closed" value="true" />
+      <created>1785754532383</created>
+      <option name="number" value="00051" />
+      <option name="presentableId" value="LOCAL-00051" />
+      <option name="project" value="LOCAL" />
+      <updated>1785754532383</updated>
+    </task>
+    <task id="LOCAL-00052" summary="added player position to generate chunks">
+      <option name="closed" value="true" />
+      <created>1785755359163</created>
+      <option name="number" value="00052" />
+      <option name="presentableId" value="LOCAL-00052" />
+      <option name="project" value="LOCAL" />
+      <updated>1785755359163</updated>
+    </task>
+    <option name="localTasksCounter" value="53" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -642,8 +642,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="update 2" />
-    <MESSAGE value="added fast chunk manager" />
     <MESSAGE value="added easy tiled" />
     <MESSAGE value="added fps" />
     <MESSAGE value="added vlc windows" />
@@ -667,6 +665,8 @@
     <MESSAGE value="added server interpolation" />
     <MESSAGE value="added items" />
     <MESSAGE value="added animation and physics bugfix" />
-    <option name="LAST_COMMIT_MESSAGE" value="added animation and physics bugfix" />
+    <MESSAGE value="critical bugfix physics world" />
+    <MESSAGE value="added player position to generate chunks" />
+    <option name="LAST_COMMIT_MESSAGE" value="added player position to generate chunks" />
   </component>
 </project>
