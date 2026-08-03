@@ -50,7 +50,7 @@ class InventoryDialog: LaunchedEffect, Dialog() {
         dragAndDrop = DragAndDrop()
         assetManager = gContext.getObject()
         skin = assetManager.get(SkinID.BUTTON.skin)
-        itemBox = assetManager.get<TextureAtlas>(SkinID.BUTTON.atlas).findRegion("ic_item_box")
+        itemBox = assetManager.get<TextureAtlas>(SkinID.BUTTON.atlas).findRegion("ic_item_box_off")
         val eventBus = gContext.getObject<EventBus>(EventBusTypes.MAIN_EVENT_BUS)
         eventBus.registerHandler(this)
 

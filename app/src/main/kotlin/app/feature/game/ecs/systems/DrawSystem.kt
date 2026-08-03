@@ -113,6 +113,7 @@ class DrawSystem: BaseEntitySystem() {
             if (blenderRenderData.subMeshes.isEmpty()) return
 
             for ((index, subMesh) in blenderRenderData.subMeshes.withIndex()) {
+                if (blenderModelComponent.ignoreDrawingAll) continue
                 if (blenderModelComponent.ignoreMeshDrawing.contains(index)) continue
                 val material = subMesh.material
 

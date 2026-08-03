@@ -2,6 +2,8 @@ package core.controls
 
 import app.feature.game.event.EventBusTypes
 import app.feature.game.event.GameEvent
+import app.feature.game.event.PlayerEvent
+import app.feature.game.ui.InventoryUI.Companion.TOOL_BAR_SIZE
 import com.badlogic.gdx.Input.Keys
 import com.badlogic.gdx.InputProcessor
 import com.badlogic.gdx.graphics.PerspectiveCamera
@@ -11,17 +13,36 @@ import com.gigapi.eventbus.EventBus
 import com.gigapi.general.GContext
 import core.bullet.raycast.RayCastTypes
 import core.defaults.CameraTypes
+import core.items.InventoryManager
 import kotlin.math.cos
 import kotlin.math.sin
 
 class PlayerInputProcessor: LaunchedEffect, InputProcessor {
 
     companion object {
-        const val PLAYER_SPEED = 90f
+        const val PLAYER_SPEED = 10f
         const val JUMP_FORCE = 10f
         const val JUMP_FORCE_REVERSE = -10f
         const val CAMERA_SENSITIVITY = 0.03f
         const val MAX_VERTICAL_ANGLE = 89f
+
+        const val VIEW_FIRST_PERSON = 0
+        const val VIEW_THIRD_BACK = 1
+        const val VIEW_THIRD_FRONT = 2
+        private const val VIEW_MODE_COUNT = 3
+
+        val keyNumbersMap = mapOf(
+            1 to Keys.NUM_1,
+            2 to Keys.NUM_2,
+            3 to Keys.NUM_3,
+            4 to Keys.NUM_4,
+            5 to Keys.NUM_5,
+            6 to Keys.NUM_6,
+            7 to Keys.NUM_7,
+            8 to Keys.NUM_8,
+            9 to Keys.NUM_9,
+            0 to Keys.NUM_0
+        )
     }
 
     private lateinit var mainEventBus: EventBus
@@ -32,8 +53,18 @@ class PlayerInputProcessor: LaunchedEffect, InputProcessor {
         camera = gContext.getObject(CameraTypes.GL_3D)
         mainEventBus = gContext.getObject(EventBusTypes.MAIN_EVENT_BUS)
         physicsEventBus = gContext.getObject(EventBusTypes.PHYSICS_EVENT_BUS)
+        val inventoryManager = gContext.getObject<InventoryManager>()
+
+        inventoryStartSlot = inventoryManager.inventorySize - TOOL_BAR_SIZE
+        inventoryEndSlot = inventoryManager.inventorySize - 1
+        selectedSlot = inventoryEndSlot
     }
 
+    private var viewMode = 0
+    private var inFreeCam = false
+    private var selectedSlot = 0
+    private var inventoryStartSlot = 0
+    private var inventoryEndSlot = 0
     private var isMouseHold = false
     private var jump = false
     private var lastMouseX = -1
@@ -58,7 +89,10 @@ class PlayerInputProcessor: LaunchedEffect, InputProcessor {
         moveDirectionByCamera.set(Vector3.Zero)
     }
 
+    fun getSelectedSlot() = selectedSlot
     fun isJumped() = jump
+    fun isFreeCam() = inFreeCam
+    fun getViewMode() = viewMode
     fun getPitch() = pitch
     fun getYaw() = yaw
 
@@ -105,6 +139,32 @@ class PlayerInputProcessor: LaunchedEffect, InputProcessor {
             )
         )
     }
+    private fun selectSlot(slot: Int) {
+        val slot = slot.coerceIn(inventoryStartSlot, inventoryEndSlot)
+        mainEventBus.sendEvent(PlayerEvent.OnSelectInventorySlot(slot))
+    }
+
+    private fun selectSlotByKeyNum(num: Int) {
+        val adjustedNum = if (num == 0) 9 else num - 1
+        val slot = adjustedNum + inventoryStartSlot
+        selectedSlot = slot
+        selectSlot(slot)
+    }
+
+    private fun onScrollSlot(count: Float) {
+        if (count < 0) {
+            selectedSlot--
+            if (selectedSlot < inventoryStartSlot) {
+                selectedSlot = inventoryEndSlot
+            }
+        } else {
+            selectedSlot++
+            if (selectedSlot > inventoryEndSlot) {
+                selectedSlot = inventoryStartSlot
+            }
+        }
+        selectSlot(selectedSlot)
+    }
 
     private fun updateMoveDirection(x: Float = moveDirection.x, z: Float = moveDirection.z) {
         moveDirection.x = x
@@ -144,7 +204,12 @@ class PlayerInputProcessor: LaunchedEffect, InputProcessor {
             Keys.A -> updateMoveDirection(x = 0f)
             Keys.S -> updateMoveDirection(z = 0f)
             Keys.D -> updateMoveDirection(x = 0f)
+            Keys.F -> { inFreeCam = !inFreeCam }
+            Keys.F5 -> { viewMode = (viewMode + 1) % VIEW_MODE_COUNT }
             Keys.SPACE -> { jump = false }
+        }
+        keyNumbersMap.forEach { (num, key) ->
+            if (keycode == key) selectSlotByKeyNum(num)
         }
         return false
     }
@@ -194,6 +259,7 @@ class PlayerInputProcessor: LaunchedEffect, InputProcessor {
     }
 
     override fun scrolled(amountX: Float, amountY: Float): Boolean {
+        onScrollSlot(amountY)
         return false
     }
 }

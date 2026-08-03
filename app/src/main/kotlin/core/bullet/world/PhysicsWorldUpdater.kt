@@ -5,6 +5,7 @@ import app.feature.game.event.GameEvent
 import com.badlogic.gdx.math.Vector3
 import com.badlogic.gdx.physics.bullet.Bullet
 import com.badlogic.gdx.physics.bullet.collision.ClosestRayResultCallback
+import com.badlogic.gdx.physics.bullet.collision.LocalRayResult
 import com.gigapi.coruntines.DeltaUpdater
 import com.gigapi.effects.LaunchedEffect
 import com.gigapi.eventbus.EventBus
@@ -12,14 +13,22 @@ import com.gigapi.eventbus.annotation.BusEvent
 import com.gigapi.general.GContext
 import core.bullet.PhysicalData
 import core.bullet.PhysicsUtils
+import core.defaults.WorldConstants
 import kotlinx.coroutines.Dispatchers
 
-class PhysicsWorldUpdater: LaunchedEffect, DeltaUpdater(1 / 60F, Dispatchers.Default) {
+class PhysicsWorldUpdater: LaunchedEffect, DeltaUpdater(1 / 30F, Dispatchers.Default) {
 
     private lateinit var physicalEventBus: EventBus
     private lateinit var mainEventBus: EventBus
     private lateinit var physicsWorld: PhysicsWorld
     private lateinit var physicBodies: HashMap<Int, PhysicalData>
+
+    private val lastChunkUpdate = HashMap<Int, GameEvent.OnUpdateChunkData>()
+    private val linearIntents = HashMap<Int, LinearIntent>()
+    private val forceIntents = HashMap<Int, ForceIntent>()
+
+    private val tmpVelocity = Vector3()
+    private val tmpImpulse = Vector3()
 
     override fun launch(gContext: GContext) {
         physicalEventBus = gContext.getObject(EventBusTypes.PHYSICS_EVENT_BUS)
@@ -31,7 +40,14 @@ class PhysicsWorldUpdater: LaunchedEffect, DeltaUpdater(1 / 60F, Dispatchers.Def
     fun onRayCastRequest(event: GameEvent.OnRayCastRequest) {
         val rayFrom = event.from
         val rayTo = Vector3(event.direction).scl(event.maxDistance).add(rayFrom)
-        val callback = ClosestRayResultCallback(rayFrom, rayTo)
+        val ignoreEntityId = WorldConstants.getLocalPlayerEntityId()
+        val callback = object : ClosestRayResultCallback(rayFrom, rayTo) {
+            override fun addSingleResult(rayResult: LocalRayResult, normalInWorldSpace: Boolean): Float {
+                val hitId = rayResult.collisionObject?.userData as? Int
+                if (hitId == ignoreEntityId) { return 1f }
+                return super.addSingleResult(rayResult, normalInWorldSpace)
+            }
+        }
         physicsWorld.world.rayTest(rayFrom, rayTo, callback)
 
         var hitEntityId: Int? = null
@@ -61,12 +77,10 @@ class PhysicsWorldUpdater: LaunchedEffect, DeltaUpdater(1 / 60F, Dispatchers.Def
         callback.dispose()
     }
 
-    private val lastUpdate = HashMap<Int, GameEvent.OnUpdateChunkData>()
-
     @BusEvent
     fun onUpdateChunkData(event: GameEvent.OnUpdateChunkData) {
         val entityId = event.chunkEntityId
-        lastUpdate[entityId] = event
+        lastChunkUpdate[entityId] = event
         val physicalData = physicBodies.remove(entityId) ?: return
         val body = physicalData.getBodyOrNull() ?: return
         if (!body.isDisposed) {
@@ -110,6 +124,8 @@ class PhysicsWorldUpdater: LaunchedEffect, DeltaUpdater(1 / 60F, Dispatchers.Def
     @BusEvent
     fun onBodyRemoved(event: GameEvent.OnRemoveRigidBody) {
         val entityId = event.entityId
+        linearIntents.remove(entityId)
+        forceIntents.remove(entityId)
         val physicalData = physicBodies.remove(entityId) ?: return
         val body = physicalData.getBodyOrNull() ?: return
         if (!body.isDisposed) {
@@ -120,22 +136,17 @@ class PhysicsWorldUpdater: LaunchedEffect, DeltaUpdater(1 / 60F, Dispatchers.Def
 
     @BusEvent
     fun onApplyForce(event: GameEvent.OnApplyForce) {
-        val entityId = event.entityId
-        val physicalData = physicBodies[entityId]?: return
-        physicalData.getBody().applyCentralForce(event.force)
+        val intent = forceIntents.getOrPut(event.entityId) { ForceIntent() }
+        intent.force.set(event.force)
+        intent.active = true
     }
 
     @BusEvent
     fun onApplyLinearForce(event: GameEvent.OnApplyLinearForce) {
-        val entityId = event.entityId
-        val physicalData = physicBodies[entityId]?: return
-        val body = physicalData.getBody()
-        val currentLinearVelocity = body.linearVelocity
-        if (event.ignoreYLinear) {
-            body.linearVelocity = Vector3(event.force.x, currentLinearVelocity.y, event.force.z)
-        } else {
-            body.linearVelocity = Vector3(event.force.x, event.force.y, event.force.z)
-        }
+        val intent = linearIntents.getOrPut(event.entityId) { LinearIntent() }
+        intent.velocity.set(event.force)
+        intent.ignoreYLinear = event.ignoreYLinear
+        intent.active = true
     }
 
     override fun create() {
@@ -143,11 +154,15 @@ class PhysicsWorldUpdater: LaunchedEffect, DeltaUpdater(1 / 60F, Dispatchers.Def
         physicBodies = HashMap()
         physicsWorld = PhysicsWorld()
     }
+
     override fun update(deltaTime: Float) {
-        physicsWorld.update(deltaTime)
         physicalEventBus.process()
-        lastUpdate.forEach { (_, data) -> updateChunkImmediately(data) }
-        lastUpdate.clear()
+        lastChunkUpdate.forEach { (_, data) -> updateChunkImmediately(data) }
+        lastChunkUpdate.clear()
+
+        applyMovementIntents(deltaTime)
+        physicsWorld.update(deltaTime)
+
         for ((entityId, data) in physicBodies) {
             if (data.isStatic) continue
             val body = data.getBody()
@@ -165,8 +180,48 @@ class PhysicsWorldUpdater: LaunchedEffect, DeltaUpdater(1 / 60F, Dispatchers.Def
             data.dispose()
         }
         physicBodies.clear()
+        linearIntents.clear()
+        forceIntents.clear()
+        lastChunkUpdate.clear()
         physicalEventBus.clear()
         physicsWorld.dispose()
     }
 
+    private fun applyMovementIntents(deltaTime: Float) {
+        for ((entityId, intent) in linearIntents) {
+            if (!intent.active) continue
+            val body = physicBodies[entityId]?.getBodyOrNull() ?: continue
+            if (body.isDisposed) continue
+
+            if (intent.ignoreYLinear) {
+                val current = body.linearVelocity
+                tmpVelocity.set(intent.velocity.x, current.y, intent.velocity.z)
+            } else {
+                tmpVelocity.set(intent.velocity)
+            }
+            body.linearVelocity = tmpVelocity
+        }
+
+        for ((entityId, intent) in forceIntents) {
+            if (!intent.active) continue
+            val body = physicBodies[entityId]?.getBodyOrNull() ?: continue
+            if (body.isDisposed) continue
+            if (intent.force.isZero) continue
+
+            // Impulse = F * dt keeps continuous force rate-independent across updater Hz / substeps.
+            tmpImpulse.set(intent.force).scl(deltaTime)
+            body.applyCentralImpulse(tmpImpulse)
+        }
+    }
+
+    private class LinearIntent {
+        val velocity = Vector3()
+        var ignoreYLinear = false
+        var active = false
+    }
+
+    private class ForceIntent {
+        val force = Vector3()
+        var active = false
+    }
 }

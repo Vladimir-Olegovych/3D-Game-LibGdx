@@ -118,11 +118,12 @@ class GameFragment(
         arrayOf(
             WorldSystem(),
             TimeSystem(),
+            PhysicSystem(),
             PlayerSystem(),
             MoveSystem(),
             ChunkSystem(),
-            PhysicSystem(),
             NetworkSystem(),
+            ModelAnimationSystem(),
             DrawSystem(),
             UISystem()
         ).forEach { system ->

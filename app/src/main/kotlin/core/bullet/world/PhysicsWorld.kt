@@ -19,6 +19,8 @@ class PhysicsWorld: LaunchedEffect, DisposableEffect {
 
     companion object {
         const val GRAVITY = -98.0665f
+        const val FIXED_TIME_STEP = 1f / 60f
+        const val MAX_SUB_STEPS = 10
     }
 
     override fun launch(gContext: GContext) {
@@ -27,7 +29,7 @@ class PhysicsWorld: LaunchedEffect, DisposableEffect {
     }
 
     fun update(deltaTime: Float) {
-        world.stepSimulation(deltaTime, 1, 1 / 60F)
+        world.stepSimulation(deltaTime, MAX_SUB_STEPS, FIXED_TIME_STEP)
     }
 
     override fun dispose() {
@@ -37,5 +39,4 @@ class PhysicsWorld: LaunchedEffect, DisposableEffect {
         dispatcher.dispose()
         collisionConfig.dispose()
     }
-
 }

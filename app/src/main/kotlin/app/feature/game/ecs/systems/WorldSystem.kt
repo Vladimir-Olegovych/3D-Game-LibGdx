@@ -9,11 +9,13 @@ import com.artemis.ComponentMapper
 import com.artemis.World
 import com.artemis.annotations.Wire
 import com.badlogic.gdx.assets.AssetManager
+import com.badlogic.gdx.math.Matrix4
 import com.badlogic.gdx.physics.bullet.collision.CollisionConstants.DISABLE_DEACTIVATION
 import com.gigapi.eventbus.EventBus
 import com.gigapi.eventbus.annotation.BusEvent
 import com.gigapi.mesh.ModelAssetManager
 import com.gigcreator.NetEntityType
+import core.animator.ModelAnimator
 import core.assets.ModelID
 import core.defaults.WorldConstants
 import core.mesh.MeshUtils
@@ -30,9 +32,11 @@ class WorldSystem: BaseSystem() {
 
     private lateinit var transformMapper: ComponentMapper<TransformComponent>
     private lateinit var meshMapper: ComponentMapper<MeshComponent>
+    private lateinit var animatorMapper: ComponentMapper<AnimatorComponent>
     private lateinit var blenderMapper: ComponentMapper<BlenderModelComponent>
     private lateinit var linearMoveMapper: ComponentMapper<LinearMoveComponent>
     private lateinit var forceMoveMapper: ComponentMapper<ForceMoveComponent>
+    private lateinit var lookDirectionMapper: ComponentMapper<LookDirectionComponent>
     private lateinit var networkEntityMapper: ComponentMapper<NetworkEntityComponent>
 
     override fun setWorld(world: World?) {
@@ -47,17 +51,19 @@ class WorldSystem: BaseSystem() {
         val playerEntityId = WorldConstants.getLocalPlayerEntityId()
         val playerPhysicalModel = defaultPlayerHitBox
 
-        /*
-        val playerBlenderModel = modelAssetManager.getRenderModel(ModelID.STONE)
+        val playerBlenderModel = modelAssetManager.getRenderModel(ModelID.M_PLAYER_MODEL)
         playerBlenderModel.subMeshes.forEach {
-            it.mesh.transform(Matrix4().translate(0F, -4.8F, 0F))
-            it.mesh.scale(0.2f, 0.2f, 0.2f)
+            it.mesh.transform(Matrix4().translate(0F, 0F, 0F))
+            it.mesh.scale(0.4f, 0.4f, 0.4f)
         }
         blenderMapper.create(playerEntityId).apply {
             this@apply.blenderRenderData = playerBlenderModel
             //ignoreMeshDrawing.add(0)
         }
-         */
+
+        animatorMapper.create(playerEntityId).apply {
+            animator = ModelAnimator(playerBlenderModel)
+        }
 
         /*
        meshMapper.create(playerEntityId).apply {
@@ -68,6 +74,7 @@ class WorldSystem: BaseSystem() {
         linearMoveMapper.create(playerEntityId).ignoreYLinear = true
         forceMoveMapper.create(playerEntityId)
         transformMapper.create(playerEntityId)
+        lookDirectionMapper.create(playerEntityId)
 
         networkEntityMapper.create(playerEntityId).apply {
             isLocal = true

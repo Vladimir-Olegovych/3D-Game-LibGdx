@@ -19,23 +19,26 @@ class MoveSystem: IteratingSystem() {
     private lateinit var forceMoveMapper: ComponentMapper<ForceMoveComponent>
 
     override fun process(entityId: Int) {
-        linearMoveMapper[entityId]?.let {
+        linearMoveMapper[entityId]?.let { component ->
+            if (!component.dirty) return@let
             physicsEventBus.sendEvent(
                 GameEvent.OnApplyLinearForce(
                     entityId,
-                    it.ignoreYLinear,
-                    it.direction
+                    component.ignoreYLinear,
+                    component.direction.cpy()
                 )
             )
+            component.dirty = false
         }
-        forceMoveMapper[entityId]?.let {
+        forceMoveMapper[entityId]?.let { component ->
+            if (!component.dirty) return@let
             physicsEventBus.sendEvent(
                 GameEvent.OnApplyForce(
                     entityId,
-                    it.direction
+                    component.direction.cpy()
                 )
             )
+            component.dirty = false
         }
     }
-
 }
