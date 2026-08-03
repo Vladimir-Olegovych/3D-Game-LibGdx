@@ -28,15 +28,24 @@ class PhysicalData(val isStatic: Boolean) : Disposable {
     override fun dispose() {
         rigidBodies.forEach { if (!it.isDisposed) it.dispose() }
         motionStates.forEach { if (!it.isDisposed) it.dispose() }
-        compounds.forEach { if (!it.isDisposed) it.dispose() }
+
+        // Detach compound children explicitly, then dispose shapes once.
+        // Never rely on compound.dispose() + shapes.dispose() (double-free / GC warnings).
+        compounds.forEach { compound ->
+            if (compound.isDisposed) return@forEach
+            while (compound.numChildShapes > 0) {
+                compound.removeChildShapeByIndex(compound.numChildShapes - 1)
+            }
+            compound.dispose()
+        }
         shapes.forEach { if (!it.isDisposed) it.dispose() }
         collisionShapes.forEach { if (!it.isDisposed) it.dispose() }
         triangleMeshes.forEach { if (!it.isDisposed) it.dispose() }
 
         rigidBodies.clear()
         motionStates.clear()
-        collisionShapes.clear()
         shapes.clear()
+        collisionShapes.clear()
         compounds.clear()
         triangleMeshes.clear()
 

@@ -54,7 +54,7 @@ class WorldSystem: BaseSystem() {
         val playerBlenderModel = modelAssetManager.getRenderModel(ModelID.M_PLAYER_MODEL)
         playerBlenderModel.subMeshes.forEach {
             it.mesh.transform(Matrix4().translate(0F, 0F, 0F))
-            it.mesh.scale(0.4f, 0.4f, 0.4f)
+            it.mesh.scale(0.35f, 0.35f, 0.35f)
         }
         blenderMapper.create(playerEntityId).apply {
             this@apply.blenderRenderData = playerBlenderModel

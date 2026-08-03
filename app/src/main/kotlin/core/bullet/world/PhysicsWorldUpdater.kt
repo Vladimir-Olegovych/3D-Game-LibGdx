@@ -5,7 +5,8 @@ import app.feature.game.event.GameEvent
 import com.badlogic.gdx.math.Vector3
 import com.badlogic.gdx.physics.bullet.Bullet
 import com.badlogic.gdx.physics.bullet.collision.ClosestRayResultCallback
-import com.badlogic.gdx.physics.bullet.collision.LocalRayResult
+import com.badlogic.gdx.physics.bullet.collision.btBroadphaseProxy
+import com.badlogic.gdx.physics.bullet.collision.btCollisionObject
 import com.gigapi.coruntines.DeltaUpdater
 import com.gigapi.effects.LaunchedEffect
 import com.gigapi.eventbus.EventBus
@@ -13,6 +14,7 @@ import com.gigapi.eventbus.annotation.BusEvent
 import com.gigapi.general.GContext
 import core.bullet.PhysicalData
 import core.bullet.PhysicsUtils
+import core.chunk.ChunkData
 import core.defaults.WorldConstants
 import kotlinx.coroutines.Dispatchers
 
@@ -23,7 +25,7 @@ class PhysicsWorldUpdater: LaunchedEffect, DeltaUpdater(1 / 30F, Dispatchers.Def
     private lateinit var physicsWorld: PhysicsWorld
     private lateinit var physicBodies: HashMap<Int, PhysicalData>
 
-    private val lastChunkUpdate = HashMap<Int, GameEvent.OnUpdateChunkData>()
+    private val pendingChunkBodies = HashMap<Int, ChunkData>()
     private val linearIntents = HashMap<Int, LinearIntent>()
     private val forceIntents = HashMap<Int, ForceIntent>()
 
@@ -41,13 +43,7 @@ class PhysicsWorldUpdater: LaunchedEffect, DeltaUpdater(1 / 30F, Dispatchers.Def
         val rayFrom = event.from
         val rayTo = Vector3(event.direction).scl(event.maxDistance).add(rayFrom)
         val ignoreEntityId = WorldConstants.getLocalPlayerEntityId()
-        val callback = object : ClosestRayResultCallback(rayFrom, rayTo) {
-            override fun addSingleResult(rayResult: LocalRayResult, normalInWorldSpace: Boolean): Float {
-                val hitId = rayResult.collisionObject?.userData as? Int
-                if (hitId == ignoreEntityId) { return 1f }
-                return super.addSingleResult(rayResult, normalInWorldSpace)
-            }
-        }
+        val callback = IgnoreEntityRayCallback(rayFrom, rayTo, ignoreEntityId)
         physicsWorld.world.rayTest(rayFrom, rayTo, callback)
 
         var hitEntityId: Int? = null
@@ -59,7 +55,7 @@ class PhysicsWorldUpdater: LaunchedEffect, DeltaUpdater(1 / 30F, Dispatchers.Def
             callback.getHitNormalWorld(hitNormal)
 
             val hitCollisionObject = callback.collisionObject
-            hitEntityId = hitCollisionObject.userData as? Int
+            hitEntityId = hitCollisionObject?.userData as? Int
             if (hitEntityId == 0) hitEntityId = null
         }
 
@@ -79,34 +75,20 @@ class PhysicsWorldUpdater: LaunchedEffect, DeltaUpdater(1 / 30F, Dispatchers.Def
 
     @BusEvent
     fun onUpdateChunkData(event: GameEvent.OnUpdateChunkData) {
-        val entityId = event.chunkEntityId
-        lastChunkUpdate[entityId] = event
-        val physicalData = physicBodies.remove(entityId) ?: return
-        val body = physicalData.getBodyOrNull() ?: return
-        if (!body.isDisposed) {
-            physicsWorld.world.removeRigidBody(body)
-        }
-        physicalData.dispose()
-    }
-
-    fun updateChunkImmediately(event: GameEvent.OnUpdateChunkData) {
-        val entityId = event.chunkEntityId
-        val physicalData = PhysicsUtils.createChunkBody(entityId = entityId, event.chunkData)
-        physicBodies[entityId] = physicalData
-        physicsWorld.world.addRigidBody(physicalData.getBody())
+        // Only queue — never remove/dispose here. Raycasts in the same process()
+        // batch must still see the old body; replace happens after process().
+        pendingChunkBodies[event.chunkEntityId] = event.chunkData
     }
 
     @BusEvent
     fun onChunkBodyCreated(event: GameEvent.OnCreateChunkRigidBody) {
-        val entityId = event.chunkEntityId
-        val physicalData = PhysicsUtils.createChunkBody(entityId = entityId,event.chunkData)
-        physicBodies[entityId] = physicalData
-        physicsWorld.world.addRigidBody(physicalData.getBody())
+        pendingChunkBodies[event.chunkEntityId] = event.chunkData
     }
 
     @BusEvent
     fun onMeshBodyCreated(event: GameEvent.OnCreateMeshRigidBody) {
         val entityId = event.entityId
+        removeBody(entityId)
         val physicalData = PhysicsUtils.createMeshBody(
             entityId = entityId,
             position = event.position,
@@ -124,14 +106,10 @@ class PhysicsWorldUpdater: LaunchedEffect, DeltaUpdater(1 / 30F, Dispatchers.Def
     @BusEvent
     fun onBodyRemoved(event: GameEvent.OnRemoveRigidBody) {
         val entityId = event.entityId
+        pendingChunkBodies.remove(entityId)
         linearIntents.remove(entityId)
         forceIntents.remove(entityId)
-        val physicalData = physicBodies.remove(entityId) ?: return
-        val body = physicalData.getBodyOrNull() ?: return
-        if (!body.isDisposed) {
-            physicsWorld.world.removeRigidBody(body)
-        }
-        physicalData.dispose()
+        removeBody(entityId)
     }
 
     @BusEvent
@@ -157,8 +135,7 @@ class PhysicsWorldUpdater: LaunchedEffect, DeltaUpdater(1 / 30F, Dispatchers.Def
 
     override fun update(deltaTime: Float) {
         physicalEventBus.process()
-        lastChunkUpdate.forEach { (_, data) -> updateChunkImmediately(data) }
-        lastChunkUpdate.clear()
+        flushPendingChunkBodies()
 
         applyMovementIntents(deltaTime)
         physicsWorld.update(deltaTime)
@@ -182,9 +159,40 @@ class PhysicsWorldUpdater: LaunchedEffect, DeltaUpdater(1 / 30F, Dispatchers.Def
         physicBodies.clear()
         linearIntents.clear()
         forceIntents.clear()
-        lastChunkUpdate.clear()
+        pendingChunkBodies.clear()
         physicalEventBus.clear()
         physicsWorld.dispose()
+    }
+
+    private fun flushPendingChunkBodies() {
+        if (pendingChunkBodies.isEmpty()) return
+        val pending = HashMap(pendingChunkBodies)
+        pendingChunkBodies.clear()
+        for ((entityId, chunkData) in pending) {
+            replaceChunkBody(entityId, chunkData)
+        }
+    }
+
+    private fun replaceChunkBody(entityId: Int, chunkData: ChunkData) {
+        removeBody(entityId)
+        val physicalData = PhysicsUtils.createChunkBody(entityId, chunkData)
+        physicBodies[entityId] = physicalData
+        physicsWorld.world.addRigidBody(physicalData.getBody())
+    }
+
+    private fun removeBody(entityId: Int) {
+        val physicalData = physicBodies.remove(entityId) ?: return
+        try {
+            val body = physicalData.getBodyOrNull()
+            if (body != null && !body.isDisposed) {
+                physicsWorld.world.removeRigidBody(body)
+            }
+        } finally {
+            try {
+                physicalData.dispose()
+            } catch (_: Throwable) {
+            }
+        }
     }
 
     private fun applyMovementIntents(deltaTime: Float) {
@@ -208,7 +216,6 @@ class PhysicsWorldUpdater: LaunchedEffect, DeltaUpdater(1 / 30F, Dispatchers.Def
             if (body.isDisposed) continue
             if (intent.force.isZero) continue
 
-            // Impulse = F * dt keeps continuous force rate-independent across updater Hz / substeps.
             tmpImpulse.set(intent.force).scl(deltaTime)
             body.applyCentralImpulse(tmpImpulse)
         }
@@ -223,5 +230,17 @@ class PhysicsWorldUpdater: LaunchedEffect, DeltaUpdater(1 / 30F, Dispatchers.Def
     private class ForceIntent {
         val force = Vector3()
         var active = false
+    }
+
+    private class IgnoreEntityRayCallback(
+        rayFrom: Vector3,
+        rayTo: Vector3,
+        private val ignoreEntityId: Int
+    ) : ClosestRayResultCallback(rayFrom, rayTo) {
+        override fun needsCollision(proxy0: btBroadphaseProxy): Boolean {
+            if (!super.needsCollision(proxy0)) return false
+            val obj = btCollisionObject.getInstance(proxy0.clientObject, false) ?: return true
+            return obj.userData != ignoreEntityId
+        }
     }
 }

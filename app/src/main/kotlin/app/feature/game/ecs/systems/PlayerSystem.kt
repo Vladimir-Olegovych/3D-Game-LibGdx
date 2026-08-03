@@ -37,7 +37,7 @@ class PlayerSystem: BaseSystem() {
     private lateinit var lookDirectionMapper: ComponentMapper<LookDirectionComponent>
     private lateinit var blenderMapper: ComponentMapper<BlenderModelComponent>
 
-    private val cameraOffset = Vector3(0f, 1f, 0f)
+    private val cameraOffset = Vector3(0f, 0.6f, 0f)
     private val freeCamLocalPosition = Vector3(cameraOffset)
     private val playerPosition = Vector3()
     private val lookDirection = Vector3()

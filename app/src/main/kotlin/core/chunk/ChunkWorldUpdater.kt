@@ -330,7 +330,8 @@ class ChunkWorldUpdater : LaunchedEffect, DisposableEffect, DeltaUpdater(1 / 60F
             for (chunkPos in chunksToUpdate) {
                 val updateChunkData = chunkDataMap[chunkPos] ?: continue
                 if (updateChunkData.status == ChunkStatus.GENERATION) continue
-                val updateChunkEntityId = chunkDataPositionToEntityId[chunkPos] ?: continue
+                // Physics body is created with mesh entity id — must update by the same key.
+                val updateChunkEntityId = chunkMeshPositionToEntityId[chunkPos] ?: continue
 
                 val rawMeshData = meshGenerator.createMesh(chunkDataMap, updateChunkData)
 
@@ -356,6 +357,7 @@ class ChunkWorldUpdater : LaunchedEffect, DisposableEffect, DeltaUpdater(1 / 60F
         val blockPosition = ChunkHelper.getBlockPositionFromWorldPosition(hitPoint)
         val currentBlock = chunkData.getBlockByLocal(blockPosition)
 
+        if (chunkData.status == ChunkStatus.GENERATION) return
         if (currentBlock == BlockType.AIR) return
         if (!inventoryManager.hasSpaceFor(currentBlock.name)) return
         chunkEventBus?.sendEventNow(ChunkEvent.OnSetBlock(
@@ -434,7 +436,7 @@ class ChunkWorldUpdater : LaunchedEffect, DisposableEffect, DeltaUpdater(1 / 60F
     private suspend fun remeshChunk(chunkPos: IntVector3) {
         val updateChunkData = chunkDataMap[chunkPos] ?: return
         if (updateChunkData.status == ChunkStatus.GENERATION) return
-        val updateChunkEntityId = chunkDataPositionToEntityId[chunkPos] ?: return
+        val updateChunkEntityId = chunkMeshPositionToEntityId[chunkPos] ?: return
 
         val rawMeshData = meshGenerator.createMesh(chunkDataMap, updateChunkData)
         // Never replace an existing mesh with an empty one when the chunk still has blocks
