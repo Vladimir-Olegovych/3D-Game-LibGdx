@@ -30,14 +30,14 @@ fun World.startTest100Box() {
     val m = size * 2.1F
     val playerPhysicalModel = MeshUtils.createHitboxModel(size, size)
 
-    val rawBoxMesh = MeshUtils.createBoxMeshData(blockDataManager, BlockType.STONE, size)
+    val rawBoxMesh = MeshUtils.createBlockMeshData(blockDataManager, BlockType.STONE, size)
 
     for (x in 0 .. 5) {
         for (y in -5 .. 0) {
             for (z in 0 .. 5) {
                 val entityId = this.create()
 
-                val meshData = rawBoxMesh.createMeshData(BlenderParser.modelMeshParams)
+                val meshData = rawBoxMesh?.createMeshData(BlenderParser.modelMeshParams)?: continue
                 val radius = MeshUtils.getBoundRadius(meshData.mesh)
                 boundMapper.create(entityId).boundingRadius = radius
                 transformMapper.create(entityId)

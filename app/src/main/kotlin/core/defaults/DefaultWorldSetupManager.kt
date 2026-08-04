@@ -27,6 +27,7 @@ import core.network.NetworkStateUpdater
 import app.feature.game.ecs.states.TimeState
 import com.gigapi.kryo.GameClient
 import core.client.ClientAcceptor
+import core.items.ItemManager
 
 object DefaultWorldSetupManager: LaunchedEffect {
 
@@ -77,6 +78,8 @@ object DefaultWorldSetupManager: LaunchedEffect {
         gContext.setObject(RemotePlayerRegistry())
         //---
         gContext.setObject(TerrainGenerator())
+        //---
+        gContext.setObject(ItemManager())
         //---
         gContext.setObject(InventoryManager())
     }

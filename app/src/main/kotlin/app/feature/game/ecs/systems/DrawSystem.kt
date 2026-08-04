@@ -1,10 +1,10 @@
 package app.feature.game.ecs.systems
 
+import app.feature.game.ecs.components.AnimatorComponent
 import app.feature.game.ecs.components.BoundRadiusComponent
 import app.feature.game.ecs.components.BlenderModelComponent
 import app.feature.game.ecs.components.ChunkComponent
 import app.feature.game.ecs.components.MeshComponent
-import app.feature.game.ecs.components.NetworkEntityComponent
 import app.feature.game.ecs.components.StaticComponent
 import app.feature.game.ecs.components.TransformComponent
 import com.artemis.BaseEntitySystem
@@ -18,6 +18,7 @@ import com.badlogic.gdx.graphics.PerspectiveCamera
 import com.badlogic.gdx.graphics.glutils.ShaderProgram
 import com.badlogic.gdx.math.Vector3
 import com.gigapi.texture.DefaultsTextures
+import core.animator.ModelAnimator
 import core.chunk.ChunkWorldUpdater
 import core.defaults.CameraTypes
 import core.renderers.StarRenderer
@@ -30,6 +31,7 @@ class DrawSystem: BaseEntitySystem() {
 
     private lateinit var boundMapper: ComponentMapper<BoundRadiusComponent>
     private lateinit var blenderMapper: ComponentMapper<BlenderModelComponent>
+    private lateinit var animatorMapper: ComponentMapper<AnimatorComponent>
     private lateinit var meshMapper: ComponentMapper<MeshComponent>
     private lateinit var transformMapper: ComponentMapper<TransformComponent>
     private lateinit var staticMapper: ComponentMapper<StaticComponent>
@@ -83,6 +85,9 @@ class DrawSystem: BaseEntitySystem() {
             modelShader.bind()
             modelShader.setUniformi("u_texture", 0)
             modelShader.setUniformMatrix("modelViewProjection", camera.combined)
+            modelShader.setUniformf("u_dayPhase", timeState.dayPhase)
+            modelShader.setUniformf("u_maxShadowThreshold", timeState.maxShadowThreshold)
+            modelShader.setUniformf("u_nightBlueFilter", timeState.nightBlueFilter)
 
             for (i in 0 until entities.size()) {
                 singleCall(entities[i])
@@ -105,6 +110,7 @@ class DrawSystem: BaseEntitySystem() {
             modelShader.setUniformMatrix("transform", transform)
 
             blenderMapper[entityId]?.let(::drawModelMesh)
+            animatorMapper[entityId]?.animator?.let(::drawAnimator)
             meshMapper[entityId]?.let(::drawModelComp)
         }
 
@@ -134,6 +140,16 @@ class DrawSystem: BaseEntitySystem() {
 
                 subMesh.mesh.render(modelShader, GL20.GL_TRIANGLES)
             }
+        }
+
+        private fun drawAnimator(animator: ModelAnimator) {
+            val mesh = animator.getRightHandItemMesh() ?: return
+            val texture = animator.getRightHandItemTexture() ?: DefaultsTextures.WHITE
+
+            modelShader.setUniformf("objectColor", 1f, 1f, 1f)
+            modelShader.setUniformf("u_useTexture", 1f)
+            texture.bind(0)
+            mesh.render(modelShader, GL20.GL_TRIANGLES)
         }
 
         private fun drawModelComp(meshComponent: MeshComponent) {

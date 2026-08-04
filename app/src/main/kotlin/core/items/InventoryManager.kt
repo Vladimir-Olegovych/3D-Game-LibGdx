@@ -10,11 +10,7 @@ import com.gigapi.effects.LaunchedEffect
 import com.gigapi.eventbus.EventBus
 import com.gigapi.eventbus.annotation.BusEvent
 import com.gigapi.general.GContext
-import com.gigapi.storage.json.AppConfig
-import core.assets.SkinID
-import core.blocks.BlockDataManager
 import core.blocks.BlockType
-import core.configs.ConfigTypes
 import core.crafting.CraftingRecipeData
 
 class InventoryManager(
@@ -25,49 +21,28 @@ class InventoryManager(
 
     private val inventorySlots = Array<InventoryItem?>(inventorySize) { null }
 
-    private val itemMap = HashMap<String, Item>()
-
-    private lateinit var blockDataManager: BlockDataManager
-    private lateinit var assetManager: AssetManager
     private lateinit var eventBus: EventBus
+    private lateinit var assetManager: AssetManager
+    private lateinit var itemManager: ItemManager
 
     override fun launch(gContext: GContext) {
-        blockDataManager = gContext.getObject()
-        assetManager = gContext.getObject()
         eventBus = gContext.getObject(EventBusTypes.MAIN_EVENT_BUS)
+        assetManager = gContext.getObject()
+        itemManager = gContext.getObject()
         eventBus.registerHandler(this)
-
-        val config = gContext.getObject<AppConfig<ItemDataSO>>(ConfigTypes.ITEM_DATA_SO)
-        val itemsData = config.getConfig()
-
-        for (blockType in BlockType.entries) {
-            val blockData = blockDataManager.getBlockTextureDataMap()[blockType]?: continue
-            itemMap[blockType.name] = Item(
-                id = blockType.name,
-                name = blockType.name.lowercase(),
-                description = "Block",
-                skinID = SkinID.BLOCK,
-                regionName = blockData.regionNameSide,
-                maxStack = 64,
-                stackable = true
-            )
-        }
-        itemsData.items.forEach {
-            item -> itemMap[item.id] = item
-        }
     }
 
     @BusEvent
     fun onBlockRemoved(event: GameEvent.OnBlockRemoved) {
         val blockType = event.blockType
         if (blockType == BlockType.AIR) return
-        val item = itemMap[blockType.name]?: return
+        val item = itemManager.getItem(blockType.name)?: return
         addItem(item)
     }
 
     fun craftItem(recipe: CraftingRecipeData): Boolean {
         if (!canCraft(recipe)) return false
-        val resultItem = getItem(recipe.result.item) ?: return false
+        val resultItem = itemManager.getItem(recipe.result.item) ?: return false
         val resultCount = recipe.result.count.coerceAtLeast(1)
 
         for (ingredient in recipe.ingredients) {
@@ -76,7 +51,7 @@ class InventoryManager(
 
         if (!addItem(resultItem, resultCount)) {
             for (ingredient in recipe.ingredients) {
-                val ingredientItem = getItem(ingredient.item) ?: continue
+                val ingredientItem = itemManager.getItem(ingredient.item) ?: continue
                 addItem(ingredientItem, ingredient.count)
             }
             return false
@@ -84,13 +59,9 @@ class InventoryManager(
         return true
     }
 
-    fun getItem(id: String): Item? {
-        return itemMap[id]
-    }
-
     fun hasSpaceFor(id: String, count: Int = 1): Boolean {
         if (count <= 0) return true
-        val item = getItem(id) ?: return false
+        val item = itemManager.getItem(id) ?: return false
         var remaining = count
 
         if (item.stackable) {

@@ -10,6 +10,7 @@ import com.gigapi.storage.json.AppConfig
 import core.assets.SkinID
 import core.configs.ConfigTypes
 import core.mesh.DirectionType
+import core.mesh.MeshUtils.createFaceUvs
 
 class BlockDataManager: LaunchedEffect
 {
@@ -59,23 +60,4 @@ class BlockDataManager: LaunchedEffect
             ?: error("Region '$regionName' ($faceType) not found for block type: $blockType")
     }
 
-    private fun createFaceUvs(region: TextureRegion): Array<Vector2> {
-        val textureWidth = region.texture.width.toFloat()
-        val textureHeight = region.texture.height.toFloat()
-
-        val epsilonU = 1f / textureWidth
-        val epsilonV = 1f / textureHeight
-
-        val left = minOf(region.u, region.u2) + epsilonU
-        val right = maxOf(region.u, region.u2) - epsilonU
-        val top = minOf(region.v, region.v2) + epsilonV
-        val bottom = maxOf(region.v, region.v2) - epsilonV
-
-        return arrayOf(
-            Vector2(left, top),
-            Vector2(left, bottom),
-            Vector2(right, bottom),
-            Vector2(right, top)
-        )
-    }
 }

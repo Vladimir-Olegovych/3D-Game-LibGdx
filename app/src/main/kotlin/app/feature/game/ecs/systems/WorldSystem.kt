@@ -18,7 +18,7 @@ import com.gigcreator.NetEntityType
 import core.animator.ModelAnimator
 import core.assets.ModelID
 import core.defaults.WorldConstants
-import core.mesh.MeshUtils
+import core.items.ItemManager
 import core.mesh.defaultPlayerHitBox
 
 class WorldSystem: BaseSystem() {
@@ -29,10 +29,13 @@ class WorldSystem: BaseSystem() {
     private lateinit var assetManager: AssetManager
     @Wire
     private lateinit var modelAssetManager: ModelAssetManager
+    @Wire
+    private lateinit var itemManager: ItemManager
 
     private lateinit var transformMapper: ComponentMapper<TransformComponent>
     private lateinit var meshMapper: ComponentMapper<MeshComponent>
     private lateinit var animatorMapper: ComponentMapper<AnimatorComponent>
+    private lateinit var holdingItemComponent: ComponentMapper<HoldingItemComponent>
     private lateinit var blenderMapper: ComponentMapper<BlenderModelComponent>
     private lateinit var linearMoveMapper: ComponentMapper<LinearMoveComponent>
     private lateinit var forceMoveMapper: ComponentMapper<ForceMoveComponent>
@@ -75,6 +78,7 @@ class WorldSystem: BaseSystem() {
         forceMoveMapper.create(playerEntityId)
         transformMapper.create(playerEntityId)
         lookDirectionMapper.create(playerEntityId)
+        holdingItemComponent.create(playerEntityId)
 
         networkEntityMapper.create(playerEntityId).apply {
             isLocal = true
@@ -93,7 +97,6 @@ class WorldSystem: BaseSystem() {
                 fixedXZ = true
             )
         )
-
 
         //world.startTest100Box()
     }

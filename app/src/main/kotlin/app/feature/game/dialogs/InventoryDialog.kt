@@ -28,6 +28,7 @@ import core.crafting.CraftingRecipeData
 import core.crafting.CraftingRecipeSO
 import core.items.InventoryManager
 import core.items.Item
+import core.items.ItemManager
 
 class InventoryDialog: LaunchedEffect, Dialog() {
 
@@ -35,6 +36,7 @@ class InventoryDialog: LaunchedEffect, Dialog() {
     private lateinit var fullscreenOverlay: Table
     private lateinit var dragAndDrop: DragAndDrop
     private lateinit var inventoryManager: InventoryManager
+    private lateinit var itemManager: ItemManager
     private lateinit var inventoryCells: Array<Stack?>
     private lateinit var assetManager: AssetManager
     private lateinit var skin: Skin
@@ -46,6 +48,7 @@ class InventoryDialog: LaunchedEffect, Dialog() {
 
     override fun launch(gContext: GContext) {
         stage = gContext.getObject()
+        itemManager = gContext.getObject()
         inventoryManager = gContext.getObject()
         dragAndDrop = DragAndDrop()
         assetManager = gContext.getObject()
@@ -134,7 +137,7 @@ class InventoryDialog: LaunchedEffect, Dialog() {
     private fun createRecipeRow(recipe: CraftingRecipeData): Table {
         val row = Table()
 
-        val item = inventoryManager.getItem(recipe.result.item)?: return row
+        val item = itemManager.getItem(recipe.result.item)?: return row
         val resultTexture = resolveItemTexture(item)
         val resultCell = createItemCell(
             size = RESULT_CELL_SIZE,
@@ -147,7 +150,7 @@ class InventoryDialog: LaunchedEffect, Dialog() {
         val ingredientsTable = Table()
         for (ingredient in recipe.ingredients) {
             val ingredientColumn = Table()
-            val item = inventoryManager.getItem(ingredient.item)?: continue
+            val item = itemManager.getItem(ingredient.item)?: continue
             val ingredientTexture = resolveItemTexture(item)
             val ingredientCell = createItemCell(
                 size = INGREDIENT_CELL_SIZE,

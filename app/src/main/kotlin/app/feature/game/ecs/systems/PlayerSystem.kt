@@ -3,10 +3,12 @@ package app.feature.game.ecs.systems
 import app.feature.game.ecs.components.AnimatorComponent
 import app.feature.game.ecs.components.BlenderModelComponent
 import app.feature.game.ecs.components.ForceMoveComponent
+import app.feature.game.ecs.components.HoldingItemComponent
 import app.feature.game.ecs.components.LinearMoveComponent
 import app.feature.game.ecs.components.LookDirectionComponent
 import app.feature.game.ecs.components.TransformComponent
 import app.feature.game.event.HotKeyEvent
+import app.feature.game.event.InventoryEvent
 import com.artemis.BaseSystem
 import com.artemis.ComponentMapper
 import com.artemis.annotations.Wire
@@ -17,6 +19,7 @@ import core.animator.ModelAnimator
 import core.controls.PlayerInputProcessor
 import core.defaults.CameraTypes
 import core.defaults.WorldConstants
+import core.items.InventoryManager
 import kotlin.math.cos
 import kotlin.math.sin
 
@@ -30,8 +33,11 @@ class PlayerSystem: BaseSystem() {
     @Wire(name = CameraTypes.GL_3D)
     private lateinit var camera: PerspectiveCamera
     @Wire
+    private lateinit var inventoryManager: InventoryManager
+    @Wire
     private lateinit var playerInputProcessor: PlayerInputProcessor
 
+    private lateinit var holdingItemComponent: ComponentMapper<HoldingItemComponent>
     private lateinit var transformMapper: ComponentMapper<TransformComponent>
     private lateinit var linearMoveMapper: ComponentMapper<LinearMoveComponent>
     private lateinit var forceMoveMapper: ComponentMapper<ForceMoveComponent>
@@ -52,6 +58,13 @@ class PlayerSystem: BaseSystem() {
     fun onFreeCameraMode(event: HotKeyEvent.OnFreeCamera) {
         if (!event.state) return
         freeCamLocalPosition.set(camera.position).sub(playerPosition)
+    }
+
+    @BusEvent
+    fun onSelectInventorySlot(event: InventoryEvent.OnSelectInventorySlot) {
+        val playerEntityId = WorldConstants.getLocalPlayerEntityId()
+        val holdingItem = inventoryManager.getInventoryItem(event.slot)
+        holdingItemComponent[playerEntityId]?.setHoldingItem(holdingItem?.item)
     }
 
     override fun begin() {

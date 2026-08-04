@@ -1,8 +1,13 @@
 package core.mesh
 
+import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.graphics.Mesh
+import com.badlogic.gdx.graphics.Pixmap
 import com.badlogic.gdx.graphics.VertexAttribute
 import com.badlogic.gdx.graphics.VertexAttributes
+import com.badlogic.gdx.graphics.g2d.TextureAtlas
+import com.badlogic.gdx.graphics.g2d.TextureRegion
+import com.badlogic.gdx.math.Vector2
 import com.badlogic.gdx.math.Vector3
 import com.badlogic.gdx.math.collision.BoundingBox
 import com.gigapi.mesh.MeshParams
@@ -10,6 +15,7 @@ import com.gigapi.mesh.RawMeshData
 import com.gigapi.mesh.blender.BlenderParser
 import core.blocks.BlockDataManager
 import core.blocks.BlockType
+import core.items.Item
 import core.mesh.MeshUtils.createHitboxModel
 
 val rawMeshParams = MeshParams(
@@ -106,11 +112,33 @@ object MeshUtils {
         return RawMeshData(vertices, indices)
     }
 
-    fun createBoxMeshData(
+    fun createFaceUvs(region: TextureRegion): Array<Vector2> {
+        val textureWidth = region.texture.width.toFloat()
+        val textureHeight = region.texture.height.toFloat()
+
+        val epsilonU = 1f / textureWidth
+        val epsilonV = 1f / textureHeight
+
+        val left = minOf(region.u, region.u2) + epsilonU
+        val right = maxOf(region.u, region.u2) - epsilonU
+        val top = minOf(region.v, region.v2) + epsilonV
+        val bottom = maxOf(region.v, region.v2) - epsilonV
+
+        return arrayOf(
+            Vector2(left, top),
+            Vector2(left, bottom),
+            Vector2(right, bottom),
+            Vector2(right, top)
+        )
+    }
+
+    fun createBlockMeshData(
         blockDataManager: BlockDataManager,
         blockType: BlockType,
         size: Float = 1F
-    ): RawMeshData {
+    ): RawMeshData? {
+        if (blockType == BlockType.NOTHING || blockType == BlockType.AIR) return null
+
         val verticesList = ArrayList<Float>()
         val indicesList = ArrayList<Short>()
 
@@ -139,6 +167,202 @@ object MeshUtils {
             vertices = verticesList.toFloatArray(),
             indices = indicesList.toShortArray()
         )
+    }
+
+    fun createItemMeshData(
+        atlas: TextureAtlas,
+        item: Item,
+        size: Float = 0.4f,
+        depth: Float = size / 16f,
+        resolution: Int = 16,
+        alphaThreshold: Int = 128
+    ): RawMeshData? {
+        val region = atlas.findRegion(item.regionName)
+        val atlasRegion = region ?: return null
+        val pagePixmap = atlas.textures.first().let {
+            it.textureData.prepare()
+            it.textureData.consumePixmap()
+        }
+
+        try {
+            val gridW = resolution.coerceAtLeast(1)
+            val gridH = resolution.coerceAtLeast(1)
+            val opaque = Array(gridH) { BooleanArray(gridW) }
+
+            for (gy in 0 until gridH) {
+                for (gx in 0 until gridW) {
+                    val px = atlasRegion.regionX + ((gx + 0.5f) * atlasRegion.regionWidth / gridW).toInt()
+                        .coerceIn(0, pagePixmap.width - 1)
+                    val py = atlasRegion.regionY + ((gy + 0.5f) * atlasRegion.regionHeight / gridH).toInt()
+                        .coerceIn(0, pagePixmap.height - 1)
+                    opaque[gy][gx] = (pagePixmap.getPixel(px, py) and 0xff) >= alphaThreshold
+                }
+            }
+
+            val verticesList = ArrayList<Float>()
+            val indicesList = ArrayList<Short>()
+            val stride = BlenderParser.modelMeshParams.stride
+
+            val half = size / 2f
+            val halfD = depth / 2f
+            val cellW = size / gridW
+            val cellH = size / gridH
+
+            fun isOpaque(x: Int, y: Int): Boolean =
+                x in 0 until gridW && y in 0 until gridH && opaque[y][x]
+
+            fun addQuad(
+                positions: Array<FloatArray>,
+                nx: Float, ny: Float, nz: Float,
+                uvs: Array<FloatArray>
+            ) {
+                val baseIndex = (verticesList.size / stride).toShort()
+                for (i in positions.indices) {
+                    val p = positions[i]
+                    val uv = uvs[i]
+                    verticesList.add(p[0])
+                    verticesList.add(p[1])
+                    verticesList.add(p[2])
+                    verticesList.add(nx)
+                    verticesList.add(ny)
+                    verticesList.add(nz)
+                    verticesList.add(uv[0])
+                    verticesList.add(uv[1])
+                }
+                indicesList.add(baseIndex)
+                indicesList.add((baseIndex + 1).toShort())
+                indicesList.add((baseIndex + 2).toShort())
+                indicesList.add(baseIndex)
+                indicesList.add((baseIndex + 2).toShort())
+                indicesList.add((baseIndex + 3).toShort())
+            }
+
+            for (gy in 0 until gridH) {
+                for (gx in 0 until gridW) {
+                    if (!opaque[gy][gx]) continue
+
+                    val x0 = -half + gx * cellW
+                    val x1 = x0 + cellW
+                    // pixmap y=0 is top of texture → +Y
+                    val y1 = half - gy * cellH
+                    val y0 = y1 - cellH
+                    val z0 = -halfD
+                    val z1 = halfD
+
+                    val u0 = region.u + gx * (region.u2 - region.u) / gridW
+                    val u1 = region.u + (gx + 1) * (region.u2 - region.u) / gridW
+                    val v0 = region.v + gy * (region.v2 - region.v) / gridH
+                    val v1 = region.v + (gy + 1) * (region.v2 - region.v) / gridH
+                    val uC = (u0 + u1) * 0.5f
+                    val vC = (v0 + v1) * 0.5f
+                    val solidUv = arrayOf(
+                        floatArrayOf(uC, vC),
+                        floatArrayOf(uC, vC),
+                        floatArrayOf(uC, vC),
+                        floatArrayOf(uC, vC)
+                    )
+
+                    // Front (+Z)
+                    addQuad(
+                        positions = arrayOf(
+                            floatArrayOf(x0, y1, z1),
+                            floatArrayOf(x0, y0, z1),
+                            floatArrayOf(x1, y0, z1),
+                            floatArrayOf(x1, y1, z1)
+                        ),
+                        nx = 0f, ny = 0f, nz = 1f,
+                        uvs = arrayOf(
+                            floatArrayOf(u0, v0),
+                            floatArrayOf(u0, v1),
+                            floatArrayOf(u1, v1),
+                            floatArrayOf(u1, v0)
+                        )
+                    )
+
+                    // Back (-Z)
+                    addQuad(
+                        positions = arrayOf(
+                            floatArrayOf(x1, y1, z0),
+                            floatArrayOf(x1, y0, z0),
+                            floatArrayOf(x0, y0, z0),
+                            floatArrayOf(x0, y1, z0)
+                        ),
+                        nx = 0f, ny = 0f, nz = -1f,
+                        uvs = arrayOf(
+                            floatArrayOf(u1, v0),
+                            floatArrayOf(u1, v1),
+                            floatArrayOf(u0, v1),
+                            floatArrayOf(u0, v0)
+                        )
+                    )
+
+                    // Left (-X) — transparent neighbor or edge
+                    if (!isOpaque(gx - 1, gy)) {
+                        addQuad(
+                            positions = arrayOf(
+                                floatArrayOf(x0, y1, z0),
+                                floatArrayOf(x0, y0, z0),
+                                floatArrayOf(x0, y0, z1),
+                                floatArrayOf(x0, y1, z1)
+                            ),
+                            nx = -1f, ny = 0f, nz = 0f,
+                            uvs = solidUv
+                        )
+                    }
+
+                    // Right (+X)
+                    if (!isOpaque(gx + 1, gy)) {
+                        addQuad(
+                            positions = arrayOf(
+                                floatArrayOf(x1, y1, z1),
+                                floatArrayOf(x1, y0, z1),
+                                floatArrayOf(x1, y0, z0),
+                                floatArrayOf(x1, y1, z0)
+                            ),
+                            nx = 1f, ny = 0f, nz = 0f,
+                            uvs = solidUv
+                        )
+                    }
+
+                    // Up (+Y) — neighbor above in texture (smaller gy)
+                    if (!isOpaque(gx, gy - 1)) {
+                        addQuad(
+                            positions = arrayOf(
+                                floatArrayOf(x0, y1, z1),
+                                floatArrayOf(x1, y1, z1),
+                                floatArrayOf(x1, y1, z0),
+                                floatArrayOf(x0, y1, z0)
+                            ),
+                            nx = 0f, ny = 1f, nz = 0f,
+                            uvs = solidUv
+                        )
+                    }
+
+                    // Down (-Y)
+                    if (!isOpaque(gx, gy + 1)) {
+                        addQuad(
+                            positions = arrayOf(
+                                floatArrayOf(x0, y0, z0),
+                                floatArrayOf(x1, y0, z0),
+                                floatArrayOf(x1, y0, z1),
+                                floatArrayOf(x0, y0, z1)
+                            ),
+                            nx = 0f, ny = -1f, nz = 0f,
+                            uvs = solidUv
+                        )
+                    }
+                }
+            }
+
+            if (verticesList.isEmpty()) return null
+
+            return RawMeshData(
+                vertices = verticesList.toFloatArray(),
+                indices = indicesList.toShortArray()
+            )
+        } finally {
+            pagePixmap.dispose()
+        }
     }
 
     fun addModelFace(
