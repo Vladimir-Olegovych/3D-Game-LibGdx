@@ -21,7 +21,8 @@ import kotlin.math.sin
 class PlayerInputProcessor: LaunchedEffect, InputProcessor {
 
     companion object {
-        const val PLAYER_SPEED = 10f
+        const val PLAYER_SPEED = 6f
+        const val PLAYER_RUN_SPEED = 10f
         const val JUMP_FORCE = 10f
         const val JUMP_FORCE_REVERSE = -10f
         const val CAMERA_SENSITIVITY = 0.03f
@@ -93,6 +94,7 @@ class PlayerInputProcessor: LaunchedEffect, InputProcessor {
     fun getSelectedSlot() = selectedSlot
     fun isJumped() = jump
     fun isFreeCam() = inFreeCam
+    fun isAttacking() = isMouseHold
     fun getViewMode() = viewMode
     fun getPitch() = pitch
     fun getYaw() = yaw

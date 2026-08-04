@@ -1,14 +1,7 @@
 package app.feature.game.ecs.systems
 
-import app.feature.game.ecs.components.AnimatorComponent
-import app.feature.game.ecs.components.BlenderModelComponent
-import app.feature.game.ecs.components.ForceMoveComponent
-import app.feature.game.ecs.components.HoldingItemComponent
-import app.feature.game.ecs.components.LinearMoveComponent
-import app.feature.game.ecs.components.LookDirectionComponent
-import app.feature.game.ecs.components.TransformComponent
+import app.feature.game.ecs.components.*
 import app.feature.game.event.HotKeyEvent
-import app.feature.game.event.InventoryEvent
 import com.artemis.BaseSystem
 import com.artemis.ComponentMapper
 import com.artemis.annotations.Wire
@@ -60,13 +53,6 @@ class PlayerSystem: BaseSystem() {
         freeCamLocalPosition.set(camera.position).sub(playerPosition)
     }
 
-    @BusEvent
-    fun onSelectInventorySlot(event: InventoryEvent.OnSelectInventorySlot) {
-        val playerEntityId = WorldConstants.getLocalPlayerEntityId()
-        val holdingItem = inventoryManager.getInventoryItem(event.slot)
-        holdingItemComponent[playerEntityId]?.setHoldingItem(holdingItem?.item)
-    }
-
     override fun begin() {
         val playerEntityId = WorldConstants.getLocalPlayerEntityId()
         val linearMoveComponent = linearMoveMapper[playerEntityId]?: return
@@ -77,6 +63,7 @@ class PlayerSystem: BaseSystem() {
     override fun processSystem() {
         val playerEntityId = WorldConstants.getLocalPlayerEntityId()
         playerInputProcessor.update(world.delta)
+        updateHildingItem(playerEntityId)
         updateLookDirection(playerEntityId)
         cameraUpdate(playerEntityId)
         if (playerInputProcessor.isFreeCam()) {
@@ -85,6 +72,14 @@ class PlayerSystem: BaseSystem() {
         } else {
             forceUpdate(playerEntityId)
             updateAnimation(playerEntityId, moving = !playerInputProcessor.getMoveDirection().isZero)
+        }
+    }
+
+    private fun updateHildingItem(playerEntityId: Int) {
+        val slot = playerInputProcessor.getSelectedSlot()
+        val holdingItem = inventoryManager.getInventoryItem(slot)?.item
+        holdingItemComponent[playerEntityId]?.apply {
+            if (item?.name != holdingItem?.name) setHoldingItem(holdingItem)
         }
     }
 
@@ -108,6 +103,7 @@ class PlayerSystem: BaseSystem() {
     private fun updateAnimation(playerEntityId: Int, moving: Boolean) {
         val animator = animatorMapper[playerEntityId]?.animator ?: return
         animator.playAnimation(if (moving) ModelAnimator.ANIM_MOVE else ModelAnimator.ANIM_IDLE)
+        animator.setAttacking(playerInputProcessor.isAttacking())
     }
 
     private fun stopPlayer(playerEntityId: Int) {
