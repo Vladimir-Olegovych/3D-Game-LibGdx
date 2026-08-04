@@ -67,6 +67,13 @@ class TerrainGenerator: LaunchedEffect {
         }
     }
 
+    fun getBiomeAt(worldX: Int, worldZ: Int): BiomeType {
+        val offset = noiseWarp.generateDomainOffset(worldX, worldZ)
+        val warpX = worldX + offset.x * 8.0f
+        val warpZ = worldZ + offset.y * 8.0f
+        return biomeSelector.getBiomeAt(warpX.toInt(), warpZ.toInt())
+    }
+
     private fun generateColumn(chunkData: ChunkData, localX: Int, localZ: Int) {
         val worldX = chunkData.position.x * chunkData.chunkWidth + localX
         val worldZ = chunkData.position.z * chunkData.chunkWidth + localZ

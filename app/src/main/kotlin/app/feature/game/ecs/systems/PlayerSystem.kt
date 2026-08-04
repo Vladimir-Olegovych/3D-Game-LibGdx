@@ -6,11 +6,13 @@ import app.feature.game.ecs.components.ForceMoveComponent
 import app.feature.game.ecs.components.LinearMoveComponent
 import app.feature.game.ecs.components.LookDirectionComponent
 import app.feature.game.ecs.components.TransformComponent
+import app.feature.game.event.HotKeyEvent
 import com.artemis.BaseSystem
 import com.artemis.ComponentMapper
 import com.artemis.annotations.Wire
 import com.badlogic.gdx.graphics.PerspectiveCamera
 import com.badlogic.gdx.math.Vector3
+import com.gigapi.eventbus.annotation.BusEvent
 import core.animator.ModelAnimator
 import core.controls.PlayerInputProcessor
 import core.defaults.CameraTypes
@@ -45,7 +47,12 @@ class PlayerSystem: BaseSystem() {
     private val rightDirection = Vector3()
     private val cameraTarget = Vector3()
     private val orbitPivot = Vector3()
-    private var wasFreeCam = false
+
+    @BusEvent
+    fun onFreeCameraMode(event: HotKeyEvent.OnFreeCamera) {
+        if (!event.state) return
+        freeCamLocalPosition.set(camera.position).sub(playerPosition)
+    }
 
     override fun begin() {
         val playerEntityId = WorldConstants.getLocalPlayerEntityId()
@@ -137,15 +144,10 @@ class PlayerSystem: BaseSystem() {
             !isFreeCam && viewMode == PlayerInputProcessor.VIEW_FIRST_PERSON
 
         if (isFreeCam) {
-            if (!wasFreeCam) {
-                freeCamLocalPosition.set(camera.position).sub(playerPosition)
-                wasFreeCam = true
-            }
             updateFreeCamLocalPosition(lookDirection)
             camera.position.set(playerPosition).add(freeCamLocalPosition)
             camera.direction.set(lookDirection)
         } else {
-            wasFreeCam = false
             applyViewModeCamera(viewMode)
         }
 

@@ -2,7 +2,8 @@ package core.controls
 
 import app.feature.game.event.EventBusTypes
 import app.feature.game.event.GameEvent
-import app.feature.game.event.PlayerEvent
+import app.feature.game.event.HotKeyEvent
+import app.feature.game.event.InventoryEvent
 import app.feature.game.ui.InventoryUI.Companion.TOOL_BAR_SIZE
 import com.badlogic.gdx.Input.Keys
 import com.badlogic.gdx.InputProcessor
@@ -129,6 +130,22 @@ class PlayerInputProcessor: LaunchedEffect, InputProcessor {
         moveDirectionByCamera.set(resultX, 0f, resultZ).nor().scl(PLAYER_SPEED)
     }
 
+
+    private fun updateFreeCamera() {
+        inFreeCam = !inFreeCam
+        mainEventBus.sendEvent(HotKeyEvent.OnFreeCamera(inFreeCam))
+        if (!inFreeCam) return
+        viewMode = VIEW_FIRST_PERSON
+        mainEventBus.sendEvent(HotKeyEvent.OnCameraMode(viewMode))
+    }
+
+    private fun updateCameraMode() {
+        if (inFreeCam) return
+        viewMode = (viewMode + 1) % VIEW_MODE_COUNT
+        mainEventBus.sendEvent(HotKeyEvent.OnCameraMode(viewMode))
+
+    }
+
     private fun onLeftButtonClick() {
         physicsEventBus.sendEvent(
             GameEvent.OnRayCastRequest(
@@ -141,7 +158,7 @@ class PlayerInputProcessor: LaunchedEffect, InputProcessor {
     }
     private fun selectSlot(slot: Int) {
         val slot = slot.coerceIn(inventoryStartSlot, inventoryEndSlot)
-        mainEventBus.sendEvent(PlayerEvent.OnSelectInventorySlot(slot))
+        mainEventBus.sendEvent(InventoryEvent.OnSelectInventorySlot(slot))
     }
 
     private fun selectSlotByKeyNum(num: Int) {
@@ -204,8 +221,8 @@ class PlayerInputProcessor: LaunchedEffect, InputProcessor {
             Keys.A -> updateMoveDirection(x = 0f)
             Keys.S -> updateMoveDirection(z = 0f)
             Keys.D -> updateMoveDirection(x = 0f)
-            Keys.F -> { inFreeCam = !inFreeCam }
-            Keys.F5 -> { viewMode = (viewMode + 1) % VIEW_MODE_COUNT }
+            Keys.F -> updateFreeCamera()
+            Keys.F5 -> updateCameraMode()
             Keys.SPACE -> { jump = false }
         }
         keyNumbersMap.forEach { (num, key) ->

@@ -4,4 +4,5 @@ import core.items.InventoryItem
 
 sealed class InventoryEvent {
     class OnUpdate(val inventoryItem: InventoryItem?, val slot: Int)
+    class OnSelectInventorySlot(val slot: Int)
 }

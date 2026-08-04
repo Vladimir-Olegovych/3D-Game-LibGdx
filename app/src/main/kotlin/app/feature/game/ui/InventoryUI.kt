@@ -2,7 +2,6 @@ package app.feature.game.ui
 
 import app.feature.game.event.EventBusTypes
 import app.feature.game.event.InventoryEvent
-import app.feature.game.event.PlayerEvent
 import com.badlogic.gdx.assets.AssetManager
 import com.badlogic.gdx.graphics.g2d.TextureAtlas
 import com.badlogic.gdx.graphics.g2d.TextureRegion
@@ -94,7 +93,7 @@ class InventoryUI: LaunchedEffect, UIGetter {
     }
 
     @BusEvent
-    fun onSelectInventorySlot(event: PlayerEvent.OnSelectInventorySlot) {
+    fun onSelectInventorySlot(event: InventoryEvent.OnSelectInventorySlot) {
         val prevInventoryCell = inventoryCells[prevSelectedSlot] ?: return
         val prevBackground = prevInventoryCell.findActor<Image>(CELL_BACKGROUND_NAME)
         prevBackground.drawable = TextureRegionDrawable(itemBoxOff)

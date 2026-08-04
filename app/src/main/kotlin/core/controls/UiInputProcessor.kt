@@ -2,7 +2,7 @@ package core.controls
 
 import app.feature.game.dialogs.PauseDialog
 import app.feature.game.event.EventBusTypes
-import app.feature.game.event.UiEvent
+import app.feature.game.event.DialogEvent
 import com.badlogic.gdx.Input.Keys
 import com.badlogic.gdx.InputProcessor
 import com.gigapi.effects.LaunchedEffect
@@ -18,9 +18,9 @@ class UiInputProcessor: LaunchedEffect, InputProcessor {
     fun onInventoryDialog() {
         if (inPause)  return
         if (inInventory) {
-            mainEventBus.sendEvent(UiEvent.OnInventoryClose)
+            mainEventBus.sendEvent(DialogEvent.OnInventoryClose)
         } else {
-            mainEventBus.sendEvent(UiEvent.OnInventoryOpen)
+            mainEventBus.sendEvent(DialogEvent.OnInventoryOpen)
         }
         inInventory = !inInventory
 
@@ -28,18 +28,18 @@ class UiInputProcessor: LaunchedEffect, InputProcessor {
 
     fun onPauseDialog(state: PauseDialog.State) {
         if (inInventory) {
-            mainEventBus.sendEvent(UiEvent.OnInventoryClose)
+            mainEventBus.sendEvent(DialogEvent.OnInventoryClose)
             inInventory = !inInventory
             return
         }
 
         if (inPause) {
-            mainEventBus.sendEvent(UiEvent.OnPauseClose(state))
+            mainEventBus.sendEvent(DialogEvent.OnPauseClose(state))
             if (state == PauseDialog.State.QUIT) {
-                mainEventBus.sendEvent(UiEvent.OnMenuScreen)
+                mainEventBus.sendEvent(DialogEvent.OnMenuScreen)
             }
         } else {
-            mainEventBus.sendEvent(UiEvent.OnPauseOpen)
+            mainEventBus.sendEvent(DialogEvent.OnPauseOpen)
         }
 
         inPause = !inPause

@@ -3,7 +3,7 @@ package app.feature.game
 import app.feature.game.ecs.systems.*
 import app.feature.game.event.ClientEvent
 import app.feature.game.event.EventBusTypes
-import app.feature.game.event.UiEvent
+import app.feature.game.event.DialogEvent
 import com.artemis.WorldConfiguration
 import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.InputMultiplexer
@@ -48,7 +48,7 @@ class GameFragment(
     private lateinit var gameClient: GameClient
 
     @BusEvent
-    fun onMenuScreen(event: UiEvent.OnMenuScreen) {
+    fun onMenuScreen(event: DialogEvent.OnMenuScreen) {
         onMenuScreen.invoke()
     }
 

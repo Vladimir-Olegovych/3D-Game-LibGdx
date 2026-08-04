@@ -1,4 +1,4 @@
-package core.artemis
+package core.debug
 
 import app.feature.game.ecs.components.BoundRadiusComponent
 import app.feature.game.ecs.components.MeshComponent

@@ -2,7 +2,7 @@ package app.feature.game.ecs.systems
 
 import app.feature.game.dialogs.InventoryDialog
 import app.feature.game.dialogs.PauseDialog
-import app.feature.game.event.UiEvent
+import app.feature.game.event.DialogEvent
 import app.feature.game.ui.AimUI
 import app.feature.game.ui.DataUI
 import app.feature.game.ui.InventoryUI
@@ -56,7 +56,7 @@ class UISystem: BaseSystem() {
     }
 
     @BusEvent
-    fun onPauseOpen(event: UiEvent.OnPauseOpen) {
+    fun onPauseOpen(event: DialogEvent.OnPauseOpen) {
         playerInputProcessor.clear()
         inputMultiplexer.removeProcessor(playerInputProcessor)
         Gdx.input.isCursorCatched = false
@@ -64,14 +64,14 @@ class UISystem: BaseSystem() {
     }
 
     @BusEvent
-    fun onPauseClose(event: UiEvent.OnPauseClose) {
+    fun onPauseClose(event: DialogEvent.OnPauseClose) {
         inputMultiplexer.addProcessor(playerInputProcessor)
         Gdx.input.isCursorCatched = true
         if (pauseDialog.isShowed()) pauseDialog.dismiss()
     }
 
     @BusEvent
-    fun onInventoryOpen(event: UiEvent.OnInventoryOpen) {
+    fun onInventoryOpen(event: DialogEvent.OnInventoryOpen) {
         inventoryUI.getUI().isVisible = false
         playerInputProcessor.clear()
         inputMultiplexer.removeProcessor(playerInputProcessor)
@@ -80,7 +80,7 @@ class UISystem: BaseSystem() {
     }
 
     @BusEvent
-    fun onInventoryClose(event: UiEvent.OnInventoryClose) {
+    fun onInventoryClose(event: DialogEvent.OnInventoryClose) {
         inventoryUI.getUI().isVisible = true
         inputMultiplexer.addProcessor(playerInputProcessor)
         Gdx.input.isCursorCatched = true
