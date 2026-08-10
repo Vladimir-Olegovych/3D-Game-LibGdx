@@ -7,7 +7,9 @@
       "skinID": "ITEM",
       "regionName": "tile_iron_axe",
       "maxStack": 1,
-      "stackable": false
+      "stackable": false,
+      "toolType": "AXE",
+      "toolLevel": 2
     },
     {
       "id": "DIAMOND_PICKAXE",
@@ -16,7 +18,9 @@
       "skinID": "ITEM",
       "regionName": "tile_diamond_pickaxe",
       "maxStack": 1,
-      "stackable": false
+      "stackable": false,
+      "toolType": "PICKAXE",
+      "toolLevel": 3
     }
   ]
 }

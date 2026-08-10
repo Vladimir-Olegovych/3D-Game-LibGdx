@@ -5,6 +5,7 @@ import app.feature.game.event.GameEvent
 import app.feature.game.event.HotKeyEvent
 import app.feature.game.event.InventoryEvent
 import app.feature.game.ui.InventoryUI.Companion.TOOL_BAR_SIZE
+import com.badlogic.gdx.Input.Buttons
 import com.badlogic.gdx.Input.Keys
 import com.badlogic.gdx.InputProcessor
 import com.badlogic.gdx.graphics.PerspectiveCamera
@@ -26,6 +27,7 @@ class PlayerInputProcessor: LaunchedEffect, InputProcessor {
         const val JUMP_FORCE = 10f
         const val JUMP_FORCE_REVERSE = -10f
         const val CAMERA_SENSITIVITY = 0.03f
+        const val DIG_DELTA = 0.2f
         const val MAX_VERTICAL_ANGLE = 89f
 
         const val VIEW_FIRST_PERSON = 0
@@ -67,24 +69,28 @@ class PlayerInputProcessor: LaunchedEffect, InputProcessor {
     private var selectedSlot = 0
     private var inventoryStartSlot = 0
     private var inventoryEndSlot = 0
-    private var isMouseHold = false
+    private var isMouseLeftHold = false
+    private var isMouseRightHold = false
     private var jump = false
     private var lastMouseX = -1
     private var lastMouseY = -1
     private var deltaMouseX = 0f
     private var deltaMouseY = 0f
+    private var deltaMouseRight = 0f
     private var pitch = 0f
     private var yaw = 0f
     private val moveDirection = Vector3()
     private val moveDirectionByCamera = Vector3()
 
     fun clear() {
-        isMouseHold = false
+        isMouseLeftHold = false
+        isMouseRightHold = false
         jump = false
         lastMouseX = -1
         lastMouseY = -1
         deltaMouseX = 0f
         deltaMouseY = 0f
+        deltaMouseRight = 0f
         //pitch = 0f
         //yaw = 0f
         moveDirection.set(Vector3.Zero)
@@ -94,7 +100,8 @@ class PlayerInputProcessor: LaunchedEffect, InputProcessor {
     fun getSelectedSlot() = selectedSlot
     fun isJumped() = jump
     fun isFreeCam() = inFreeCam
-    fun isAttacking() = isMouseHold
+    fun isMouseLeft() = isMouseLeftHold
+    fun isMouseRight() = isMouseRightHold
     fun getViewMode() = viewMode
     fun getPitch() = pitch
     fun getYaw() = yaw
@@ -104,9 +111,15 @@ class PlayerInputProcessor: LaunchedEffect, InputProcessor {
     fun getMoveDirectionByCamera(): Vector3 = moveDirectionByCamera
 
     fun update(deltaTime: Float) {
-        if (isMouseHold) {
-            onLeftButtonClick()
+        if (isMouseLeftHold) { onLeftButtonClick() }
+
+        if (isMouseRightHold && deltaMouseRight >= DIG_DELTA) {
+            onRightButtonClick()
+            deltaMouseRight = 0f
+        } else if (isMouseRightHold) {
+            deltaMouseRight + deltaTime
         }
+
         yaw -= deltaMouseX * CAMERA_SENSITIVITY
         pitch = (pitch - deltaMouseY * CAMERA_SENSITIVITY).coerceIn(-MAX_VERTICAL_ANGLE, MAX_VERTICAL_ANGLE)
 
@@ -151,13 +164,25 @@ class PlayerInputProcessor: LaunchedEffect, InputProcessor {
     private fun onLeftButtonClick() {
         physicsEventBus.sendEvent(
             GameEvent.OnRayCastRequest(
-                requestId = RayCastTypes.CHUNK_RAY_CAST,
+                requestId = RayCastTypes.CHUNK_DIG_RAY_CAST,
                 from = camera.position.cpy(),
                 direction = camera.direction.cpy(),
                 maxDistance = 5f
             )
         )
     }
+
+    private fun onRightButtonClick() {
+        physicsEventBus.sendEvent(
+            GameEvent.OnRayCastRequest(
+                requestId = RayCastTypes.CHUNK_PLACE_RAY_CAST,
+                from = camera.position.cpy(),
+                direction = camera.direction.cpy(),
+                maxDistance = 5f
+            )
+        )
+    }
+    
     private fun selectSlot(slot: Int) {
         val slot = slot.coerceIn(inventoryStartSlot, inventoryEndSlot)
         mainEventBus.sendEvent(InventoryEvent.OnSelectInventorySlot(slot))
@@ -249,7 +274,10 @@ class PlayerInputProcessor: LaunchedEffect, InputProcessor {
         pointer: Int,
         button: Int
     ): Boolean {
-        isMouseHold = true
+        when (button) {
+            Buttons.LEFT -> isMouseLeftHold = true
+            Buttons.RIGHT -> isMouseRightHold = true
+        }
         return false
     }
 
@@ -259,7 +287,10 @@ class PlayerInputProcessor: LaunchedEffect, InputProcessor {
         pointer: Int,
         button: Int
     ): Boolean {
-        isMouseHold = false
+        when (button) {
+            Buttons.LEFT -> isMouseLeftHold = false
+            Buttons.RIGHT -> isMouseRightHold = false
+        }
         return false
     }
 
@@ -269,6 +300,10 @@ class PlayerInputProcessor: LaunchedEffect, InputProcessor {
         pointer: Int,
         button: Int
     ): Boolean {
+        when (button) {
+            Buttons.LEFT -> isMouseLeftHold = false
+            Buttons.RIGHT -> isMouseRightHold = false
+        }
         return false
     }
 

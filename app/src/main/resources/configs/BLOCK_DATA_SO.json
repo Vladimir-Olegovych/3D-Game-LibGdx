@@ -55,5 +55,34 @@
     "solid" : true,
     "generateAllSides" : false,
     "generateCollider" : true
+  } ],
+  "blockInfoList" : [ {
+    "blockType" : "GRASS",
+    "digTime" : 0.6,
+    "digItem" : "SHOVEL"
+  }, {
+    "blockType" : "DIRT",
+    "digTime" : 0.5,
+    "digItem" : "SHOVEL"
+  }, {
+    "blockType" : "STONE",
+    "digTime" : 3.0,
+    "digItem" : "PICKAXE"
+  }, {
+    "blockType" : "SAND",
+    "digTime" : 0.5,
+    "digItem" : "SWORD"
+  }, {
+    "blockType" : "WOOD",
+    "digTime" : 1.5,
+    "digItem" : "AXE"
+  }, {
+    "blockType" : "LEAVES",
+    "digTime" : 0.2,
+    "digItem" : "SWORD"
+  }, {
+    "blockType" : "CACTUS",
+    "digTime" : 0.6,
+    "digItem" : "SWORD"
   } ]
 }

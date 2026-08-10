@@ -4,11 +4,29 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="df78e54d-8fbf-4f78-86ee-f370d7368d41" name="Changes" comment="added hand item">
+    <list default="true" id="21bb169d-cf41-4c8a-bf73-e63da1eaa6c0" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/app/src/main/kotlin/app/feature/game/ecs/components/DiggingComponent.kt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/src/main/kotlin/app/feature/game/ecs/systems/BlockProcessingSystem.kt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/items/ToolType.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/app/feature/game/GameFragment.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/app/feature/game/GameFragment.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/app/feature/game/ecs/systems/NetworkSystem.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/app/feature/game/ecs/systems/NetworkSystem.kt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/app/feature/game/ecs/systems/PlayerSystem.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/app/feature/game/ecs/systems/PlayerSystem.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/app/feature/game/event/ChunkEvent.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/app/feature/game/event/ChunkEvent.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/app/feature/game/event/GameEvent.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/app/feature/game/event/GameEvent.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/app/feature/game/event/InventoryEvent.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/app/feature/game/event/InventoryEvent.kt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/core/animator/ModelAnimator.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/animator/ModelAnimator.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/core/blocks/BlockDataManager.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/blocks/BlockDataManager.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/core/blocks/BlockDataSO.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/blocks/BlockDataSO.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/core/bullet/PhysicsUtils.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/bullet/PhysicsUtils.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/core/bullet/raycast/RayCastTypes.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/bullet/raycast/RayCastTypes.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/core/chunk/ChunkWorldUpdater.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/chunk/ChunkWorldUpdater.kt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/core/controls/PlayerInputProcessor.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/controls/PlayerInputProcessor.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/core/items/InventoryManager.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/items/InventoryManager.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/core/items/Item.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/items/Item.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/resources/configs/BLOCK_DATA_SO.json" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/resources/configs/BLOCK_DATA_SO.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/resources/configs/ITEM_DATA_SO.json" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/resources/configs/ITEM_DATA_SO.json" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -23,26 +41,12 @@
   <component name="ExternalProjectsManager">
     <system id="GRADLE">
       <state>
-        <task path="$PROJECT_DIR$">
-          <activation />
-        </task>
         <projects_view>
           <tree_state>
             <expand>
               <path>
                 <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
                 <item name="GDX-3D-TEST" type="f1a62948:ProjectNode" />
-              </path>
-              <path>
-                <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
-                <item name="GDX-3D-TEST" type="f1a62948:ProjectNode" />
-                <item name="app" type="2d1252cf:ModuleNode" />
-              </path>
-              <path>
-                <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
-                <item name="GDX-3D-TEST" type="f1a62948:ProjectNode" />
-                <item name="app" type="2d1252cf:ModuleNode" />
-                <item name="Tasks" type="e4a08cd1:TasksNode" />
               </path>
             </expand>
             <select />
@@ -54,7 +58,6 @@
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
       <list>
-        <option value="Kotlin Data Class" />
         <option value="Kotlin Class" />
       </list>
     </option>
@@ -62,128 +65,32 @@
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
-  <component name="GitHubPullRequestSearchHistory">{
-  &quot;lastFilter&quot;: {
-    &quot;state&quot;: &quot;OPEN&quot;,
-    &quot;assignee&quot;: &quot;Vladimir-Olegovych&quot;
-  }
-}</component>
-  <component name="GithubPullRequestsUISettings">{
-  &quot;selectedUrlAndAccountId&quot;: {
-    &quot;url&quot;: &quot;https://github.com/Vladimir-Olegovych/3D-Game-LibGdx.git&quot;,
-    &quot;accountId&quot;: &quot;3831c278-3a99-4691-b653-87e94a84bf49&quot;
-  }
-}</component>
   <component name="ProjectColorInfo">{
+  &quot;customColor&quot;: &quot;&quot;,
   &quot;associatedIndex&quot;: 6
 }</component>
-  <component name="ProjectId" id="3FzuDtCVLyZ8nB26R3DcGQwFMeG" />
+  <component name="ProjectId" id="3HXRwPyWCp2QiuCBaJVvSsZT8aj" />
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
   <component name="PropertiesComponent">{
   &quot;keyToString&quot;: {
-    &quot;Gradle.Build GDX-3D-TEST.executor&quot;: &quot;Run&quot;,
-    &quot;Gradle.GDX-3D-TEST [:app:core.debug.WorldTesterKt.main()].executor&quot;: &quot;Run&quot;,
     &quot;Gradle.GDX-3D-TEST [:desktop:com.gigcreator.DesktopMainKt.main()].executor&quot;: &quot;Run&quot;,
-    &quot;Gradle.GDX-3D-TEST [:desktop:com.gigcreator.MainKt.main()].executor&quot;: &quot;Run&quot;,
-    &quot;Gradle.GDX-3D-TEST [:desktop:windowsShadowDist].executor&quot;: &quot;Run&quot;,
     &quot;Gradle.GDX-3D-TEST [:server:com.gigcreator.ServerMainKt.main()].executor&quot;: &quot;Run&quot;,
-    &quot;Gradle.GDX-3D-TEST [app:assemble].executor&quot;: &quot;Run&quot;,
-    &quot;Gradle.GDX-3D-TEST [desktop:shadowJar].executor&quot;: &quot;Run&quot;,
-    &quot;Kotlin.MainKt.executor&quot;: &quot;Run&quot;,
     &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
     &quot;git-widget-placeholder&quot;: &quot;main&quot;,
-    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
-    &quot;last_opened_file_path&quot;: &quot;/home/vladimir/Documents/Java/GDX-3D-TEST/app/src/main/resources/models&quot;,
-    &quot;onboarding.tips.debug.path&quot;: &quot;/home/vladimir/Documents/Java/GDX-3D-TEST/core/src/main/kotlin/Main.kt&quot;,
-    &quot;project.structure.last.edited&quot;: &quot;Modules&quot;,
-    &quot;project.structure.proportion&quot;: &quot;0.0&quot;,
-    &quot;project.structure.side.proportion&quot;: &quot;0.0&quot;
+    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;
   }
 }</component>
   <component name="RecentsManager">
-    <key name="CopyFile.RECENT_KEYS">
-      <recent name="$PROJECT_DIR$/app/src/main/resources/models" />
-      <recent name="$PROJECT_DIR$/app/src/main/resources/images/button" />
-      <recent name="$PROJECT_DIR$/app/src/main/resources/images/item" />
-      <recent name="$PROJECT_DIR$/app/src/main/resources/configs" />
-      <recent name="$PROJECT_DIR$/app/src/main/resources/images/items" />
-    </key>
-    <key name="MoveFile.RECENT_KEYS">
-      <recent name="$PROJECT_DIR$/app/src/main/resources/shaders/sun" />
-      <recent name="$PROJECT_DIR$/app/src/main/resources/shaders/chunk" />
-    </key>
-    <key name="CopyKotlinDeclarationDialog.RECENTS_KEY">
-      <recent name="core.defaults" />
-      <recent name="core.terrain.biome.biomes" />
-      <recent name="core.terrain.structures" />
-      <recent name="app.feature.game.ecs.systems" />
-      <recent name="app.feature.game.ui" />
-    </key>
     <key name="K2MoveDeclarationsDialog.RECENT_PACKAGE_KEY">
-      <recent name="core.animator.scripts" />
-      <recent name="core.debug" />
-      <recent name="app.feature.game.ecs.states" />
-      <recent name="com.gigcreator.ecs.states" />
-      <recent name="com.gigcreator.ecs.systems" />
+      <recent name="core.items" />
     </key>
   </component>
   <component name="RunManager" selected="Kotlin.DesktopMainKt">
-    <configuration name="GDX-3D-TEST [app:assemble]" type="GradleRunConfiguration" factoryName="Gradle" nameIsGenerated="true">
-      <ExternalSystemSettings>
-        <option name="executionName" />
-        <option name="externalProjectPath" value="$PROJECT_DIR$" />
-        <option name="externalSystemIdString" value="GRADLE" />
-        <option name="scriptParameters" value="" />
-        <option name="taskDescriptions">
-          <list />
-        </option>
-        <option name="taskNames">
-          <list>
-            <option value="app:assemble" />
-          </list>
-        </option>
-        <option name="vmOptions" />
-      </ExternalSystemSettings>
-      <ExternalSystemDebugServerProcess>true</ExternalSystemDebugServerProcess>
-      <ExternalSystemReattachDebugProcess>true</ExternalSystemReattachDebugProcess>
-      <ExternalSystemDebugDisabled>false</ExternalSystemDebugDisabled>
-      <DebugAllEnabled>false</DebugAllEnabled>
-      <RunAsTest>false</RunAsTest>
-      <GradleProfilingDisabled>false</GradleProfilingDisabled>
-      <GradleCoverageDisabled>false</GradleCoverageDisabled>
-      <method v="2" />
-    </configuration>
-    <configuration name="GDX-3D-TEST [desktop:shadowJar]" type="GradleRunConfiguration" factoryName="Gradle" nameIsGenerated="true">
-      <ExternalSystemSettings>
-        <option name="executionName" />
-        <option name="externalProjectPath" value="$PROJECT_DIR$" />
-        <option name="externalSystemIdString" value="GRADLE" />
-        <option name="scriptParameters" value="" />
-        <option name="taskDescriptions">
-          <list />
-        </option>
-        <option name="taskNames">
-          <list>
-            <option value="desktop:shadowJar" />
-          </list>
-        </option>
-        <option name="vmOptions" />
-      </ExternalSystemSettings>
-      <ExternalSystemDebugServerProcess>true</ExternalSystemDebugServerProcess>
-      <ExternalSystemReattachDebugProcess>true</ExternalSystemReattachDebugProcess>
-      <ExternalSystemDebugDisabled>false</ExternalSystemDebugDisabled>
-      <DebugAllEnabled>false</DebugAllEnabled>
-      <RunAsTest>false</RunAsTest>
-      <GradleProfilingDisabled>false</GradleProfilingDisabled>
-      <GradleCoverageDisabled>false</GradleCoverageDisabled>
-      <method v="2" />
-    </configuration>
     <configuration name="DesktopMainKt" type="JetRunConfigurationType" temporary="true" nameIsGenerated="true">
       <option name="MAIN_CLASS_NAME" value="com.gigcreator.DesktopMainKt" />
       <module name="GDX-3D-TEST.desktop.main" />
@@ -198,21 +105,6 @@
         <option name="Make" enabled="true" />
       </method>
     </configuration>
-    <configuration default="true" type="JetRunConfigurationType">
-      <method v="2">
-        <option name="Make" enabled="true" />
-      </method>
-    </configuration>
-    <configuration default="true" type="KotlinStandaloneScriptRunConfigurationType">
-      <option name="filePath" />
-      <method v="2" />
-    </configuration>
-    <list>
-      <item itemvalue="Gradle.GDX-3D-TEST [app:assemble]" />
-      <item itemvalue="Gradle.GDX-3D-TEST [desktop:shadowJar]" />
-      <item itemvalue="Kotlin.DesktopMainKt" />
-      <item itemvalue="Kotlin.ServerMainKt" />
-    </list>
     <recent_temporary>
       <list>
         <item itemvalue="Kotlin.ServerMainKt" />
@@ -222,450 +114,12 @@
   </component>
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">
-      <changelist id="df78e54d-8fbf-4f78-86ee-f370d7368d41" name="Changes" comment="" />
-      <created>1783090102890</created>
+      <changelist id="21bb169d-cf41-4c8a-bf73-e63da1eaa6c0" name="Changes" comment="" />
+      <created>1786012665860</created>
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
-      <updated>1783090102890</updated>
+      <updated>1786012665860</updated>
     </task>
-    <task id="LOCAL-00008" summary="added vlc windows">
-      <option name="closed" value="true" />
-      <created>1783599639147</created>
-      <option name="number" value="00008" />
-      <option name="presentableId" value="LOCAL-00008" />
-      <option name="project" value="LOCAL" />
-      <updated>1783599639147</updated>
-    </task>
-    <task id="LOCAL-00009" summary="removed vlc windows">
-      <option name="closed" value="true" />
-      <created>1783604940247</created>
-      <option name="number" value="00009" />
-      <option name="presentableId" value="LOCAL-00009" />
-      <option name="project" value="LOCAL" />
-      <updated>1783604940247</updated>
-    </task>
-    <task id="LOCAL-00010" summary="update">
-      <option name="closed" value="true" />
-      <created>1783697430149</created>
-      <option name="number" value="00010" />
-      <option name="presentableId" value="LOCAL-00010" />
-      <option name="project" value="LOCAL" />
-      <updated>1783697430149</updated>
-    </task>
-    <task id="LOCAL-00011" summary="update">
-      <option name="closed" value="true" />
-      <created>1783699972899</created>
-      <option name="number" value="00011" />
-      <option name="presentableId" value="LOCAL-00011" />
-      <option name="project" value="LOCAL" />
-      <updated>1783699972899</updated>
-    </task>
-    <task id="LOCAL-00012" summary="update">
-      <option name="closed" value="true" />
-      <created>1784539881408</created>
-      <option name="number" value="00012" />
-      <option name="presentableId" value="LOCAL-00012" />
-      <option name="project" value="LOCAL" />
-      <updated>1784539881408</updated>
-    </task>
-    <task id="LOCAL-00013" summary="fixed shadow compiler">
-      <option name="closed" value="true" />
-      <created>1784559439334</created>
-      <option name="number" value="00013" />
-      <option name="presentableId" value="LOCAL-00013" />
-      <option name="project" value="LOCAL" />
-      <updated>1784559439334</updated>
-    </task>
-    <task id="LOCAL-00014" summary="fixed shadow compiler">
-      <option name="closed" value="true" />
-      <created>1784706665409</created>
-      <option name="number" value="00014" />
-      <option name="presentableId" value="LOCAL-00014" />
-      <option name="project" value="LOCAL" />
-      <updated>1784706665409</updated>
-    </task>
-    <task id="LOCAL-00015" summary="fixed shadow compiler">
-      <option name="closed" value="true" />
-      <created>1784706677777</created>
-      <option name="number" value="00015" />
-      <option name="presentableId" value="LOCAL-00015" />
-      <option name="project" value="LOCAL" />
-      <updated>1784706677777</updated>
-    </task>
-    <task id="LOCAL-00016" summary="fixed shadow compiler back">
-      <option name="closed" value="true" />
-      <created>1784706733324</created>
-      <option name="number" value="00016" />
-      <option name="presentableId" value="LOCAL-00016" />
-      <option name="project" value="LOCAL" />
-      <updated>1784706733324</updated>
-    </task>
-    <task id="LOCAL-00017" summary="night update - day-cycle">
-      <option name="closed" value="true" />
-      <created>1784715077266</created>
-      <option name="number" value="00017" />
-      <option name="presentableId" value="LOCAL-00017" />
-      <option name="project" value="LOCAL" />
-      <updated>1784715077266</updated>
-    </task>
-    <task id="LOCAL-00018" summary="night update - day-cycle">
-      <option name="closed" value="true" />
-      <created>1784715972652</created>
-      <option name="number" value="00018" />
-      <option name="presentableId" value="LOCAL-00018" />
-      <option name="project" value="LOCAL" />
-      <updated>1784715972652</updated>
-    </task>
-    <task id="LOCAL-00019" summary="night update - day-cycle">
-      <option name="closed" value="true" />
-      <created>1784727759530</created>
-      <option name="number" value="00019" />
-      <option name="presentableId" value="LOCAL-00019" />
-      <option name="project" value="LOCAL" />
-      <updated>1784727759530</updated>
-    </task>
-    <task id="LOCAL-00020" summary="update">
-      <option name="closed" value="true" />
-      <created>1784729865186</created>
-      <option name="number" value="00020" />
-      <option name="presentableId" value="LOCAL-00020" />
-      <option name="project" value="LOCAL" />
-      <updated>1784729865186</updated>
-    </task>
-    <task id="LOCAL-00021" summary="model drawing update">
-      <option name="closed" value="true" />
-      <created>1784812958690</created>
-      <option name="number" value="00021" />
-      <option name="presentableId" value="LOCAL-00021" />
-      <option name="project" value="LOCAL" />
-      <updated>1784812958690</updated>
-    </task>
-    <task id="LOCAL-00022" summary="added cactus in DesertBiomeGenerator.kt">
-      <option name="closed" value="true" />
-      <created>1784815536334</created>
-      <option name="number" value="00022" />
-      <option name="presentableId" value="LOCAL-00022" />
-      <option name="project" value="LOCAL" />
-      <updated>1784815536334</updated>
-    </task>
-    <task id="LOCAL-00023" summary="added caves level">
-      <option name="closed" value="true" />
-      <created>1784888184958</created>
-      <option name="number" value="00023" />
-      <option name="presentableId" value="LOCAL-00023" />
-      <option name="project" value="LOCAL" />
-      <updated>1784888184958</updated>
-    </task>
-    <task id="LOCAL-00024" summary="added new forest">
-      <option name="closed" value="true" />
-      <created>1784889775292</created>
-      <option name="number" value="00024" />
-      <option name="presentableId" value="LOCAL-00024" />
-      <option name="project" value="LOCAL" />
-      <updated>1784889775292</updated>
-    </task>
-    <task id="LOCAL-00025" summary="added optimized pending blocks">
-      <option name="closed" value="true" />
-      <created>1784890652114</created>
-      <option name="number" value="00025" />
-      <option name="presentableId" value="LOCAL-00025" />
-      <option name="project" value="LOCAL" />
-      <updated>1784890652114</updated>
-    </task>
-    <task id="LOCAL-00026" summary="added optimized pending blocks">
-      <option name="closed" value="true" />
-      <created>1784891920339</created>
-      <option name="number" value="00026" />
-      <option name="presentableId" value="LOCAL-00026" />
-      <option name="project" value="LOCAL" />
-      <updated>1784891920339</updated>
-    </task>
-    <task id="LOCAL-00027" summary="added optimized pending blocks">
-      <option name="closed" value="true" />
-      <created>1784893915925</created>
-      <option name="number" value="00027" />
-      <option name="presentableId" value="LOCAL-00027" />
-      <option name="project" value="LOCAL" />
-      <updated>1784893915925</updated>
-    </task>
-    <task id="LOCAL-00028" summary="added optimized pending blocks">
-      <option name="closed" value="true" />
-      <created>1784894024905</created>
-      <option name="number" value="00028" />
-      <option name="presentableId" value="LOCAL-00028" />
-      <option name="project" value="LOCAL" />
-      <updated>1784894024905</updated>
-    </task>
-    <task id="LOCAL-00029" summary="added optimized pending blocks">
-      <option name="closed" value="true" />
-      <created>1784898347798</created>
-      <option name="number" value="00029" />
-      <option name="presentableId" value="LOCAL-00029" />
-      <option name="project" value="LOCAL" />
-      <updated>1784898347799</updated>
-    </task>
-    <task id="LOCAL-00030" summary="added optimized pending blocks - bugfix">
-      <option name="closed" value="true" />
-      <created>1785144132004</created>
-      <option name="number" value="00030" />
-      <option name="presentableId" value="LOCAL-00030" />
-      <option name="project" value="LOCAL" />
-      <updated>1785144132004</updated>
-    </task>
-    <task id="LOCAL-00031" summary="added optimized pending blocks - bugfix">
-      <option name="closed" value="true" />
-      <created>1785146037154</created>
-      <option name="number" value="00031" />
-      <option name="presentableId" value="LOCAL-00031" />
-      <option name="project" value="LOCAL" />
-      <updated>1785146037154</updated>
-    </task>
-    <task id="LOCAL-00032" summary="added optimized pending blocks - bugfix">
-      <option name="closed" value="true" />
-      <created>1785222033652</created>
-      <option name="number" value="00032" />
-      <option name="presentableId" value="LOCAL-00032" />
-      <option name="project" value="LOCAL" />
-      <updated>1785222033652</updated>
-    </task>
-    <task id="LOCAL-00033" summary="added optimized pending blocks - bugfix 2">
-      <option name="closed" value="true" />
-      <created>1785223753250</created>
-      <option name="number" value="00033" />
-      <option name="presentableId" value="LOCAL-00033" />
-      <option name="project" value="LOCAL" />
-      <updated>1785223753250</updated>
-    </task>
-    <task id="LOCAL-00034" summary="added server">
-      <option name="closed" value="true" />
-      <created>1785309373683</created>
-      <option name="number" value="00034" />
-      <option name="presentableId" value="LOCAL-00034" />
-      <option name="project" value="LOCAL" />
-      <updated>1785309373683</updated>
-    </task>
-    <task id="LOCAL-00035" summary="added server simple">
-      <option name="closed" value="true" />
-      <created>1785311156083</created>
-      <option name="number" value="00035" />
-      <option name="presentableId" value="LOCAL-00035" />
-      <option name="project" value="LOCAL" />
-      <updated>1785311156083</updated>
-    </task>
-    <task id="LOCAL-00036" summary="added server simple">
-      <option name="closed" value="true" />
-      <created>1785314822414</created>
-      <option name="number" value="00036" />
-      <option name="presentableId" value="LOCAL-00036" />
-      <option name="project" value="LOCAL" />
-      <updated>1785314822414</updated>
-    </task>
-    <task id="LOCAL-00037" summary="added server simple">
-      <option name="closed" value="true" />
-      <created>1785319664817</created>
-      <option name="number" value="00037" />
-      <option name="presentableId" value="LOCAL-00037" />
-      <option name="project" value="LOCAL" />
-      <updated>1785319664817</updated>
-    </task>
-    <task id="LOCAL-00038" summary="added server events ext">
-      <option name="closed" value="true" />
-      <created>1785400031514</created>
-      <option name="number" value="00038" />
-      <option name="presentableId" value="LOCAL-00038" />
-      <option name="project" value="LOCAL" />
-      <updated>1785400031514</updated>
-    </task>
-    <task id="LOCAL-00039" summary="added server events ext">
-      <option name="closed" value="true" />
-      <created>1785404507157</created>
-      <option name="number" value="00039" />
-      <option name="presentableId" value="LOCAL-00039" />
-      <option name="project" value="LOCAL" />
-      <updated>1785404507157</updated>
-    </task>
-    <task id="LOCAL-00040" summary="added server events ext">
-      <option name="closed" value="true" />
-      <created>1785404774877</created>
-      <option name="number" value="00040" />
-      <option name="presentableId" value="LOCAL-00040" />
-      <option name="project" value="LOCAL" />
-      <updated>1785404774877</updated>
-    </task>
-    <task id="LOCAL-00041" summary="added server events for player">
-      <option name="closed" value="true" />
-      <created>1785405980508</created>
-      <option name="number" value="00041" />
-      <option name="presentableId" value="LOCAL-00041" />
-      <option name="project" value="LOCAL" />
-      <updated>1785405980509</updated>
-    </task>
-    <task id="LOCAL-00042" summary="added server events for player">
-      <option name="closed" value="true" />
-      <created>1785405996036</created>
-      <option name="number" value="00042" />
-      <option name="presentableId" value="LOCAL-00042" />
-      <option name="project" value="LOCAL" />
-      <updated>1785405996036</updated>
-    </task>
-    <task id="LOCAL-00043" summary="added server events for player">
-      <option name="closed" value="true" />
-      <created>1785406645939</created>
-      <option name="number" value="00043" />
-      <option name="presentableId" value="LOCAL-00043" />
-      <option name="project" value="LOCAL" />
-      <updated>1785406645940</updated>
-    </task>
-    <task id="LOCAL-00044" summary="added server events for player">
-      <option name="closed" value="true" />
-      <created>1785407486920</created>
-      <option name="number" value="00044" />
-      <option name="presentableId" value="LOCAL-00044" />
-      <option name="project" value="LOCAL" />
-      <updated>1785407486920</updated>
-    </task>
-    <task id="LOCAL-00045" summary="added server events for player">
-      <option name="closed" value="true" />
-      <created>1785408521201</created>
-      <option name="number" value="00045" />
-      <option name="presentableId" value="LOCAL-00045" />
-      <option name="project" value="LOCAL" />
-      <updated>1785408521201</updated>
-    </task>
-    <task id="LOCAL-00046" summary="added server interpolation">
-      <option name="closed" value="true" />
-      <created>1785408894605</created>
-      <option name="number" value="00046" />
-      <option name="presentableId" value="LOCAL-00046" />
-      <option name="project" value="LOCAL" />
-      <updated>1785408894605</updated>
-    </task>
-    <task id="LOCAL-00047" summary="added server interpolation">
-      <option name="closed" value="true" />
-      <created>1785408906745</created>
-      <option name="number" value="00047" />
-      <option name="presentableId" value="LOCAL-00047" />
-      <option name="project" value="LOCAL" />
-      <updated>1785408906745</updated>
-    </task>
-    <task id="LOCAL-00048" summary="added server interpolation">
-      <option name="closed" value="true" />
-      <created>1785487793366</created>
-      <option name="number" value="00048" />
-      <option name="presentableId" value="LOCAL-00048" />
-      <option name="project" value="LOCAL" />
-      <updated>1785487793366</updated>
-    </task>
-    <task id="LOCAL-00049" summary="added items">
-      <option name="closed" value="true" />
-      <created>1785492318326</created>
-      <option name="number" value="00049" />
-      <option name="presentableId" value="LOCAL-00049" />
-      <option name="project" value="LOCAL" />
-      <updated>1785492318326</updated>
-    </task>
-    <task id="LOCAL-00050" summary="added animation and physics bugfix">
-      <option name="closed" value="true" />
-      <created>1785752737872</created>
-      <option name="number" value="00050" />
-      <option name="presentableId" value="LOCAL-00050" />
-      <option name="project" value="LOCAL" />
-      <updated>1785752737872</updated>
-    </task>
-    <task id="LOCAL-00051" summary="critical bugfix physics world">
-      <option name="closed" value="true" />
-      <created>1785754532383</created>
-      <option name="number" value="00051" />
-      <option name="presentableId" value="LOCAL-00051" />
-      <option name="project" value="LOCAL" />
-      <updated>1785754532383</updated>
-    </task>
-    <task id="LOCAL-00052" summary="added player position to generate chunks">
-      <option name="closed" value="true" />
-      <created>1785755359163</created>
-      <option name="number" value="00052" />
-      <option name="presentableId" value="LOCAL-00052" />
-      <option name="project" value="LOCAL" />
-      <updated>1785755359163</updated>
-    </task>
-    <task id="LOCAL-00053" summary="update">
-      <option name="closed" value="true" />
-      <created>1785762515611</created>
-      <option name="number" value="00053" />
-      <option name="presentableId" value="LOCAL-00053" />
-      <option name="project" value="LOCAL" />
-      <updated>1785762515613</updated>
-    </task>
-    <task id="LOCAL-00054" summary="added network animation">
-      <option name="closed" value="true" />
-      <created>1785763629884</created>
-      <option name="number" value="00054" />
-      <option name="presentableId" value="LOCAL-00054" />
-      <option name="project" value="LOCAL" />
-      <updated>1785763629885</updated>
-    </task>
-    <task id="LOCAL-00055" summary="added event features">
-      <option name="closed" value="true" />
-      <created>1785842589956</created>
-      <option name="number" value="00055" />
-      <option name="presentableId" value="LOCAL-00055" />
-      <option name="project" value="LOCAL" />
-      <updated>1785842589956</updated>
-    </task>
-    <task id="LOCAL-00056" summary="added hand item">
-      <option name="closed" value="true" />
-      <created>1785861842364</created>
-      <option name="number" value="00056" />
-      <option name="presentableId" value="LOCAL-00056" />
-      <option name="project" value="LOCAL" />
-      <updated>1785861842364</updated>
-    </task>
-    <option name="localTasksCounter" value="57" />
     <servers />
-  </component>
-  <component name="Vcs.Log.Tabs.Properties">
-    <option name="TAB_STATES">
-      <map>
-        <entry key="MAIN">
-          <value>
-            <State>
-              <option name="CUSTOM_BOOLEAN_PROPERTIES">
-                <map>
-                  <entry key="Show.Git.Branches" value="false" />
-                </map>
-              </option>
-            </State>
-          </value>
-        </entry>
-      </map>
-    </option>
-  </component>
-  <component name="VcsManagerConfiguration">
-    <MESSAGE value="removed vlc windows" />
-    <MESSAGE value="fixed shadow compiler" />
-    <MESSAGE value="fixed shadow compiler back" />
-    <MESSAGE value="night update - day-cycle" />
-    <MESSAGE value="model drawing update" />
-    <MESSAGE value="added cactus in DesertBiomeGenerator.kt" />
-    <MESSAGE value="added caves level" />
-    <MESSAGE value="added new forest" />
-    <MESSAGE value="added optimized pending blocks" />
-    <MESSAGE value="added optimized pending blocks - bugfix" />
-    <MESSAGE value="added optimized pending blocks - bugfix 2" />
-    <MESSAGE value="added server" />
-    <MESSAGE value="added server simple" />
-    <MESSAGE value="added server events ext" />
-    <MESSAGE value="added server events for player" />
-    <MESSAGE value="added server events for time" />
-    <MESSAGE value="added server interpolation" />
-    <MESSAGE value="added items" />
-    <MESSAGE value="added animation and physics bugfix" />
-    <MESSAGE value="critical bugfix physics world" />
-    <MESSAGE value="added player position to generate chunks" />
-    <MESSAGE value="update" />
-    <MESSAGE value="added network animation" />
-    <MESSAGE value="added event features" />
-    <MESSAGE value="added hand item" />
-    <option name="LAST_COMMIT_MESSAGE" value="added hand item" />
   </component>
 </project>

@@ -15,9 +15,11 @@ import core.mesh.MeshUtils.createFaceUvs
 class BlockDataManager: LaunchedEffect
 {
     private val blockTextureDataMap = HashMap<BlockType, TextureData>()
+    private val blockInfoDataMap = HashMap<BlockType, BlockInfoData>()
     private val blockFaceUvsMap = HashMap<BlockType, BlockFaceUvs>()
 
     fun getBlockTextureDataMap(): Map<BlockType, TextureData> = blockTextureDataMap
+    fun getBlockInfoDataMap(): Map<BlockType, BlockInfoData> = blockInfoDataMap
 
     override fun launch(gContext: GContext) {
         val assetManager = gContext.getObject<AssetManager>()
@@ -25,8 +27,13 @@ class BlockDataManager: LaunchedEffect
         val textureData = config.getConfig()
         val atlas = assetManager.get<TextureAtlas>(SkinID.BLOCK.atlas)
 
+        blockInfoDataMap.clear()
         blockTextureDataMap.clear()
         blockFaceUvsMap.clear()
+
+        textureData.blockInfoDataList.forEach { item ->
+            blockInfoDataMap[item.blockType] = item
+        }
 
         textureData.textureDataList.forEach { item ->
             if (!blockTextureDataMap.containsKey(item.blockType))

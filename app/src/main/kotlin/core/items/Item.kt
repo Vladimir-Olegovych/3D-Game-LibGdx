@@ -17,5 +17,9 @@ data class Item(
     @get:JsonProperty("maxStack") @param:JsonProperty("maxStack")
     val maxStack: Int = 4,
     @get:JsonProperty("stackable") @param:JsonProperty("stackable")
-    val stackable: Boolean = true
+    val stackable: Boolean = true,
+    @get:JsonProperty("toolType") @param:JsonProperty("toolType")
+    val toolType: ToolType? = null,
+    @get:JsonProperty("toolLevel") @param:JsonProperty("toolLevel")
+    val toolLevel: Int = 1
 )

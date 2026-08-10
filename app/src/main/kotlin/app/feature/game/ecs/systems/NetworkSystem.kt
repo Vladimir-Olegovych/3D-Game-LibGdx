@@ -268,6 +268,14 @@ class NetworkSystem: BaseSystem() {
 
     private fun updateRemoteAnimation(entityId: Int, moving: Boolean) {
         val animator = animatorMapper[entityId]?.animator ?: return
+        if (moving) {
+            interpolationMapper[entityId]?.let { interp ->
+                animator.setMoveDirection(
+                    interp.toPos.x - interp.fromPos.x,
+                    interp.toPos.z - interp.fromPos.z
+                )
+            }
+        }
         animator.playAnimation(if (moving) ModelAnimator.ANIM_MOVE else ModelAnimator.ANIM_IDLE)
     }
 

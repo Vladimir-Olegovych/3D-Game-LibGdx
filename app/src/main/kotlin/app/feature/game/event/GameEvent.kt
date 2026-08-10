@@ -49,9 +49,12 @@ sealed class GameEvent {
         val hitEntityId: Int? = null
     ) : GameEvent()
 
-    class OnBlockRemoved(
-        val blockType: BlockType,
+    class OnRayCastBlockResult(
+        val requestId: Long,
+        val chunkEntityId: Int,
+        val blockToSet: BlockType,
+        val blockToRemove: BlockType,
         val chunkPosition: IntVector3,
-        val localPosition: IntVector3
-    ) : GameEvent()
+        val blockPosition: IntVector3
+    )
 }

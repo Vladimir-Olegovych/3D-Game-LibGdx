@@ -8,6 +8,7 @@ import core.animator.scripts.AttackAnimationScript
 import core.animator.scripts.IdleAnimationScript
 import core.animator.scripts.RunAnimationScript
 import kotlin.math.abs
+import kotlin.math.atan2
 import kotlin.math.sign
 
 class ModelAnimator(
@@ -22,6 +23,7 @@ class ModelAnimator(
         private const val HEAD_PITCH_UP_MAX = 89f
         private const val HEAD_BODY_YAW_LIMIT = 45f
         private const val BODY_TURN_SPEED = 360f
+        private const val MOVE_DIR_EPS = 1e-6f
     }
 
     private val context: AnimationContext
@@ -32,6 +34,8 @@ class ModelAnimator(
     private var locomotionScript: AnimationScript
     private var attacking = false
     private var lookInitialized = false
+    private var hasMoveDirection = false
+    private var moveYaw = 0f
 
     init {
         val bodyMesh = blenderRenderData.subMeshes[0]
@@ -98,7 +102,7 @@ class ModelAnimator(
         if (locomotionScript === next) return
 
         if (next === runScript) {
-            context.bodyYaw = context.lookYaw
+            context.bodyYaw = movementBodyYaw()
         }
         locomotionScript = next
         locomotionScript.onStart()
@@ -130,6 +134,15 @@ class ModelAnimator(
         }
     }
 
+    fun setMoveDirection(x: Float, z: Float) {
+        if (abs(x) < MOVE_DIR_EPS && abs(z) < MOVE_DIR_EPS) {
+            hasMoveDirection = false
+            return
+        }
+        moveYaw = Math.toDegrees(atan2(x.toDouble(), z.toDouble())).toFloat()
+        hasMoveDirection = true
+    }
+
     fun setRightHandItem(
         mesh: Mesh?,
         texture: GLTexture? = null,
@@ -154,7 +167,11 @@ class ModelAnimator(
     }
 
     private fun updateBodyYaw(deltaTime: Float) {
-        if (locomotionScript is RunAnimationScript || attacking) {
+        if (locomotionScript is RunAnimationScript) {
+            context.bodyYaw = movementBodyYaw()
+            return
+        }
+        if (attacking) {
             context.bodyYaw = context.lookYaw
             return
         }
@@ -167,6 +184,9 @@ class ModelAnimator(
         val step = BODY_TURN_SPEED * deltaTime
         context.bodyYaw += toTarget.coerceIn(-step, step)
     }
+
+    private fun movementBodyYaw(): Float =
+        if (hasMoveDirection) moveYaw else context.lookYaw
 
     private fun updateHead() {
         val clampedPitch = context.lookPitch.coerceIn(HEAD_PITCH_DOWN_MAX, HEAD_PITCH_UP_MAX)

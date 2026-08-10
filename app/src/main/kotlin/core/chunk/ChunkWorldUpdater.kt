@@ -3,6 +3,7 @@ package core.chunk
 import app.feature.game.event.ChunkEvent
 import app.feature.game.event.EventBusTypes
 import app.feature.game.event.GameEvent
+import app.feature.game.event.InventoryEvent
 import com.badlogic.gdx.math.Vector3
 import com.gigapi.coruntines.DeltaUpdater
 import com.gigapi.effects.DisposableEffect
@@ -18,6 +19,7 @@ import core.bullet.raycast.RayCastTypes
 import core.chunk.world.ChunkHelper
 import core.chunk.world.WorldDataHelper
 import core.chunk.world.WorldGenerationData
+import core.defaults.WorldConstants
 import core.items.InventoryManager
 import core.math.createMatrixForChunk
 import core.mesh.MeshGenerator
@@ -308,9 +310,11 @@ class ChunkWorldUpdater : LaunchedEffect, DisposableEffect, DeltaUpdater(1 / 60F
 
     @BusEvent
     fun setBlock(event: ChunkEvent.OnSetBlock) {
-        val chunkData = event.chunkData
+        val chunkData = chunkDataMap[event.chunkPosition]?: return
+        val isPlayerOwner = event.owner == WorldConstants.getLocalPlayerEntityId()
         if (chunkData.status == ChunkStatus.GENERATION) return
-        val blockPosition = event.position
+        val blockPosition = event.blockPosition
+        val removedBlockType = chunkData.getBlockByLocal(blockPosition)
         chunkData.setBlockByLocal(event.blockType, blockPosition)
 
         lifecycleScope.launch {
@@ -342,28 +346,34 @@ class ChunkWorldUpdater : LaunchedEffect, DisposableEffect, DeltaUpdater(1 / 60F
                 physicsEventBus.sendEvent(GameEvent.OnUpdateChunkData(updateChunkEntityId, updateChunkData))
                 mainEventBus.sendEvent(GameEvent.OnUpdateChunkMeshData(updateChunkEntityId, meshData))
             }
+            if (isPlayerOwner) mainEventBus.sendEvent(InventoryEvent.OnAddBlockItem(removedBlockType))
         }
     }
 
     @BusEvent
     fun onRayCastResult(event: GameEvent.OnRayCastResult) {
-        if (event.requestId != RayCastTypes.CHUNK_RAY_CAST || !event.hasHit) return
+        if (event.requestId != RayCastTypes.CHUNK_DIG_RAY_CAST || !event.hasHit) return
 
         val offset = event.direction.nor().scl(0.5f)
         val hitPoint = event.hitPoint.add(offset)
 
         val chunkPosition = WorldDataHelper.getChunkPositionFromWorldPosition(hitPoint)
         val chunkData = chunkDataMap[chunkPosition] ?: return
+        val chunkEntityId = chunkDataPositionToEntityId[chunkPosition] ?: return
         val blockPosition = ChunkHelper.getBlockPositionFromWorldPosition(hitPoint)
         val currentBlock = chunkData.getBlockByLocal(blockPosition)
 
         if (chunkData.status == ChunkStatus.GENERATION) return
         if (currentBlock == BlockType.AIR) return
         if (!inventoryManager.hasSpaceFor(currentBlock.name)) return
-        chunkEventBus?.sendEventNow(ChunkEvent.OnSetBlock(
-            chunkData, BlockType.AIR, blockPosition
+        mainEventBus.sendEvent(GameEvent.OnRayCastBlockResult(
+            requestId = RayCastTypes.CHUNK_DIG_RAY_CAST,
+            chunkEntityId = chunkEntityId,
+            blockToSet = BlockType.AIR,
+            blockToRemove = currentBlock,
+            chunkPosition = chunkPosition,
+            blockPosition = blockPosition
         ))
-        mainEventBus.sendEvent(GameEvent.OnBlockRemoved(currentBlock, chunkPosition, blockPosition))
     }
 
     private fun findSpawnPosition(centerPosition: Vector3): Vector3? {

@@ -152,7 +152,7 @@ object PhysicsUtils {
                     val shape = btBoxShape(
                         Vector3(sizeX / 2f, sizeY / 2f, sizeZ / 2f)
                     )
-                    shape.margin = 0.8f
+                    shape.margin = 0.5f
                     physicalData.shapes.add(shape)
                     val transform = Matrix4().setToTranslation(
                         x + sizeX / 2f,

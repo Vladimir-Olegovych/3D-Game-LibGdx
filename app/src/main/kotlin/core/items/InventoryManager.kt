@@ -33,11 +33,8 @@ class InventoryManager(
     }
 
     @BusEvent
-    fun onBlockRemoved(event: GameEvent.OnBlockRemoved) {
-        val blockType = event.blockType
-        if (blockType == BlockType.AIR) return
-        val item = itemManager.getItem(blockType.name)?: return
-        addItem(item)
+    fun onAddBlockItem(event: InventoryEvent.OnAddBlockItem) {
+        addItem(event.blockType, event.count)
     }
 
     fun craftItem(recipe: CraftingRecipeData): Boolean {
@@ -135,6 +132,12 @@ class InventoryManager(
 
     fun getInventoryItem(index: Int): InventoryItem? {
         return inventorySlots[index]
+    }
+
+    fun addItem(blockType: BlockType, count: Int = 1) {
+        if (blockType == BlockType.AIR) return
+        val item = itemManager.getItem(blockType.name)?: return
+        addItem(item, count)
     }
 
     fun addItem(item: Item, count: Int = 1): Boolean {

@@ -102,8 +102,10 @@ class PlayerSystem: BaseSystem() {
 
     private fun updateAnimation(playerEntityId: Int, moving: Boolean) {
         val animator = animatorMapper[playerEntityId]?.animator ?: return
+        val move = playerInputProcessor.getMoveDirectionByCamera()
+        animator.setMoveDirection(move.x, move.z)
         animator.playAnimation(if (moving) ModelAnimator.ANIM_MOVE else ModelAnimator.ANIM_IDLE)
-        animator.setAttacking(playerInputProcessor.isAttacking())
+        animator.setAttacking(playerInputProcessor.isMouseLeft())
     }
 
     private fun stopPlayer(playerEntityId: Int) {
