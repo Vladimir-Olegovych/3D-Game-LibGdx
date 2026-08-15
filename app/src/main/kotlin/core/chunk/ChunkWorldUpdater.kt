@@ -3,7 +3,6 @@ package core.chunk
 import app.feature.game.event.ChunkEvent
 import app.feature.game.event.EventBusTypes
 import app.feature.game.event.GameEvent
-import app.feature.game.event.InventoryEvent
 import com.badlogic.gdx.math.Vector3
 import com.gigapi.coruntines.DeltaUpdater
 import com.gigapi.effects.DisposableEffect
@@ -19,8 +18,6 @@ import core.bullet.raycast.RayCastTypes
 import core.chunk.world.ChunkHelper
 import core.chunk.world.WorldDataHelper
 import core.chunk.world.WorldGenerationData
-import core.defaults.WorldConstants
-import core.items.InventoryManager
 import core.math.createMatrixForChunk
 import core.mesh.MeshGenerator
 import core.mesh.MeshHelper
@@ -62,7 +59,6 @@ class ChunkWorldUpdater : LaunchedEffect, DisposableEffect, DeltaUpdater(1 / 60F
     private lateinit var shadowUpdater: ShadowUpdater
     private lateinit var meshGenerator: MeshGenerator
     private lateinit var terrainGenerator: TerrainGenerator
-    private lateinit var inventoryManager: InventoryManager
     private lateinit var mainScope: CoroutineScope
 
     @Volatile
@@ -78,7 +74,6 @@ class ChunkWorldUpdater : LaunchedEffect, DisposableEffect, DeltaUpdater(1 / 60F
         physicsEventBus = gContext.getObject(EventBusTypes.PHYSICS_EVENT_BUS)
         meshGenerator = gContext.getObject<MeshHelper>()
         shadowUpdater = gContext.getObject()
-        inventoryManager = gContext.getObject()
         terrainGenerator = gContext.getObject()
         mainScope = CoroutineScope(gContext.getObject<CoroutineDispatcher>(DispatcherTypes.MAIN))
         worldPendingBlocks.bind(
@@ -310,10 +305,21 @@ class ChunkWorldUpdater : LaunchedEffect, DisposableEffect, DeltaUpdater(1 / 60F
 
     @BusEvent
     fun setBlock(event: ChunkEvent.OnSetBlock) {
-        val chunkData = chunkDataMap[event.chunkPosition]?: return
-        val isPlayerOwner = event.owner == WorldConstants.getLocalPlayerEntityId()
-        if (chunkData.status == ChunkStatus.GENERATION) return
+        val chunkData = chunkDataMap[event.chunkPosition]
+        if (chunkData == null || chunkData.status == ChunkStatus.GENERATION) {
+            mainEventBus.sendEvent(ChunkEvent.OnSetBlockFeedBack(
+                owner = event.owner,
+                chunkPosition = event.chunkPosition,
+                blockPosition = event.blockPosition,
+                removedBlockType = BlockType.NOTHING,
+                setBlockType = event.blockType,
+                isSuccess = false
+            ))
+        }
+        chunkData?: return
+
         val blockPosition = event.blockPosition
+        val isOnEdge = WorldDataHelper.isOnEdge(blockPosition)
         val removedBlockType = chunkData.getBlockByLocal(blockPosition)
         chunkData.setBlockByLocal(event.blockType, blockPosition)
 
@@ -332,6 +338,7 @@ class ChunkWorldUpdater : LaunchedEffect, DisposableEffect, DeltaUpdater(1 / 60F
                     ).toSet()
 
             for (chunkPos in chunksToUpdate) {
+                if (!isOnEdge && chunkPos != chunkData.position) continue
                 val updateChunkData = chunkDataMap[chunkPos] ?: continue
                 if (updateChunkData.status == ChunkStatus.GENERATION) continue
                 // Physics body is created with mesh entity id — must update by the same key.
@@ -346,7 +353,14 @@ class ChunkWorldUpdater : LaunchedEffect, DisposableEffect, DeltaUpdater(1 / 60F
                 physicsEventBus.sendEvent(GameEvent.OnUpdateChunkData(updateChunkEntityId, updateChunkData))
                 mainEventBus.sendEvent(GameEvent.OnUpdateChunkMeshData(updateChunkEntityId, meshData))
             }
-            if (isPlayerOwner) mainEventBus.sendEvent(InventoryEvent.OnAddBlockItem(removedBlockType))
+            mainEventBus.sendEvent(ChunkEvent.OnSetBlockFeedBack(
+                owner = event.owner,
+                chunkPosition = event.chunkPosition,
+                blockPosition = event.blockPosition,
+                removedBlockType = removedBlockType,
+                setBlockType = event.blockType,
+                isSuccess = true
+            ))
         }
     }
 
@@ -365,7 +379,6 @@ class ChunkWorldUpdater : LaunchedEffect, DisposableEffect, DeltaUpdater(1 / 60F
 
         if (chunkData.status == ChunkStatus.GENERATION) return
         if (currentBlock == BlockType.AIR) return
-        if (!inventoryManager.hasSpaceFor(currentBlock.name)) return
         mainEventBus.sendEvent(GameEvent.OnRayCastBlockResult(
             requestId = RayCastTypes.CHUNK_DIG_RAY_CAST,
             chunkEntityId = chunkEntityId,
