@@ -1,6 +1,7 @@
 package app.feature.game.ecs.systems
 
 import app.feature.game.ecs.components.DiggingComponent
+import app.feature.game.ecs.components.MeshComponent
 import app.feature.game.event.ChunkEvent
 import app.feature.game.event.EventBusTypes
 import app.feature.game.event.GameEvent
@@ -33,6 +34,13 @@ class BlockProcessingSystem: IteratingSystem() {
     private var playerItemSlot: Int? = null
 
     private lateinit var diggingComponent: ComponentMapper<DiggingComponent>
+    private lateinit var meshComponent: ComponentMapper<MeshComponent>
+
+    @BusEvent
+    fun onSetBlockFeedBack(event: ChunkEvent.OnSetBlockFeedBack) {
+        if (!event.isSuccess) return
+        inventoryManager.addItem(event.removedBlockType)
+    }
 
     @BusEvent
     fun onBlockRayCastResult(event: GameEvent.OnRayCastBlockResult) {

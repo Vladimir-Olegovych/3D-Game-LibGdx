@@ -2,6 +2,7 @@ package app.feature.game.ecs.components
 
 import com.artemis.Component
 import com.gigapi.math.vector.IntVector3
+import com.gigapi.mesh.MeshData
 import core.blocks.BlockType
 import core.items.ToolType
 
@@ -14,4 +15,7 @@ class DiggingComponent: Component() {
     var miningToolLevel: Int? = null
     var digTime = 0f
     var process = 0f
+
+    var animation: Array<MeshData>? = null
+    var state: Int = 0
 }
