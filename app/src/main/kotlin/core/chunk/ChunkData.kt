@@ -35,7 +35,7 @@ class ChunkData(
             chunkWidth: Int,
             chunkHeight: Int
         ): ChunkData {
-            val blocks = ByteArray(chunkWidth * chunkHeight * chunkWidth) { BlockType.AIR.id }
+            val blocks = ByteArray(chunkWidth * chunkHeight * chunkWidth) { BlockType.toByte(BlockType.AIR) }
             val shadows = ByteArray(chunkWidth * chunkHeight * chunkWidth) { 15 }
             return ChunkData(position, chunkWidth, chunkHeight, blocks, shadows)
         }
@@ -54,7 +54,7 @@ class ChunkData(
     }
 
     fun setBlockByIndex(blockType: BlockType, index: Int){
-        blocks[index] = blockType.id
+        blocks[index] = BlockType.toByte(blockType)
         if (ShadowUpdater.isOpaque(blockType)) {
             shadows[index] = 15
         }
@@ -91,7 +91,7 @@ class ChunkData(
         if (x < 0 || y < 0 || z < 0 || x > chunkWidth - 1 || z > chunkWidth - 1 || y > chunkHeight - 1) return false
         val index: Int = getIndex(x, y, z)
         if (index < 0 || index >= blocks.size) return false
-        blocks[index] = blockType.id
+        blocks[index] = BlockType.toByte(blockType)
         if (ShadowUpdater.isOpaque(blockType)) {
             shadows[index] = 15
         }

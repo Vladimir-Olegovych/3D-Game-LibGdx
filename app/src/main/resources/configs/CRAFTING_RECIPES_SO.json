@@ -1,24 +1,27 @@
 {
-  "recipes" : [ {
-    "result" : {
-      "item" : "DIAMOND_PICKAXE",
-      "count" : 1
+  "recipes" : [
+    {
+      "result" : {
+        "item" : "OAK_WOODEN_PLANKS",
+        "count" : 4
+      },
+      "ingredients" : [ {
+        "item" : "OAK_WOOD",
+        "count" : 1
+      } ]
     },
-    "ingredients" : [ {
-      "item" : "DIRT",
-      "count" : 1
-    }, {
-      "item" : "WOOD",
-      "count" : 4
-    } ]
-  }, {
-    "result" : {
-      "item" : "IRON_AXE",
-      "count" : 1
-    },
-    "ingredients" : [ {
-      "item" : "DIAMOND_PICKAXE",
-      "count" : 1
-    } ]
-  } ]
+
+
+
+    {
+      "result" : {
+        "item" : "IRON_AXE",
+        "count" : 1
+      },
+      "ingredients" : [ {
+        "item" : "DIAMOND_PICKAXE",
+        "count" : 1
+      } ]
+    }
+  ]
 }

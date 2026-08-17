@@ -1,7 +1,6 @@
 package core.items
 
 import app.feature.game.event.EventBusTypes
-import app.feature.game.event.GameEvent
 import app.feature.game.event.InventoryEvent
 import com.badlogic.gdx.assets.AssetManager
 import com.badlogic.gdx.graphics.g2d.TextureAtlas
@@ -95,6 +94,23 @@ class InventoryManager(
     fun canCraft(recipe: CraftingRecipeData): Boolean {
         if (recipe.ingredients.isEmpty()) return false
         return recipe.ingredients.all { countItem(it.item) >= it.count }
+    }
+
+    fun removeItem(id: String, count: Int, slot: Int): Boolean {
+        if (count <= 0) return true
+        if (countItem(id) < count) return false
+        val inventoryItem = inventorySlots[slot] ?: return false
+        if (inventoryItem.item.id != id) return false
+        inventoryItem.count -= count
+
+        if (inventoryItem.count <= 0) {
+            inventorySlots[slot] = null
+            eventBus.sendEvent(InventoryEvent.OnUpdate(null, slot))
+        } else {
+            inventoryItem.refreshCount()
+            eventBus.sendEvent(InventoryEvent.OnUpdate(inventoryItem, slot))
+        }
+        return true
     }
 
     fun removeItem(id: String, count: Int): Boolean {

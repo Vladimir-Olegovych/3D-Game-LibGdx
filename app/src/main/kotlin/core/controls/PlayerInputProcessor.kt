@@ -22,12 +22,12 @@ import kotlin.math.sin
 class PlayerInputProcessor: LaunchedEffect, InputProcessor {
 
     companion object {
-        const val PLAYER_SPEED = 6f
+        const val PLAYER_SPEED = 106f
         const val PLAYER_RUN_SPEED = 10f
         const val JUMP_FORCE = 10f
         const val JUMP_FORCE_REVERSE = -10f
         const val CAMERA_SENSITIVITY = 0.03f
-        const val DIG_DELTA = 0.2f
+        const val PLACE_DELTA = 0.5f
         const val MAX_VERTICAL_ANGLE = 89f
 
         const val VIEW_FIRST_PERSON = 0
@@ -113,12 +113,14 @@ class PlayerInputProcessor: LaunchedEffect, InputProcessor {
     fun update(deltaTime: Float) {
         if (isMouseLeftHold) { onLeftButtonClick() }
 
-        if (isMouseRightHold && deltaMouseRight >= DIG_DELTA) {
+        if (isMouseRightHold && deltaMouseRight >= PLACE_DELTA)
+        {
             onRightButtonClick()
             deltaMouseRight = 0f
-        } else if (isMouseRightHold) {
-            deltaMouseRight + deltaTime
         }
+
+        if (isMouseRightHold) { deltaMouseRight += deltaTime }
+        else { deltaMouseRight = PLACE_DELTA }
 
         yaw -= deltaMouseX * CAMERA_SENSITIVITY
         pitch = (pitch - deltaMouseY * CAMERA_SENSITIVITY).coerceIn(-MAX_VERTICAL_ANGLE, MAX_VERTICAL_ANGLE)

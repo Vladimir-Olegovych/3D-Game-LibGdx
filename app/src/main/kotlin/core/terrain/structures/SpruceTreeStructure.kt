@@ -39,7 +39,7 @@ class SpruceTreeStructure : StructureGenerator() {
 
         for (y in 0 until treeHeight) {
             chunkData.setBlockPending(
-                BlockType.WOOD,
+                BlockType.OAK_WOOD,
                 offset = IntVector3(0, y + 1, 0),
                 localPosition = localPosition,
                 worldPosition = worldPosition

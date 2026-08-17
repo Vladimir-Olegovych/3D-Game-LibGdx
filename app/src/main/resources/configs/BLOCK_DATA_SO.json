@@ -32,14 +32,24 @@
     "generateAllSides" : false,
     "generateCollider" : true
   }, {
-    "blockType" : "WOOD",
+    "blockType" : "OAK_WOOD",
     "regionNameUp" : "tile_oak_wood_top",
     "regionNameSide" : "tile_oak_wood_side",
     "regionNameDown" : "tile_oak_wood_top",
     "solid" : true,
     "generateAllSides" : false,
     "generateCollider" : true
-  }, {
+  },
+  {
+    "blockType" : "OAK_WOODEN_PLANKS",
+    "regionNameUp" : "tile_oak_wood_planks",
+    "regionNameSide" : "tile_oak_wood_planks",
+    "regionNameDown" : "tile_oak_wood_planks",
+    "solid" : true,
+    "generateAllSides" : false,
+    "generateCollider" : true
+  },
+  {
     "blockType" : "LEAVES",
     "regionNameUp" : "tile_oak_wood_leaves",
     "regionNameSide" : "tile_oak_wood_leaves",
@@ -73,7 +83,7 @@
     "digTime" : 0.5,
     "digItem" : "SWORD"
   }, {
-    "blockType" : "WOOD",
+    "blockType" : "OAK_WOOD",
     "digTime" : 1.5,
     "digItem" : "AXE"
   }, {
@@ -84,5 +94,10 @@
     "blockType" : "CACTUS",
     "digTime" : 0.6,
     "digItem" : "SWORD"
-  } ]
+  }, {
+    "blockType" : "OAK_WOODEN_PLANKS",
+    "digTime" : 1.1,
+    "digItem" : "AXE"
+  }
+  ]
 }

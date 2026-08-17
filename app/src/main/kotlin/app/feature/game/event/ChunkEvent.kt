@@ -7,9 +7,10 @@ import core.chunk.world.WorldGenerationData
 
 sealed class ChunkEvent {
     class LoadAdditionalChunksRequest(val playerPosition: IntVector3): GameEvent()
-    class OnSetBlock(val owner: Int?, val chunkPosition: IntVector3, val blockType: BlockType, val blockPosition: IntVector3)
+    class OnSetBlock(val owner: Int?, val isPlaceContext: Boolean, val chunkPosition: IntVector3, val blockType: BlockType, val blockPosition: IntVector3)
     class OnSetBlockFeedBack(
         val owner: Int?,
+        val isPlaceContext: Boolean,
         val chunkPosition: IntVector3,
         val blockPosition: IntVector3,
         val removedBlockType: BlockType,

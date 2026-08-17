@@ -12,6 +12,7 @@ import com.artemis.systems.IteratingSystem
 import com.gigapi.eventbus.EventBus
 import com.gigapi.eventbus.annotation.BusEvent
 import core.blocks.BlockDataManager
+import core.blocks.BlockType
 import core.bullet.raycast.RayCastTypes
 import core.controls.PlayerInputProcessor
 import core.defaults.WorldConstants
@@ -39,7 +40,29 @@ class BlockProcessingSystem: IteratingSystem() {
     @BusEvent
     fun onSetBlockFeedBack(event: ChunkEvent.OnSetBlockFeedBack) {
         if (!event.isSuccess) return
-        inventoryManager.addItem(event.removedBlockType)
+        if (!event.isPlaceContext) {
+            inventoryManager.addItem(event.removedBlockType)
+        } else {
+            val slot = playerInputProcessor.getSelectedSlot()
+            val r = inventoryManager.removeItem(event.setBlockType.name, 1, slot)
+            println("remove $r")
+        }
+    }
+
+    @BusEvent
+    fun onBlockPlaceRayCastResult(event: GameEvent.OnRayCastPlaceBlockResult) {
+        val owner = WorldConstants.getLocalPlayerEntityId()
+        val slot = playerInputProcessor.getSelectedSlot()
+        val itemToSet = inventoryManager.getInventoryItem(slot)?: return
+        println(itemToSet.item.name)
+        val blockToSet = BlockType.fromName(itemToSet.item.name)?: return
+        mainEventBus.sendEvent(ChunkEvent.OnSetBlock(
+            owner = owner,
+            isPlaceContext = true,
+            chunkPosition = event.chunkPosition,
+            blockPosition = event.blockPosition,
+            blockType = blockToSet,
+        ))
     }
 
     @BusEvent
@@ -105,6 +128,7 @@ class BlockProcessingSystem: IteratingSystem() {
 
         mainEventBus.sendEvent(ChunkEvent.OnSetBlock(
             owner = owner,
+            isPlaceContext = false,
             chunkPosition = component.chunkPosition,
             blockPosition = component.blockPosition,
             blockType = component.blockToSet,

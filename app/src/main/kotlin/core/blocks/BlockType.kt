@@ -1,18 +1,30 @@
 package core.blocks
 
-enum class BlockType(val id: Byte) {
-    NOTHING(0),
-    AIR(1),
-    GRASS(2),
-    DIRT(3),
-    STONE(4),
-    WOOD(5),
-    LEAVES(6),
-    SAND(7),
-    CACTUS(8);
+enum class BlockType {
+    NOTHING,
+    AIR,
+    GRASS,
+    DIRT,
+    STONE,
+    OAK_WOOD,
+    OAK_WOODEN_PLANKS,
+    LEAVES,
+    SAND,
+    CACTUS;
 
     companion object {
-        private val map = entries.associateBy(BlockType::id)
-        fun fromByte(id: Byte): BlockType = map[id] ?: NOTHING
+        fun fromName(name: String): BlockType? {
+            entries.forEach { bt -> if (bt.name.equals(name, ignoreCase = true)) return bt }
+            return null
+        }
+        fun toByte(blockType: BlockType): Byte {
+            val index = entries.indexOf(blockType)
+            return if (index >= 0) (index + 1).toByte() else 0
+        }
+
+        fun fromByte(id: Byte): BlockType {
+            val index = id.toInt() - 1
+            return if (index >= 0 && index < entries.size) entries[index] else entries[0]
+        }
     }
 }

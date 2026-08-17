@@ -42,7 +42,7 @@ class OakTreeStructure: StructureGenerator() {
             val offsetZ = if (y > treeHeight / 2) trunkOffset else 0
 
             chunkData.setBlockPending(
-                BlockType.WOOD,
+                BlockType.OAK_WOOD,
                 offset = IntVector3(offsetX, y + 1, offsetZ),
                 localPosition = localPosition,
                 worldPosition = worldPosition
@@ -111,7 +111,7 @@ class OakTreeStructure: StructureGenerator() {
                 val posZ = zOffset * i
 
                 chunkData.setBlockPending(
-                    BlockType.WOOD,
+                    BlockType.OAK_WOOD,
                     offset = IntVector3(posX, branchHeight + i/2, posZ),
                     localPosition = localPosition,
                     worldPosition = worldPosition

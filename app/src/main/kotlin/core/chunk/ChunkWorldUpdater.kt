@@ -306,9 +306,11 @@ class ChunkWorldUpdater : LaunchedEffect, DisposableEffect, DeltaUpdater(1 / 60F
     @BusEvent
     fun setBlock(event: ChunkEvent.OnSetBlock) {
         val chunkData = chunkDataMap[event.chunkPosition]
-        if (chunkData == null || chunkData.status == ChunkStatus.GENERATION) {
+        val currentBlock = chunkData?.getBlockByLocal(event.blockPosition)
+        if (chunkData == null || chunkData.status == ChunkStatus.GENERATION || (event.isPlaceContext && currentBlock != BlockType.AIR)) {
             mainEventBus.sendEvent(ChunkEvent.OnSetBlockFeedBack(
                 owner = event.owner,
+                isPlaceContext = event.isPlaceContext,
                 chunkPosition = event.chunkPosition,
                 blockPosition = event.blockPosition,
                 removedBlockType = BlockType.NOTHING,
@@ -355,6 +357,7 @@ class ChunkWorldUpdater : LaunchedEffect, DisposableEffect, DeltaUpdater(1 / 60F
             }
             mainEventBus.sendEvent(ChunkEvent.OnSetBlockFeedBack(
                 owner = event.owner,
+                isPlaceContext = event.isPlaceContext,
                 chunkPosition = event.chunkPosition,
                 blockPosition = event.blockPosition,
                 removedBlockType = removedBlockType,
@@ -383,6 +386,30 @@ class ChunkWorldUpdater : LaunchedEffect, DisposableEffect, DeltaUpdater(1 / 60F
             requestId = RayCastTypes.CHUNK_DIG_RAY_CAST,
             chunkEntityId = chunkEntityId,
             blockToSet = BlockType.AIR,
+            blockToRemove = currentBlock,
+            chunkPosition = chunkPosition,
+            blockPosition = blockPosition
+        ))
+    }
+    @BusEvent
+    fun onPlaceCastResult(event: GameEvent.OnRayCastResult) {
+        if (event.requestId != RayCastTypes.CHUNK_PLACE_RAY_CAST || !event.hasHit) return
+
+        val normal = event.direction.nor()
+        val offset = normal.scl(0.2f)
+        val hitPoint = event.hitPoint.sub(offset)
+
+        val chunkPosition = WorldDataHelper.getChunkPositionFromWorldPosition(hitPoint)
+        val chunkEntityId = chunkDataPositionToEntityId[chunkPosition] ?: return
+        val chunkData = chunkDataMap[chunkPosition] ?: return
+        val blockPosition = ChunkHelper.getBlockPositionFromWorldPosition(hitPoint)
+        val currentBlock = chunkData.getBlockByLocal(blockPosition)
+
+        if (chunkData.status == ChunkStatus.GENERATION) return
+        if (currentBlock != BlockType.AIR) return
+
+        mainEventBus.sendEvent(GameEvent.OnRayCastPlaceBlockResult(
+            chunkEntityId = chunkEntityId,
             blockToRemove = currentBlock,
             chunkPosition = chunkPosition,
             blockPosition = blockPosition
