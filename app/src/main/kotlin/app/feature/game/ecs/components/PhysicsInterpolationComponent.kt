@@ -16,8 +16,7 @@ class PhysicsInterpolationComponent : Component() {
     var hasPending = false
 
     companion object {
-        /** Higher = snappier follow of physics samples. ~20 matches 20 Hz updater. */
-        const val SMOOTHING = 8f
-        const val SNAP_DISTANCE = 16f
+        const val SMOOTHING = 10f
+        const val SNAP_DISTANCE = 32f
     }
 }

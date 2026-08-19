@@ -22,7 +22,7 @@ import kotlin.math.sin
 class PlayerInputProcessor: LaunchedEffect, InputProcessor {
 
     companion object {
-        const val PLAYER_SPEED = 106f
+        const val PLAYER_SPEED = 6f
         const val PLAYER_RUN_SPEED = 10f
         const val JUMP_FORCE = 10f
         const val JUMP_FORCE_REVERSE = -10f

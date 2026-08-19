@@ -95,8 +95,8 @@ object WorldDataHelper {
         val centerChunk = chunkPositionFromBlockCoords(playerPosition)
         val chunkPositionsToCreate = mutableListOf<IntVector3>()
 
-        val radiusXZ = chunkDrawingRangeX + 2
-        val radiusY = chunkDrawingRangeY + 2
+        val radiusXZ = chunkDrawingRangeX + 5
+        val radiusY = chunkDrawingRangeY + 5
 
         val centerX = centerChunk.x
         val centerY = centerChunk.y
@@ -182,6 +182,27 @@ object WorldDataHelper {
             .toList()
     }
 
+    fun getNeighboursPositions(chunkPos: IntVector3): Set<IntVector3> {
+        val neighbors = mutableSetOf<IntVector3>()
+
+        val centerX = chunkPos.x
+        val centerY = chunkPos.y
+        val centerZ = chunkPos.z
+
+        for (dx in -1..1) {
+            for (dz in -1..1) {
+                if (dx == 0 && dz == 0) continue
+                val neighborPos = IntVector3(
+                    centerX + dx,
+                    centerY,
+                    centerZ + dz
+                )
+                neighbors.add(neighborPos)
+            }
+        }
+
+        return neighbors
+    }
     fun getExistingNeighboursNeedingBorderRemesh(
         chunkData: ChunkData,
         chunkMap: Map<IntVector3, ChunkData>,

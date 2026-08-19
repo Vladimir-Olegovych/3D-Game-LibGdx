@@ -18,7 +18,7 @@ import core.chunk.ChunkData
 import core.defaults.WorldConstants
 import kotlinx.coroutines.Dispatchers
 
-class PhysicsWorldUpdater: LaunchedEffect, DeltaUpdater(1 / 30F, Dispatchers.Default) {
+class PhysicsWorldUpdater: LaunchedEffect, DeltaUpdater(1 / 20F, Dispatchers.Default) {
 
     private lateinit var physicalEventBus: EventBus
     private lateinit var mainEventBus: EventBus

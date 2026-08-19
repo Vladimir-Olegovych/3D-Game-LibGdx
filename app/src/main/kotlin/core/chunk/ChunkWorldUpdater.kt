@@ -76,10 +76,7 @@ class ChunkWorldUpdater : LaunchedEffect, DisposableEffect, DeltaUpdater(1 / 60F
         shadowUpdater = gContext.getObject()
         terrainGenerator = gContext.getObject()
         mainScope = CoroutineScope(gContext.getObject<CoroutineDispatcher>(DispatcherTypes.MAIN))
-        worldPendingBlocks.bind(
-            chunkDataMap = chunkDataMap,
-            isMeshDrawn = { pos -> meshDataMap[pos]?.mesh != null }
-        )
+        worldPendingBlocks.bind(chunkDataMap = chunkDataMap)
         chunkEventBus?.registerHandler(this)
         mainEventBus.registerHandler(this)
     }
@@ -130,7 +127,7 @@ class ChunkWorldUpdater : LaunchedEffect, DisposableEffect, DeltaUpdater(1 / 60F
         }
         generationData.chunkDataToRemove.forEach { pos ->
             removedChunkDates.add(pos)
-            worldPendingBlocks.discardChunk(pos)
+            worldPendingBlocks.deleteChunk(pos)
             chunkDataPositionToEntityId[pos]?.let { entityId ->
                 mainEventBus.sendEvent(GameEvent.OnRemoveChunkData(entityId))
                 chunkDataMap.remove(pos)
@@ -178,55 +175,49 @@ class ChunkWorldUpdater : LaunchedEffect, DisposableEffect, DeltaUpdater(1 / 60F
     @BusEvent
     fun chunkPendingGenerationResponse(event: ChunkEvent.OnAcceptPendingResponse) {
         lifecycleScope.launch(Dispatchers.Default) {
-            val creating = event.generationData.chunkPositionsToCreate.toHashSet()
-            val snapshot = ArrayList(worldPendingBlocks.dirtyMeshChunks)
-            worldPendingBlocks.dirtyMeshChunks.removeAll(snapshot.toSet())
-
-            val dirty = snapshot.map { IntVector3(it.x, it.y, it.z) }.filter { pos ->
-                pos !in creating &&
-                        meshDataMap[pos]?.mesh != null &&
-                        chunkDataMap[pos]?.status != ChunkStatus.GENERATION
-            }
-
-            val meshJobs = coroutineScope {
-                dirty.map { chunkPos ->
-                    async(Dispatchers.Default) {
-                        parallelismMesh.withPermit {
-                            remeshChunk(chunkPos)
-                        }
-                    }
-                }
-            }
-            meshJobs.awaitAll()
-            chunkEventBus?.sendEvent(ChunkEvent.OnDrawResponse(event.generationData))
-        }
-    }
-    @BusEvent
-    fun chunkDrawResponse(event: ChunkEvent.OnDrawResponse) {
-        lifecycleScope.launch {
-            val shadowDirty = ConcurrentHashMap.newKeySet<IntVector3>()
-            val pendingJobs = coroutineScope {
+            val pendingMeshJobs = coroutineScope {
                 event.generationData.chunkPositionsToCreate.map { position ->
                     async(Dispatchers.Default) {
-                        parallelismMesh.withPermit {
+                        if (isFirstGeneration) parallelismStart.withPermit {
+                            updatePending(position)
+                        } else parallelismChunk.withPermit {
                             updatePending(position)
                         }
                     }
                 }
             }
-            pendingJobs.awaitAll()
+            pendingMeshJobs.awaitAll()
+            val pendingDataJobs = coroutineScope {
+                event.generationData.chunkDataPositionsToCreate.map { position ->
+                    async(Dispatchers.Default) {
+                        if (isFirstGeneration) parallelismStart.withPermit {
+                            updatePending(position)
+                        } else parallelismChunk.withPermit {
+                            updatePending(position)
+                        }
+                    }
+                }
+            }
+            pendingDataJobs.awaitAll()
+
             val shadowJobs = coroutineScope {
                 event.generationData.chunkPositionsToCreate
                     .sortedByDescending { it.y }
                     .map { position ->
                         async(Dispatchers.Default) {
                             parallelismMesh.withPermit {
-                                updateShadow(position, shadowDirty)
+                                updateShadow(position, null)
                             }
                         }
                     }
             }
             shadowJobs.awaitAll()
+            chunkEventBus?.sendEvent(ChunkEvent.OnDrawResponse(event.generationData))
+        }
+    }
+    @BusEvent
+    fun chunkDrawResponse(event: ChunkEvent.OnDrawResponse) {
+        lifecycleScope.launch {
             val meshJobs = coroutineScope {
                 event.generationData.chunkPositionsToCreate.map { position ->
                     async(Dispatchers.Default) {
@@ -239,40 +230,6 @@ class ChunkWorldUpdater : LaunchedEffect, DisposableEffect, DeltaUpdater(1 / 60F
                 }
             }
             meshJobs.awaitAll()
-            // Remesh neighbors only after all new meshes are created — avoids Create/Update races
-            // from structure overhangs and updateChunksBelow during parallel draw.
-            val creating = event.generationData.chunkPositionsToCreate.toHashSet()
-            val existingMeshed = chunkDataMap.keys.filterTo(mutableSetOf()) { pos ->
-                pos !in creating &&
-                        meshDataMap[pos]?.mesh != null &&
-                        chunkDataMap[pos]?.status != ChunkStatus.GENERATION
-            }
-            val borderRemeshCandidates = creating.flatMap { pos ->
-                chunkDataMap[pos]?.let { chunk ->
-                    WorldDataHelper.getExistingNeighboursNeedingBorderRemesh(
-                        chunk, chunkDataMap, existingMeshed
-                    )
-                } ?: emptySet()
-            }
-            val toRemesh = borderRemeshCandidates.filter { pos ->
-                pos !in creating &&
-                        meshDataMap[pos]?.mesh != null &&
-                        chunkDataMap[pos]?.status != ChunkStatus.GENERATION &&
-                        !removedChunkMeshes.contains(pos) &&
-                        !removedChunkDates.contains(pos)
-            }.toSet()
-
-            val remeshJobs = coroutineScope {
-                toRemesh.map { chunkPos ->
-                    async(Dispatchers.Default) {
-                        parallelismMesh.withPermit {
-                            remeshChunk(chunkPos)
-                        }
-                    }
-                }
-            }
-            remeshJobs.awaitAll()
-
             chunkEventBus?.sendEvent(ChunkEvent.OnFinalizeResponse(event.generationData))
         }
     }
@@ -474,7 +431,6 @@ class ChunkWorldUpdater : LaunchedEffect, DisposableEffect, DeltaUpdater(1 / 60F
         terrainGenerator.generateChunkData(chunkData)
         // Accept cross-chunk structure writes before this chunk is considered ready / meshed.
         chunkData.status = ChunkStatus.CREATED
-        worldPendingBlocks.applyTo(chunkData)
         mainEventBus.sendEvent(
             GameEvent.OnCreateChunkTransform(
                 chunkEntityId = chunkEntityId,
@@ -506,11 +462,11 @@ class ChunkWorldUpdater : LaunchedEffect, DisposableEffect, DeltaUpdater(1 / 60F
     private suspend fun updatePending(position: IntVector3) {
         if (removedChunkDates.contains(position) || removedChunkMeshes.contains(position)) return
         chunkMeshPositionToEntityId[position]?: return
-        // Catch any pending that arrived after CREATED (neighbor still generating).
         val chunkData = chunkDataMap[position]?: return
-        worldPendingBlocks.applyTo(chunkData)
+        worldPendingBlocks.applyChunk(chunkData)
     }
-    private suspend fun updateShadow(position: IntVector3, shadowDirty: MutableSet<IntVector3>) {
+
+    private suspend fun updateShadow(position: IntVector3, shadowDirty: MutableSet<IntVector3>?) {
         if (removedChunkDates.contains(position) || removedChunkMeshes.contains(position)) return
         chunkMeshPositionToEntityId[position]?: return
         // Catch any pending that arrived after CREATED (neighbor still generating).
@@ -520,7 +476,7 @@ class ChunkWorldUpdater : LaunchedEffect, DisposableEffect, DeltaUpdater(1 / 60F
             chunkData = chunkData,
             updateChunksBelow = false
         )
-        shadowDirty.addAll(shadowResult.changedChunks)
+        shadowDirty?.addAll(shadowResult.changedChunks)
     }
 
     private suspend fun drawChunkData(
