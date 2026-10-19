@@ -6,9 +6,10 @@ import app.feature.game.ecs.components.MeshComponent
 import app.feature.game.ecs.components.TransformComponent
 import app.feature.game.event.ChunkEvent
 import app.feature.game.event.EventBusTypes
-import app.feature.game.event.GameEvent
+import app.feature.game.event.GameChunkEvent
 import com.artemis.BaseSystem
 import com.artemis.ComponentMapper
+import com.artemis.EntityManager
 import com.artemis.annotations.All
 import com.artemis.annotations.Wire
 import com.badlogic.gdx.assets.AssetManager
@@ -43,6 +44,7 @@ class ChunkSystem: BaseSystem() {
     private lateinit var transformMapper: ComponentMapper<TransformComponent>
     private lateinit var chunkMapper: ComponentMapper<ChunkComponent>
     private lateinit var meshMapper: ComponentMapper<MeshComponent>
+    private lateinit var em: EntityManager
 
     private lateinit var chunkMeshTextureData: Texture
 
@@ -58,6 +60,7 @@ class ChunkSystem: BaseSystem() {
     }
 
     override fun processSystem() {
+        //println(chunkWorldUpdater.isA)
         val playerEntityId = WorldConstants.getLocalPlayerEntityId()
         val playerTransform = transformMapper[playerEntityId]?.transform
 
@@ -81,31 +84,29 @@ class ChunkSystem: BaseSystem() {
         chunkWorldUpdater.stop(false)
     }
 
-
     @BusEvent
-    fun onChunkEntitiesRequest(event: ChunkEvent.ChunkEntitiesRequest) {
-        val generationData = event.generationData
-        val entities = HashMap<IntVector3, Int>()
-
-        for (pos in generationData.chunkDataPositionsToCreate) {
+    fun onRequireChunkEntityIds(event: GameChunkEvent.OnRequireChunkEntityIds) {
+        val worldChunksPreparation = event.worldChunksPreparation
+        val entityIds = hashMapOf<IntVector3, Int>()
+        worldChunksPreparation.toCreateChunkDates.forEach { position ->
             val entityId = world.create()
-            entities[pos] = entityId
+            entityIds[position] = entityId
         }
-
-        chunkEventBus.sendEvent(ChunkEvent.ChunkEntitiesResponse(
-            generationData = generationData,
-            entities = entities
+        chunkEventBus.sendEvent(ChunkEvent.ChunksGenerating(
+            entityIds = entityIds,
+            worldChunksPreparation = worldChunksPreparation
         ))
     }
+
     @BusEvent
-    fun onChunkDataCreated(event: GameEvent.OnCreateChunkTransform) {
+    fun onChunkDataCreated(event: GameChunkEvent.OnCreateChunkTransform) {
         val entityId = event.chunkEntityId
         chunkMapper.create(entityId)
         transformMapper.create(entityId).transform = event.transform
     }
 
     @BusEvent
-    fun onUpdateChunkMeshData(event: GameEvent.OnUpdateChunkMeshData) {
+    fun onUpdateChunkMeshData(event: GameChunkEvent.OnUpdateChunkMeshData) {
         val entityId = event.chunkEntityId
         val meshComponent = meshMapper[entityId]?: meshMapper.create(entityId)
         meshComponent.dispose()
@@ -117,8 +118,9 @@ class ChunkSystem: BaseSystem() {
     }
 
     @BusEvent
-    fun onMeshDataCreated(event: GameEvent.OnCreateChunkMeshData) {
+    fun onMeshDataCreated(event: GameChunkEvent.OnCreateChunkMeshData) {
         val entityId = event.chunkEntityId
+        if (!em.isActive(entityId)) return
         val mesh = event.meshData.mesh ?: return
         val meshComponent = meshMapper[entityId] ?: meshMapper.create(entityId)
         meshComponent.dispose()
@@ -129,14 +131,16 @@ class ChunkSystem: BaseSystem() {
     }
 
     @BusEvent
-    fun onChunkDataRemoved(event: GameEvent.OnRemoveChunkData) {
+    fun onChunkDataRemoved(event: GameChunkEvent.OnRemoveChunkData) {
+        if (!em.isActive(event.chunkEntityId)) return
         chunkMapper.remove(event.chunkEntityId)
         transformMapper.remove(event.chunkEntityId)
         world.delete(event.chunkEntityId)
     }
 
     @BusEvent
-    fun onMeshDataRemoved(event: GameEvent.OnRemoveChunkMeshData) {
+    fun onMeshDataRemoved(event: GameChunkEvent.OnRemoveChunkMeshData) {
+        if (!em.isActive(event.chunkEntityId)) return
         meshMapper[event.chunkEntityId]?.dispose()
         meshMapper.remove(event.chunkEntityId)
         boundMapper.remove(event.chunkEntityId)

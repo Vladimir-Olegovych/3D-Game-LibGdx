@@ -76,7 +76,6 @@ class MeshHelper: MeshGenerator, LaunchedEffect {
                                     (neighborBlockData?.generateAllSides == true && !blockData.generateAllSides)
                         if (!shouldRenderFace) continue
 
-                        val shadow = getNeighborShadow(chunkData, chunkMap, nx, ny, nz, w, h)
                         MeshUtils.addChunkFace(
                             blockDataManager = blockDataManager,
                             verticesList = verticesList,
@@ -85,7 +84,6 @@ class MeshHelper: MeshGenerator, LaunchedEffect {
                             normal = dir.normal,
                             blockType = block,
                             directionType = dir.directionType,
-                            shadow = shadow,
                             blockExists = { wx, wy, wz ->
                                 when(getNeighborBlock(chunkData, chunkMap, wx, wy, wz, w, h)) {
                                     BlockType.AIR, BlockType.NOTHING -> false
@@ -209,77 +207,6 @@ class MeshHelper: MeshGenerator, LaunchedEffect {
         } else {
             BlockType.NOTHING
         }
-    }
-
-    private fun getNeighborShadow(
-        currentChunk: ChunkData,
-        chunkMap: Map<IntVector3, ChunkData>,
-        nx: Int, ny: Int, nz: Int,
-        w: Int, h: Int
-    ): Float {
-        if (nx in 0 until w && ny in 0 until h && nz in 0 until w) {
-            return currentChunk.getDefaultShadowValue(nx, ny, nz)
-        }
-
-        var chunkOffX = 0
-        var chunkOffY = 0
-        var chunkOffZ = 0
-        var localX = nx
-        var localY = ny
-        var localZ = nz
-
-        when {
-            nx < 0 -> {
-                chunkOffX = -1
-                localX = nx + w
-            }
-            nx >= w -> {
-                chunkOffX = 1
-                localX = nx - w
-            }
-        }
-        when {
-            ny < 0 -> {
-                chunkOffY = -1
-                localY = ny + h
-            }
-            ny >= h -> {
-                chunkOffY = 1
-                localY = ny - h
-            }
-        }
-        when {
-            nz < 0 -> {
-                chunkOffZ = -1
-                localZ = nz + w
-            }
-            nz >= w -> {
-                chunkOffZ = 1
-                localZ = nz - w
-            }
-        }
-
-        val neighborChunkPos = IntVector3(
-            currentChunk.position.x + chunkOffX,
-            currentChunk.position.y + chunkOffY,
-            currentChunk.position.z + chunkOffZ
-        )
-        val neighborChunk = chunkMap[neighborChunkPos]
-        if (neighborChunk != null &&
-            localX in 0 until w &&
-            localY in 0 until h &&
-            localZ in 0 until w
-        ) {
-            return neighborChunk.getDefaultShadowValue(localX, localY, localZ)
-        }
-
-        // Missing neighbor chunk: do not assume full sky (was causing bright structure faces
-        // on chunk borders). Fall back to this chunk's edge cell.
-        return currentChunk.getDefaultShadowValue(
-            nx.coerceIn(0, w - 1),
-            ny.coerceIn(0, h - 1),
-            nz.coerceIn(0, w - 1)
-        )
     }
 
 }

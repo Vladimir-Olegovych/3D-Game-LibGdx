@@ -32,9 +32,8 @@ val chunkMeshParams = MeshParams(
         VertexAttribute(VertexAttributes.Usage.Normal, 3, "a_Normal"),
         VertexAttribute(VertexAttributes.Usage.TextureCoordinates, 2, "a_TexCoord"),
         VertexAttribute(VertexAttributes.Usage.Generic, 1, "a_AO"),
-        VertexAttribute(VertexAttributes.Usage.Generic, 1, "a_Shadow")
     ),
-    stride = 10
+    stride = 9
 )
 
 val defaultPlayerHitBox = createHitboxModel(1F, 1.8F)
@@ -450,7 +449,6 @@ object MeshUtils {
         normal: VertexAttribute3.Normal,
         blockType: BlockType,
         directionType: DirectionType,
-        shadow: Float,
         blockExists: (Int, Int, Int) -> Boolean
     ) {
         val x = bx.toFloat()
@@ -520,7 +518,6 @@ object MeshUtils {
             verticesList.add(uv.x)
             verticesList.add(uv.y)
             verticesList.add(ao[i])
-            verticesList.add(shadow)
         }
 
         if (flip) {

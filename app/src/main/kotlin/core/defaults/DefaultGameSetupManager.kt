@@ -8,15 +8,12 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch
 import com.badlogic.gdx.math.Vector3
 import com.badlogic.gdx.scenes.scene2d.Stage
 import com.gigapi.effects.LaunchedEffect
-import com.gigapi.eventbus.EventBus
 import com.gigapi.general.GContext
 import com.gigapi.kryo.GameClient
 import com.gigapi.viewport.UnfairViewport
 import core.blocks.BlockDataManager
 import core.chunk.ChunkWorldUpdater
 import core.mesh.MeshHelper
-import core.chunk.ShadowUpdater
-import core.client.ClientAcceptor
 import core.scope.DispatcherTypes
 import core.terrain.TerrainGenerator
 import core.viewport.ViewportTypes
@@ -52,8 +49,6 @@ object DefaultGameSetupManager: Executor, LaunchedEffect {
         gContext.setObject(BlockDataManager())
         //---
         gContext.setObject(MeshHelper())
-        //---
-        gContext.setObject(ShadowUpdater())
         //---
         gContext.setObject<CoroutineDispatcher>(DispatcherTypes.MAIN, asCoroutineDispatcher())
         //---

@@ -1,9 +1,10 @@
 package core.controls
 
 import app.feature.game.event.EventBusTypes
-import app.feature.game.event.GameEvent
+import app.feature.game.event.GameChunkEvent
 import app.feature.game.event.HotKeyEvent
 import app.feature.game.event.InventoryEvent
+import app.feature.game.event.PhysicsEvent
 import app.feature.game.ui.InventoryUI.Companion.TOOL_BAR_SIZE
 import com.badlogic.gdx.Input.Buttons
 import com.badlogic.gdx.Input.Keys
@@ -22,7 +23,7 @@ import kotlin.math.sin
 class PlayerInputProcessor: LaunchedEffect, InputProcessor {
 
     companion object {
-        const val PLAYER_SPEED = 6f
+        const val PLAYER_SPEED = 106f
         const val PLAYER_RUN_SPEED = 10f
         const val JUMP_FORCE = 10f
         const val JUMP_FORCE_REVERSE = -10f
@@ -165,7 +166,7 @@ class PlayerInputProcessor: LaunchedEffect, InputProcessor {
 
     private fun onLeftButtonClick() {
         physicsEventBus.sendEvent(
-            GameEvent.OnRayCastRequest(
+            PhysicsEvent.OnRayCastRequest(
                 requestId = RayCastTypes.CHUNK_DIG_RAY_CAST,
                 from = camera.position.cpy(),
                 direction = camera.direction.cpy(),
@@ -176,7 +177,7 @@ class PlayerInputProcessor: LaunchedEffect, InputProcessor {
 
     private fun onRightButtonClick() {
         physicsEventBus.sendEvent(
-            GameEvent.OnRayCastRequest(
+            PhysicsEvent.OnRayCastRequest(
                 requestId = RayCastTypes.CHUNK_PLACE_RAY_CAST,
                 from = camera.position.cpy(),
                 direction = camera.direction.cpy(),

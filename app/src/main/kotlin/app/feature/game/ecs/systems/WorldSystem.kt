@@ -3,7 +3,7 @@ package app.feature.game.ecs.systems
 import app.feature.game.ecs.components.*
 import app.feature.game.event.ChunkEvent
 import app.feature.game.event.EventBusTypes
-import app.feature.game.event.GameEvent
+import app.feature.game.event.PhysicsEvent
 import com.artemis.BaseSystem
 import com.artemis.ComponentMapper
 import com.artemis.World
@@ -87,7 +87,7 @@ class WorldSystem: BaseSystem() {
         }
 
         physicsEventBus.sendEvent(
-            GameEvent.OnCreateMeshRigidBody(
+            PhysicsEvent.OnCreateMeshRigidBody(
                 entityId = playerEntityId,
                 position = event.position,
                 rawMeshData = playerPhysicalModel,

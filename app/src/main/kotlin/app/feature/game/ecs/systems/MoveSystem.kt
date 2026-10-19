@@ -3,7 +3,7 @@ package app.feature.game.ecs.systems
 import app.feature.game.ecs.components.ForceMoveComponent
 import app.feature.game.ecs.components.LinearMoveComponent
 import app.feature.game.event.EventBusTypes
-import app.feature.game.event.GameEvent
+import app.feature.game.event.PhysicsEvent
 import com.artemis.ComponentMapper
 import com.artemis.annotations.One
 import com.artemis.annotations.Wire
@@ -22,7 +22,7 @@ class MoveSystem: IteratingSystem() {
         linearMoveMapper[entityId]?.let { component ->
             if (!component.dirty) return@let
             physicsEventBus.sendEvent(
-                GameEvent.OnApplyLinearForce(
+                PhysicsEvent.OnApplyLinearForce(
                     entityId,
                     component.ignoreYLinear,
                     component.direction.cpy()
@@ -33,7 +33,7 @@ class MoveSystem: IteratingSystem() {
         forceMoveMapper[entityId]?.let { component ->
             if (!component.dirty) return@let
             physicsEventBus.sendEvent(
-                GameEvent.OnApplyForce(
+                PhysicsEvent.OnApplyForce(
                     entityId,
                     component.direction.cpy()
                 )

@@ -4,7 +4,8 @@ import app.feature.game.ecs.components.BoundRadiusComponent
 import app.feature.game.ecs.components.MeshComponent
 import app.feature.game.ecs.components.TransformComponent
 import app.feature.game.event.EventBusTypes
-import app.feature.game.event.GameEvent
+import app.feature.game.event.GameChunkEvent
+import app.feature.game.event.PhysicsEvent
 import com.artemis.World
 import com.badlogic.gdx.assets.AssetManager
 import com.badlogic.gdx.graphics.g2d.TextureAtlas
@@ -45,7 +46,7 @@ fun World.startTest100Box() {
                     this@apply.meshData = meshData
                     this@apply.meshTextureData = meshTexture
                 }
-                physicsEventBus.sendEvent(GameEvent.OnCreateMeshRigidBody(
+                physicsEventBus.sendEvent(PhysicsEvent.OnCreateMeshRigidBody(
                     entityId = entityId,
                     position = Vector3(x * m + 10, y * m + 700, z * m + 10),
                     rawMeshData = playerPhysicalModel

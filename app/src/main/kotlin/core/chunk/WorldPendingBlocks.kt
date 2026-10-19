@@ -5,10 +5,6 @@ import core.blocks.BlockType
 import core.chunk.world.WorldDataHelper
 import java.util.concurrent.ConcurrentHashMap
 
-/**
- * Cross-chunk structure writes go here, keyed by target chunk.
- * Applied before first mesh; already-drawn targets are marked dirty for batched remesh.
- */
 class WorldPendingBlocks {
 
     private val pendingByChunk = ConcurrentHashMap<IntVector3, ConcurrentHashMap<Int, BlockType>>()
@@ -35,7 +31,7 @@ class WorldPendingBlocks {
         pendingByChunk.remove(chunkPosition)
     }
 
-    fun offer(worldX: Int, worldY: Int, worldZ: Int, blockType: BlockType) {
+    fun offer(owner: IntVector3, worldX: Int, worldY: Int, worldZ: Int, blockType: BlockType) {
         val cx = WorldDataHelper.floorDiv(worldX, ChunkWorldUpdater.CHUNK_SIZE)
         val cy = WorldDataHelper.floorDiv(worldY, ChunkWorldUpdater.CHUNK_HEIGHT)
         val cz = WorldDataHelper.floorDiv(worldZ, ChunkWorldUpdater.CHUNK_SIZE)
@@ -51,7 +47,6 @@ class WorldPendingBlocks {
             map = ConcurrentHashMap()
             pendingByChunk[chunkKey] = map
         }
-
         map[index] = blockType
     }
 

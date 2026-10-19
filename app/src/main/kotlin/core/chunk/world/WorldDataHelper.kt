@@ -62,22 +62,22 @@ object WorldDataHelper {
         val centerY = centerChunk.y
         val centerZ = centerChunk.z
 
-        for (dx in -chunkDrawingRangeX..chunkDrawingRangeX) {
-            for (dy in -chunkDrawingRangeY..chunkDrawingRangeY) {
-                for (dz in -chunkDrawingRangeX..chunkDrawingRangeX) {
-                    val radiusSquaredXZ = chunkDrawingRangeX * chunkDrawingRangeX
-                    val radiusSquaredY = chunkDrawingRangeY * chunkDrawingRangeY
+        val radiusXZ = chunkDrawingRangeX
+        val radiusY = chunkDrawingRangeY
 
-                    if (dx * dx / radiusSquaredXZ.toDouble() +
-                        dy * dy / radiusSquaredY.toDouble() +
-                        dz * dz / radiusSquaredXZ.toDouble() <= 1.0) {
-
-                        val chunkPos = IntVector3(
-                            centerX + dx,
-                            centerY + dy,
-                            centerZ + dz
-                        )
-                        chunkPositionsToCreate.add(chunkPos)
+        for (dx in -radiusXZ..radiusXZ) {
+            for (dz in -radiusXZ..radiusXZ) {
+                val horizontalDistSquared = dx * dx + dz * dz
+                if (horizontalDistSquared <= radiusXZ * radiusXZ) {
+                    for (dy in -radiusY..radiusY) {
+                        if (dy * dy <= radiusY * radiusY) {
+                            val chunkPos = IntVector3(
+                                centerX + dx,
+                                centerY + dy,
+                                centerZ + dz
+                            )
+                            chunkPositionsToCreate.add(chunkPos)
+                        }
                     }
                 }
             }
@@ -95,35 +95,62 @@ object WorldDataHelper {
         val centerChunk = chunkPositionFromBlockCoords(playerPosition)
         val chunkPositionsToCreate = mutableListOf<IntVector3>()
 
-        val radiusXZ = chunkDrawingRangeX + 5
-        val radiusY = chunkDrawingRangeY + 5
+        val radiusXZ = chunkDrawingRangeX + 1
+        val radiusY = chunkDrawingRangeY + 1
 
         val centerX = centerChunk.x
         val centerY = centerChunk.y
         val centerZ = centerChunk.z
 
         for (dx in -radiusXZ..radiusXZ) {
-            for (dy in -radiusY..radiusY) {
-                for (dz in -radiusXZ..radiusXZ) {
-                    val radiusSquaredXZ = radiusXZ * radiusXZ
-                    val radiusSquaredY = radiusY * radiusY
-
-                    if (dx * dx / radiusSquaredXZ.toDouble() +
-                        dy * dy / radiusSquaredY.toDouble() +
-                        dz * dz / radiusSquaredXZ.toDouble() <= 1.0) {
-
-                        val chunkPos = IntVector3(
-                            centerX + dx,
-                            centerY + dy,
-                            centerZ + dz
-                        )
-                        chunkPositionsToCreate.add(chunkPos)
+            for (dz in -radiusXZ..radiusXZ) {
+                val horizontalDistSquared = dx * dx + dz * dz
+                if (horizontalDistSquared <= radiusXZ * radiusXZ) {
+                    for (dy in -radiusY..radiusY) {
+                        if (dy * dy <= radiusY * radiusY) {
+                            val chunkPos = IntVector3(
+                                centerX + dx,
+                                centerY + dy,
+                                centerZ + dz
+                            )
+                            chunkPositionsToCreate.add(chunkPos)
+                        }
                     }
                 }
             }
         }
 
         return chunkPositionsToCreate
+    }
+    fun sortChunksByDistance(
+        chunks: MutableList<IntVector3>,
+        playerPosition: IntVector3
+    ) {
+        val playerChunk = chunkPositionFromBlockCoords(playerPosition)
+
+        chunks.sortBy { position ->
+            val dx = position.x - playerChunk.x
+            val dy = position.y - playerChunk.y
+            val dz = position.z - playerChunk.z
+
+            dx * dx + dy * dy + dz * dz
+        }
+    }
+
+    fun isOutsideRadius(
+        position: IntVector3,
+        center: IntVector3,
+        radiusXZ: Int,
+        radiusY: Int
+    ): Boolean {
+        val dx = position.x - center.x
+        val dy = position.y - center.y
+        val dz = position.z - center.z
+
+        val horizontalDistanceSquared = dx * dx + dz * dz
+
+        return horizontalDistanceSquared > radiusXZ * radiusXZ ||
+                dy * dy > radiusY * radiusY
     }
 
     fun getUnneededData(

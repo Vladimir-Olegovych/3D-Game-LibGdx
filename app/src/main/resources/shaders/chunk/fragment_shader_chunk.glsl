@@ -7,7 +7,6 @@ varying vec3 v_Normal;
 varying vec3 v_WorldPos;
 varying float v_FogFactor;
 varying float v_AO;
-varying float v_Shadow;
 
 uniform sampler2D u_texture;
 uniform vec3 objectColor;
@@ -30,10 +29,9 @@ void main() {
     albedo = mix(albedo, albedo * nightTint, blueAmount);
 
     float ambient = 0.05;
-    float shadow = v_Shadow;
     float ao      = v_AO;
     float nightFactor = mix(u_maxShadowThreshold, 1.0, u_dayPhase);
-    float effectiveShadow = shadow * nightFactor;
+    float effectiveShadow = nightFactor;
     float result_shadow = effectiveShadow * ao;
 
     float dirLight;

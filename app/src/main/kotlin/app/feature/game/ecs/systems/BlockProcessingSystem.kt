@@ -4,7 +4,7 @@ import app.feature.game.ecs.components.DiggingComponent
 import app.feature.game.ecs.components.MeshComponent
 import app.feature.game.event.ChunkEvent
 import app.feature.game.event.EventBusTypes
-import app.feature.game.event.GameEvent
+import app.feature.game.event.PhysicsEvent
 import com.artemis.ComponentMapper
 import com.artemis.annotations.All
 import com.artemis.annotations.Wire
@@ -50,7 +50,7 @@ class BlockProcessingSystem: IteratingSystem() {
     }
 
     @BusEvent
-    fun onBlockPlaceRayCastResult(event: GameEvent.OnRayCastPlaceBlockResult) {
+    fun onBlockPlaceRayCastResult(event: PhysicsEvent.OnRayCastPlaceBlockResult) {
         val owner = WorldConstants.getLocalPlayerEntityId()
         val slot = playerInputProcessor.getSelectedSlot()
         val itemToSet = inventoryManager.getInventoryItem(slot)?: return
@@ -66,7 +66,7 @@ class BlockProcessingSystem: IteratingSystem() {
     }
 
     @BusEvent
-    fun onBlockRayCastResult(event: GameEvent.OnRayCastBlockResult) {
+    fun onBlockRayCastResult(event: PhysicsEvent.OnRayCastBlockResult) {
         if (event.requestId != RayCastTypes.CHUNK_DIG_RAY_CAST) return
         val blockInfoDataMap = blockDataManager.getBlockInfoDataMap()
         val itemSlot = playerInputProcessor.getSelectedSlot()

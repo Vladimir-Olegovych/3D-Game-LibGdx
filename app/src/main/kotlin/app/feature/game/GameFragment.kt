@@ -28,6 +28,7 @@ import app.feature.game.ecs.states.ClientNetworkState
 import core.terrain.TerrainGenerator
 import core.viewport.ViewportTypes
 import app.feature.game.ecs.states.TimeState
+import core.assets.MusicID
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.time.Duration.Companion.milliseconds
@@ -78,7 +79,7 @@ class GameFragment(
 
         val musicPlayer = gameGContext.getObject<MusicPlayer>()
         musicPlayer.setVolume(0.5F)
-        //musicPlayer.play(MusicID.MUSIC_1, true)
+        musicPlayer.play(MusicID.MUSIC_1, true)
 
         eventBus.registerHandler(this)
         Gdx.input.isCursorCatched = true

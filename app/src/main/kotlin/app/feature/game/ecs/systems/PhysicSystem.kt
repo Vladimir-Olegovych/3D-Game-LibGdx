@@ -2,7 +2,8 @@ package app.feature.game.ecs.systems
 
 import app.feature.game.ecs.components.PhysicsInterpolationComponent
 import app.feature.game.ecs.components.TransformComponent
-import app.feature.game.event.GameEvent
+import app.feature.game.event.GameChunkEvent
+import app.feature.game.event.PhysicsEvent
 import com.artemis.BaseSystem
 import com.artemis.ComponentMapper
 import com.artemis.annotations.Wire
@@ -28,7 +29,7 @@ class PhysicSystem : BaseSystem() {
     private val activeEntities = IntArray()
 
     @BusEvent
-    fun onRigidBodyTransformUpdate(event: GameEvent.OnRigidBodyTransformUpdate) {
+    fun onRigidBodyTransformUpdate(event: PhysicsEvent.OnRigidBodyTransformUpdate) {
         val transformComponent = transformMapper[event.entityId] ?: return
         if (transformComponent.transform == null) {
             transformComponent.transform = Matrix4()
