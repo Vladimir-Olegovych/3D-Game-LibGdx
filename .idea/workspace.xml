@@ -5,8 +5,11 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="21bb169d-cf41-4c8a-bf73-e63da1eaa6c0" name="Changes" comment="bug fix and optimized chunk updater">
+      <change afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/terrain/biome/BiomePointGrid.kt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/core/chunk/ChunkWorldUpdater.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/chunk/ChunkWorldUpdater.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/core/terrain/TerrainGenerator.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/terrain/TerrainGenerator.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/core/terrain/biome/BiomeSelector.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/terrain/biome/BiomeSelector.kt" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />

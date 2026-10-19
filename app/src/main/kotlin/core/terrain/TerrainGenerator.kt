@@ -7,10 +7,14 @@ import com.gigapi.math.noice.PerlinNoise
 import com.gigapi.math.noice.RandomNoise
 import com.gigapi.math.noice.domain.DomainWarping2D
 import com.gigapi.math.noice.models.NoiseSettings
+import com.gigapi.math.vector.IntVector3
 import core.chunk.ChunkData
+import core.chunk.ChunkWorldUpdater
+import core.chunk.world.WorldDataHelper.floorDiv
 import core.noice.NoiceTypes
 import core.noice.asGenerator
 import core.terrain.biome.BiomeGenerator
+import core.terrain.biome.BiomePointGrid
 import core.terrain.biome.BiomeSelector
 import core.terrain.biome.biomes.DesertBiomeGenerator
 import core.terrain.biome.biomes.ForestBiomeGenerator
@@ -24,9 +28,17 @@ import kotlin.random.Random
 
 class TerrainGenerator: LaunchedEffect {
 
+    companion object {
+        const val UNDERGROUND_HEIGHT = 80
+        const val CAVE_THRESHOLD = 0.025f
+        const val CAVE_LEVEL = -UNDERGROUND_HEIGHT
+        const val WORLD_HEIGHT = 300
+        const val WORLD_SURFACE = WORLD_HEIGHT / 1.5
+    }
+
     private lateinit var noiseWarp: DomainWarping2D
     private lateinit var biomeSelector: BiomeSelector
-    private lateinit var structureSelector: StructureSelector
+    private lateinit var biomePointGrid: BiomePointGrid
     private lateinit var biomeGenerators: Map<BiomeType, BiomeGenerator>
 
     var worldSeedFromServer: Int? = null
@@ -57,40 +69,43 @@ class TerrainGenerator: LaunchedEffect {
         biomeSelector = gContext.getObject()
         val noise = gContext.getObject<PerlinNoise>(NoiceTypes.PERLIN_WORLD)
         noiseWarp = getNoiseDomainWarping(noise.asGenerator())
+        biomePointGrid = BiomePointGrid(biomeSelector)
+
     }
 
-    fun generateChunkData(chunkData: ChunkData) {
+    fun generateBiomePoints(position: IntVector3) =
+        biomePointGrid.preparePointsAround(position)
+
+
+    fun generateChunkData(chunkData: ChunkData, points: Map<IntVector3, BiomeType>) {
         for (x in 0 until chunkData.chunkWidth) {
             for (z in 0 until chunkData.chunkWidth) {
-                generateColumn(chunkData, x, z)
+                generateColumn(chunkData, x, z, points)
             }
         }
     }
 
-    fun getBiomeAt(worldX: Int, worldZ: Int): BiomeType {
-        val offset = noiseWarp.generateDomainOffset(worldX, worldZ)
-        val warpX = worldX + offset.x * 8.0f
-        val warpZ = worldZ + offset.y * 8.0f
-        return biomeSelector.getBiomeAt(warpX.toInt(), warpZ.toInt())
-    }
-
-    private fun generateColumn(chunkData: ChunkData, localX: Int, localZ: Int) {
+    private fun generateColumn(
+        chunkData: ChunkData,
+        localX: Int,
+        localZ: Int,
+        points: Map<IntVector3, BiomeType>
+    ) {
         val worldX = chunkData.position.x * chunkData.chunkWidth + localX
         val worldZ = chunkData.position.z * chunkData.chunkWidth + localZ
 
         val offset = noiseWarp.generateDomainOffset(worldX, worldZ)
-
         val warpX = worldX + offset.x * 8.0f
         val warpZ = worldZ + offset.y * 8.0f
 
-        val biome = biomeSelector.getBiomeAt(warpX.toInt(), warpZ.toInt())
-        val generator = biomeGenerators[biome] ?: return
-
-        val (terrain, surface) = generator.computeSurfaceNoise(
+        val biome = biomePointGrid.getBiomeAt(
+            points,
             warpX.toInt(),
             warpZ.toInt()
         )
 
+        val generator = biomeGenerators[biome] ?: return
+        val (terrain, surface) = generator.computeSurfaceNoise(warpX.toInt(), warpZ.toInt())
         generator.process(chunkData, localX, localZ, Pair(terrain, surface))
     }
 
@@ -117,14 +132,6 @@ class TerrainGenerator: LaunchedEffect {
             amplitudeX = 20,
             amplitudeY = 20
         )
-    }
-
-    companion object {
-        const val UNDERGROUND_HEIGHT = 80
-        const val CAVE_THRESHOLD = 0.025f
-        const val CAVE_LEVEL = -UNDERGROUND_HEIGHT
-        const val WORLD_HEIGHT = 300
-        const val WORLD_SURFACE = WORLD_HEIGHT / 1.5
     }
 
 }

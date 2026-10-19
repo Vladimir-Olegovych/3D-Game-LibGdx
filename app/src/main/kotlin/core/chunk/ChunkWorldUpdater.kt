@@ -22,6 +22,7 @@ import core.mesh.MeshHelper
 import core.mesh.chunkMeshParams
 import core.scope.DispatcherTypes
 import core.terrain.TerrainGenerator
+import core.terrain.biome.models.BiomeType
 import kotlinx.coroutines.*
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
@@ -31,7 +32,7 @@ import java.util.concurrent.atomic.AtomicBoolean
 class ChunkWorldUpdater : LaunchedEffect, DisposableEffect, DeltaUpdater(1 / 60F, Dispatchers.Default) {
 
     companion object {
-        const val DRAW_RADIUS_X = 12
+        const val DRAW_RADIUS_X = 32
         const val DRAW_RADIUS_Y = 12
         const val CHUNK_SIZE = 16
         const val CHUNK_HEIGHT = 16
@@ -41,10 +42,10 @@ class ChunkWorldUpdater : LaunchedEffect, DisposableEffect, DeltaUpdater(1 / 60F
 
     private val isFirstGeneration = AtomicBoolean(true)
 
-    private val workerCount =
-        (Runtime.getRuntime().availableProcessors() / 4).coerceAtLeast(2)
+    private val workerCount = (Runtime.getRuntime().availableProcessors() / 6).coerceAtLeast(2)
 
-    private val parallelism = Semaphore(workerCount)
+    private val parallelismChunks = Semaphore(workerCount)
+    private val parallelismMesh = Semaphore(workerCount)
     private val chunkPoolUpdater = ChunkPoolUpdater()
 
     private val pendingMeshPositions = ConcurrentHashMap.newKeySet<IntVector3>()
@@ -75,6 +76,11 @@ class ChunkWorldUpdater : LaunchedEffect, DisposableEffect, DeltaUpdater(1 / 60F
     }
 
     override fun dispose() {
+        chunkDataMap.clear()
+        meshDataMap.clear()
+        pendingMeshPositions.clear()
+        pendingChunkPositions.clear()
+        chunkPoolUpdater.clear()
         chunkEventBus?.clear()
     }
 
@@ -136,9 +142,11 @@ class ChunkWorldUpdater : LaunchedEffect, DisposableEffect, DeltaUpdater(1 / 60F
     }
 
     @BusEvent
-    fun chunksGenerating(event: ChunkEvent.ChunksGenerating) = lifecycleScope.launch {
+    fun chunksGenerating(event: ChunkEvent.ChunksGenerating) = lifecycleScope.launch(Dispatchers.Default) {
         val preparation = event.worldChunksPreparation
         val createdChunks = HashMap<IntVector3, ChunkData>()
+
+        val points = terrainGenerator.generateBiomePoints(preparation.playerPosition)
 
         for (position in preparation.toCreateChunkDates) {
             val entityId = event.entityIds[position] ?: continue
@@ -149,17 +157,16 @@ class ChunkWorldUpdater : LaunchedEffect, DisposableEffect, DeltaUpdater(1 / 60F
             createdChunks[position] = chunkData
         }
 
-        coroutineScope {
-            preparation.toCreateChunkDates.map { position ->
-                async {
-                    val chunkData = createdChunks[position] ?: return@async
+        preparation.toCreateChunkDates.map { position ->
+            async(Dispatchers.Default) {
+                val chunkData = createdChunks[position] ?: return@async
 
-                    parallelism.withPermit {
-                        generateChunk(chunkData)
-                    }
+                parallelismChunks.withPermit {
+                    generateChunk(chunkData, points)
                 }
-            }.awaitAll()
-        }
+            }
+        }.awaitAll()
+
 
         chunkDataMap.putAll(createdChunks)
         pendingChunkPositions.removeAll(createdChunks.keys)
@@ -170,18 +177,16 @@ class ChunkWorldUpdater : LaunchedEffect, DisposableEffect, DeltaUpdater(1 / 60F
     }
 
     @BusEvent
-    fun chunksMeshing(event: ChunkEvent.ChunksMeshing) = lifecycleScope.launch {
+    fun chunksMeshing(event: ChunkEvent.ChunksMeshing) = lifecycleScope.launch(Dispatchers.Default) {
         val preparation = event.worldChunksPreparation
 
-        coroutineScope {
-            preparation.toCreateMeshDates.map { position ->
-                async {
-                    parallelism.withPermit {
-                        meshChunk(position)
-                    }
+        preparation.toCreateMeshDates.map { position ->
+            async(Dispatchers.Default) {
+                parallelismMesh.withPermit {
+                    meshChunk(position)
                 }
-            }.awaitAll()
-        }
+            }
+        }.awaitAll()
 
         pendingMeshPositions.removeAll(preparation.toCreateMeshDates.toSet())
 
@@ -260,10 +265,11 @@ class ChunkWorldUpdater : LaunchedEffect, DisposableEffect, DeltaUpdater(1 / 60F
         }
     }
 
-    private fun generateChunk(chunkData: ChunkData) {
+    private fun generateChunk(chunkData: ChunkData,
+                              points: Map<IntVector3, BiomeType>) {
         val entityId = chunkData.entityId ?: return
 
-        terrainGenerator.generateChunkData(chunkData)
+        terrainGenerator.generateChunkData(chunkData, points)
 
         mainEventBus.sendEvent(
             GameChunkEvent.OnCreateChunkTransform(

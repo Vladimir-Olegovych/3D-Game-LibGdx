@@ -12,17 +12,17 @@ class BiomeSelector(val seed: Int) {
         const val WETNESS_INDEX = 1
     }
 
-    private val serviceSeeds: IntArray = IntArray(8) { Random(seed).nextInt() }
+    private val random = Random(seed)
+
+    private val serviceSeeds: IntArray = IntArray(8) { random.nextInt() }
 
     private val noises: Array<FastNoise> = arrayOf(
-        // [TEMPERATURE_INDEX]
         FastNoise(serviceSeeds[TEMPERATURE_INDEX]).apply {
             SetFrequency(0.003f)
             SetFractalOctaves(1)
             SetFractalLacunarity(2.0f)
             SetFractalGain(0.5f)
         },
-        // [WETNESS_INDEX]
         FastNoise(serviceSeeds[WETNESS_INDEX]).apply {
             SetFrequency(0.002f)
             SetFractalOctaves(1)
