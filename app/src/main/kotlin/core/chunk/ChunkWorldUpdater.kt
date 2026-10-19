@@ -255,6 +255,7 @@ class ChunkWorldUpdater : LaunchedEffect, DisposableEffect, DeltaUpdater(1 / 60F
                 )
             }
 
+            chunkPoolUpdater.removeChunk(chunkData)
             pendingChunkPositions.remove(position)
         }
     }

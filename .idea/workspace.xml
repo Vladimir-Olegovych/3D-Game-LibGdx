@@ -4,37 +4,9 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="21bb169d-cf41-4c8a-bf73-e63da1eaa6c0" name="Changes" comment="bug with shadows and pending">
-      <change afterPath="$PROJECT_DIR$/app/src/main/kotlin/app/feature/game/event/PhysicsEvent.kt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/chunk/ChunkPoolUpdater.kt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/chunk/world/WorldChunksPreparation.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+    <list default="true" id="21bb169d-cf41-4c8a-bf73-e63da1eaa6c0" name="Changes" comment="bug fix and optimized chunk updater">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/app/feature/game/GameFragment.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/app/feature/game/GameFragment.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/app/feature/game/ecs/systems/BlockProcessingSystem.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/app/feature/game/ecs/systems/BlockProcessingSystem.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/app/feature/game/ecs/systems/ChunkSystem.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/app/feature/game/ecs/systems/ChunkSystem.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/app/feature/game/ecs/systems/DrawSystem.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/app/feature/game/ecs/systems/DrawSystem.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/app/feature/game/ecs/systems/MoveSystem.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/app/feature/game/ecs/systems/MoveSystem.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/app/feature/game/ecs/systems/PhysicSystem.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/app/feature/game/ecs/systems/PhysicSystem.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/app/feature/game/ecs/systems/WorldSystem.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/app/feature/game/ecs/systems/WorldSystem.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/app/feature/game/event/ChunkEvent.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/app/feature/game/event/ChunkEvent.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/app/feature/game/event/GameEvent.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/app/feature/game/event/GameChunkEvent.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/core/bullet/world/PhysicsWorldUpdater.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/bullet/world/PhysicsWorldUpdater.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/core/chunk/ChunkData.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/chunk/ChunkData.kt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/core/chunk/ChunkWorldUpdater.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/chunk/ChunkWorldUpdater.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/core/chunk/ShadowUpdater.kt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/core/chunk/WorldPendingBlocks.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/chunk/WorldPendingBlocks.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/core/chunk/world/WorldDataHelper.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/chunk/world/WorldDataHelper.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/core/chunk/world/WorldGenerationData.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/chunk/world/WorldGenerationData.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/core/controls/PlayerInputProcessor.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/controls/PlayerInputProcessor.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/core/debug/Tests.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/debug/Tests.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/core/defaults/DefaultGameSetupManager.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/defaults/DefaultGameSetupManager.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/core/mesh/MeshHelper.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/mesh/MeshHelper.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/core/mesh/MeshUtils.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/mesh/MeshUtils.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/core/terrain/layers/ShadowLayerHandler.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/terrain/layers/ShadowLayerHandler.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/resources/shaders/chunk/fragment_shader_chunk.glsl" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/resources/shaders/chunk/fragment_shader_chunk.glsl" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/resources/shaders/chunk/vertex_shader_chunk.glsl" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/resources/shaders/chunk/vertex_shader_chunk.glsl" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/server/src/main/kotlin/ServerMain.kt" beforeDir="false" afterPath="$PROJECT_DIR$/server/src/main/kotlin/ServerMain.kt" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -82,22 +54,22 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "Gradle.Build GDX-3D-TEST.executor": "Run",
-    "Gradle.GDX-3D-TEST [:desktop:com.gigcreator.DesktopMainKt.main()].executor": "Run",
-    "Gradle.GDX-3D-TEST [:server:com.gigcreator.ServerMainKt.main()].executor": "Run",
-    "Kotlin.DesktopMainKt.executor": "Run",
-    "Kotlin.ServerMainKt.executor": "Run",
-    "ModuleVcsDetector.initialDetectionPerformed": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
-    "RunOnceActivity.git.unshallow": "true",
-    "git-widget-placeholder": "main",
-    "kotlin-language-version-configured": "true",
-    "last_opened_file_path": "/home/vladimir/Documents/Java/GDX-3D-TEST/app/src/main/kotlin/core/chunk"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;Gradle.Build GDX-3D-TEST.executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.GDX-3D-TEST [:desktop:com.gigcreator.DesktopMainKt.main()].executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.GDX-3D-TEST [:server:com.gigcreator.ServerMainKt.main()].executor&quot;: &quot;Run&quot;,
+    &quot;Kotlin.DesktopMainKt.executor&quot;: &quot;Run&quot;,
+    &quot;Kotlin.ServerMainKt.executor&quot;: &quot;Run&quot;,
+    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
+    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;/home/vladimir/Documents/Java/GDX-3D-TEST/app/src/main/kotlin/core/chunk&quot;
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/app/src/main/kotlin/core/chunk" />
@@ -185,6 +157,7 @@
     <MESSAGE value="digging component + set block features" />
     <MESSAGE value="placing blocks added" />
     <MESSAGE value="bug with shadows and pending" />
-    <option name="LAST_COMMIT_MESSAGE" value="bug with shadows and pending" />
+    <MESSAGE value="bug fix and optimized chunk updater" />
+    <option name="LAST_COMMIT_MESSAGE" value="bug fix and optimized chunk updater" />
   </component>
 </project>
