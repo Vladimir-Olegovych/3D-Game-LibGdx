@@ -1,61 +1,83 @@
 package core.terrain.biome
 
+import com.gigapi.effects.LaunchedEffect
+import com.gigapi.general.GContext
 import com.gigapi.math.vector.IntVector3
 import core.chunk.ChunkWorldUpdater
 import core.terrain.biome.models.BiomeType
 import kotlin.math.sqrt
 
-class BiomePointGrid(
-    private val selector: BiomeSelector
-) {
-    companion object {
-        const val STEP_ADD = 16
-        const val POINT_RADIUS = ChunkWorldUpdater.DRAW_RADIUS_X
-        const val POINT_WORLD_STEP = ChunkWorldUpdater.CHUNK_SIZE * STEP_ADD
+class BiomePointGrid: LaunchedEffect {
 
-        private const val JITTER = 0.1f
-        private const val HASH_SEED = (20 * 20) + 20 + 41
+    companion object {
+        const val STEP_ADD = 32
+        const val POINT_RADIUS = ChunkWorldUpdater.DRAW_RADIUS_X / 2
+        const val POINT_WORLD_STEP = ChunkWorldUpdater.CHUNK_SIZE * STEP_ADD
+        const val BLEND_DISTANCE = POINT_WORLD_STEP * 0.4
     }
+
+    private lateinit var selector: BiomeSelector
+
+    override fun launch(gContext: GContext) {
+        selector = gContext.getObject()
+    }
+
+    data class BiomeData(
+        val currentBiome: BiomeType,
+        val weights: Map<BiomeType, Float>
+    )
 
     fun getBiomeAt(
         points: Map<IntVector3, BiomeType>,
         worldX: Int,
         worldZ: Int
-    ): BiomeType {
-        val cellX = floorDiv(worldX, POINT_WORLD_STEP)
-        val cellZ = floorDiv(worldZ, POINT_WORLD_STEP)
+    ): BiomeData {
+        val nearestByBiome = HashMap<BiomeType, Double>()
 
-        var bestBiome: BiomeType? = null
-        var bestDistance = Float.MAX_VALUE
+        for ((point, biome) in points) {
+            val dx = worldX.toDouble() - point.x.toDouble()
+            val dz = worldZ.toDouble() - point.z.toDouble()
+            val distance = sqrt(dx * dx + dz * dz)
 
-        for (gx in -1..1) {
-            for (gz in -1..1) {
-                val cx = cellX + gx
-                val cz = cellZ + gz
+            val previous = nearestByBiome[biome]
 
-                val baseX = cx * POINT_WORLD_STEP + POINT_WORLD_STEP / 2
-                val baseZ = cz * POINT_WORLD_STEP + POINT_WORLD_STEP / 2
-
-                val pointX = baseX + jitterX(cx, cz)
-                val pointZ = baseZ + jitterZ(cx, cz)
-
-                val dx = (worldX - pointX).toFloat()
-                val dz = (worldZ - pointZ).toFloat()
-                val distance = sqrt(dx * dx + dz * dz)
-
-                val biome = points[IntVector3(baseX, 0, baseZ)]
-
-                if (biome != null && distance < bestDistance) {
-                    bestDistance = distance
-                    bestBiome = biome
-                }
+            if (previous == null || distance < previous) {
+                nearestByBiome[biome] = distance
             }
         }
 
-        return bestBiome ?: BiomeType.FOREST
+        val nearest = nearestByBiome.minByOrNull { it.value }
+            ?: return BiomeData(
+                currentBiome = BiomeType.FOREST,
+                weights = mapOf(BiomeType.FOREST to 1f)
+            )
+
+        val minDistance = nearest.value
+        val rawWeights = HashMap<BiomeType, Double>()
+        var totalWeight = 0.0
+
+        for ((biome, distance) in nearestByBiome) {
+            val t = (
+                    (distance - minDistance) / BLEND_DISTANCE
+                    ).coerceIn(0.0, 1.0)
+
+            val weight = 1.0 - t * t * (3.0 - 2.0 * t)
+
+            if (weight > 0.0) {
+                rawWeights[biome] = weight
+                totalWeight += weight
+            }
+        }
+
+        return BiomeData(
+            currentBiome = nearest.key,
+            weights = rawWeights.mapValues { (_, weight) ->
+                (weight / totalWeight).toFloat()
+            }
+        )
     }
 
-    fun preparePointsAround(position: IntVector3): Map<IntVector3, BiomeType> {
+    fun getPointsAround(position: IntVector3): Map<IntVector3, BiomeType> {
         val result = HashMap<IntVector3, BiomeType>(16 * 16)
 
         val centerCellX = floorDiv(position.x, POINT_WORLD_STEP)
@@ -77,27 +99,6 @@ class BiomePointGrid(
         }
 
         return result
-    }
-
-    private fun jitterX(cellX: Int, cellZ: Int): Int {
-        val noise = hashNormalized(cellX, cellZ, HASH_SEED)
-        return ((noise - 0.5f) * POINT_WORLD_STEP * JITTER).toInt()
-    }
-
-    private fun jitterZ(cellX: Int, cellZ: Int): Int {
-        val noise = hashNormalized(cellX, cellZ, HASH_SEED + 7919)
-        return ((noise - 0.5f) * POINT_WORLD_STEP * JITTER).toInt()
-    }
-
-    private fun hashNormalized(x: Int, z: Int, seed: Int): Int {
-        var h = seed
-        h = h xor (x * 0x27d4eb2d)
-        h = (h shl 13) xor h
-        h = h xor (z * 0x27d4eb2d)
-        h = (h shl 17) xor h
-        h *= 0x9E3779B1.toInt()
-        h = h xor (h ushr 16)
-        return h and 0x7FFFFFFF
     }
 
     private fun floorDiv(value: Int, divisor: Int): Int {

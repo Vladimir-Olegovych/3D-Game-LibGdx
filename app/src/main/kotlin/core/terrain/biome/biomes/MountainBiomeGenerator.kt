@@ -14,20 +14,22 @@ import core.noice.NoiceTypes
 import core.noice.asGenerator
 import core.terrain.TerrainGenerator
 import core.terrain.biome.BiomeGenerator
+import core.terrain.biome.BiomePointGrid
 import core.terrain.layers.CaveLayerHandler
 import core.terrain.layers.ShadowLayerHandler
 import core.terrain.layers.SurfaceLayerHandler
 import core.terrain.layers.UndergroundLayerHandler
 import math.noice.FastNoise
+import kotlin.random.Random
 
 class MountainBiomeGenerator : LaunchedEffect, BiomeGenerator() {
 
     private val baseNoiseSettings = NoiseSettings(
-        noiseZoom = 0.03f,
-        octaves = 4,
-        persistance = 0.5f,
-        redistributionModifier = 1.0f,
-        exponent = 1.0f
+        noiseZoom = 0.04f,
+        octaves = 5,
+        persistance = 0.1f,
+        redistributionModifier = 1.4f,
+        exponent = 1.8f
     )
 
     private lateinit var baseDomainWarping: DomainWarping2D
@@ -36,7 +38,8 @@ class MountainBiomeGenerator : LaunchedEffect, BiomeGenerator() {
     override fun launch(gContext: GContext) {
         val perlinNoise = gContext.getObject<PerlinNoise>(NoiceTypes.PERLIN_WORLD)
         val caveNoise = gContext.getObject<FastNoise>(NoiceTypes.FAST_CAVE)
-        val noiceGenerator = perlinNoise.asGenerator()
+        val randomPerlin = PerlinNoise(Random(perlinNoise.seed).nextInt())
+        val noiceGenerator = randomPerlin.asGenerator()
 
         baseDomainWarping = getSurfaceDomainWarping(noiceGenerator)
 
@@ -51,10 +54,12 @@ class MountainBiomeGenerator : LaunchedEffect, BiomeGenerator() {
         var terrainHeight = baseDomainWarping.generateDomainNoise(worldX, worldZ, baseNoiseSettings)
         terrainHeight = NoiceUtils.redistribution(terrainHeight, baseNoiseSettings)
         val surfaceHeight = NoiceUtils.remapValue01ToInt(terrainHeight, 0f, height.toFloat())
-        return Pair(terrainHeight, surfaceHeight + (height / 2))
+        return Pair(terrainHeight, surfaceHeight + (height))
     }
 
-    override fun process(chunkData: ChunkData, x: Int, z: Int, surfaceNoise: Pair<Float, Int>) {
+    override fun process(chunkData: ChunkData,
+                         biomeData: BiomePointGrid.BiomeData,
+                         x: Int, z: Int, surfaceNoise: Pair<Float, Int>) {
         val worldPosition = IntVector3(
             x = chunkData.position.x * chunkData.chunkWidth + x,
             z = chunkData.position.z * chunkData.chunkWidth + z
@@ -73,7 +78,9 @@ class MountainBiomeGenerator : LaunchedEffect, BiomeGenerator() {
         }
     }
 
-    override fun process(chunkData: ChunkData, x: Int, z: Int) {
+    override fun process(chunkData: ChunkData,
+                         biomeData: BiomePointGrid.BiomeData,
+                         x: Int, z: Int) {
         val worldPosition = IntVector3(
             x = chunkData.position.x * chunkData.chunkWidth + x,
             z = chunkData.position.z * chunkData.chunkWidth + z

@@ -79,7 +79,7 @@ class GameFragment(
 
         val musicPlayer = gameGContext.getObject<MusicPlayer>()
         musicPlayer.setVolume(0.5F)
-        musicPlayer.play(MusicID.MUSIC_1, true)
+        musicPlayer.play(MusicID.MUSIC_2, true)
 
         eventBus.registerHandler(this)
         Gdx.input.isCursorCatched = true
@@ -156,8 +156,10 @@ class GameFragment(
 
         gameClient.dispose()
         inputMultiplexer.clear()
-        artemisWorld?.disposeALL()
-        artemisWorld = null
+        artemisWorld?.let {
+            artemisWorld = null
+            it.disposeALL()
+        }
         eventBus.clear()
         gameGContext.getObject<EventBus>(EventBusTypes.PHYSICS_EVENT_BUS).process()
         gameGContext.removeContext(gContext)

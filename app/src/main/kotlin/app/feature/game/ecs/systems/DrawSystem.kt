@@ -4,6 +4,7 @@ import app.feature.game.ecs.components.AnimatorComponent
 import app.feature.game.ecs.components.BoundRadiusComponent
 import app.feature.game.ecs.components.BlenderModelComponent
 import app.feature.game.ecs.components.ChunkComponent
+import app.feature.game.ecs.components.ColorComponent
 import app.feature.game.ecs.components.MeshComponent
 import app.feature.game.ecs.components.StaticComponent
 import app.feature.game.ecs.components.TransformComponent
@@ -37,6 +38,7 @@ class DrawSystem : BaseEntitySystem() {
     private lateinit var meshMapper: ComponentMapper<MeshComponent>
     private lateinit var transformMapper: ComponentMapper<TransformComponent>
     private lateinit var staticMapper: ComponentMapper<StaticComponent>
+    private lateinit var colorMapper: ComponentMapper<ColorComponent>
     private lateinit var chunkMapper: ComponentMapper<ChunkComponent>
 
     @Wire(name = CameraTypes.GL_3D)
@@ -196,12 +198,20 @@ class DrawSystem : BaseEntitySystem() {
 
             val transformComponent = transformMapper[entityId] ?: return
             val transform = transformComponent.transform ?: return
+            val color = colorMapper[entityId]?.color
 
             val boundingRadius = boundMapper[entityId]?.boundingRadius
 
             if (!isSphereVisible(transform, boundingRadius)) return
 
             modelShader.setUniformMatrix("transform", transform)
+
+            if (color != null) {
+                modelShader.setUniformf("objectColor", color.r, color.g, color.b)
+            } else {
+                modelShader.setUniformf("objectColor", 1f, 1f, 1f)
+            }
+            modelShader.setUniformf("u_useTexture", 0f)
 
             blenderMapper[entityId]?.let(::drawModelMesh)
             animatorMapper[entityId]?.animator?.let(::drawAnimator)
@@ -250,9 +260,6 @@ class DrawSystem : BaseEntitySystem() {
             val texture = animator.getRightHandItemTexture()
                 ?: DefaultsTextures.WHITE
 
-            modelShader.setUniformf("objectColor", 1f, 1f, 1f)
-            modelShader.setUniformf("u_useTexture", 1f)
-
             texture.bind(0)
 
             mesh.render(
@@ -263,11 +270,7 @@ class DrawSystem : BaseEntitySystem() {
 
         private fun drawModelComp(meshComponent: MeshComponent) {
             val mesh = meshComponent.meshData?.mesh ?: return
-            val texture = meshComponent.meshTextureData
-                ?: DefaultsTextures.WHITE
-
-            modelShader.setUniformf("objectColor", 1f, 1f, 1f)
-            modelShader.setUniformf("u_useTexture", 1f)
+            val texture = meshComponent.meshTextureData ?: DefaultsTextures.WHITE
 
             texture.bind(0)
 
@@ -279,11 +282,15 @@ class DrawSystem : BaseEntitySystem() {
     }
 
     inner class DrawTaskChunks : DrawTask {
+        val fogVerticalRadius = 5000f
+        /*
+            ChunkWorldUpdater.CHUNK_HEIGHT * ChunkWorldUpdater.DRAW_RADIUS_Y -
+                    ChunkWorldUpdater.CHUNK_HEIGHT * 2f
+
+         */
 
         override fun draw(entities: IntBag) {
-            val fogVerticalRadius =
-                ChunkWorldUpdater.CHUNK_HEIGHT * ChunkWorldUpdater.DRAW_RADIUS_Y -
-                        ChunkWorldUpdater.CHUNK_HEIGHT * 2f
+
 
             chunkShader.bind()
             chunkShader.setUniformi("u_texture", 0)

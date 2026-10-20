@@ -413,4 +413,74 @@ object WorldDataHelper {
                 localBlockPosition.z == 0 ||
                 localBlockPosition.z == ChunkWorldUpdater.CHUNK_SIZE - 1
     }
+    fun hasRequiredNeighbors(
+        chunkDataMap: Map<IntVector3, ChunkData>,
+        position: IntVector3
+    ): Boolean {
+        val north = IntVector3(position.x, position.y, position.z - 1)
+        val south = IntVector3(position.x, position.y, position.z + 1)
+        val west  = IntVector3(position.x - 1, position.y, position.z)
+        val east  = IntVector3(position.x + 1, position.y, position.z)
+        val down  = IntVector3(position.x, position.y - 1, position.z)
+        val up    = IntVector3(position.x, position.y + 1, position.z)
+
+        return chunkDataMap.containsKey(north) &&
+                chunkDataMap.containsKey(south) &&
+                chunkDataMap.containsKey(west)  &&
+                chunkDataMap.containsKey(east)  &&
+                chunkDataMap.containsKey(down)  &&
+                chunkDataMap.containsKey(up)
+    }
+
+    fun findSpawnPosition(chunkDataMap: Map<IntVector3, ChunkData>,
+                          centerPosition: Vector3): Vector3? {
+        val startChunkPos = getChunkPositionFromWorldPosition(centerPosition)
+        for (y in -4 + startChunkPos.y .. 4 + startChunkPos.y) {
+            val chunkPosition = IntVector3(
+                startChunkPos.x,
+                y,
+                startChunkPos.z
+            )
+            val chunkData = chunkDataMap[chunkPosition] ?: continue
+
+            for (localX in 0 until chunkData.chunkWidth) {
+                for (localZ in 0 until chunkData.chunkWidth) {
+                    for (localY in 0 until chunkData.chunkHeight) {
+                        val block = chunkData.getBlockByLocal(localX, localY, localZ)
+                        if (block != BlockType.AIR) {
+                            val aboveBlock = if (localY < chunkData.chunkHeight - 1) {
+                                chunkData.getBlockByLocal(localX, localY + 1, localZ)
+                            } else {
+                                val aboveChunkPos = IntVector3(chunkPosition.x, chunkPosition.y + 1, chunkPosition.z)
+                                val aboveChunk = chunkDataMap[aboveChunkPos]
+                                aboveChunk?.getBlockByLocal(localX, 0, localZ)
+                            }
+
+                            val aboveAboveBlock = if (localY < chunkData.chunkHeight - 2) {
+                                chunkData.getBlockByLocal(localX, localY + 2, localZ)
+                            } else if (localY == chunkData.chunkHeight - 2) {
+                                val aboveChunkPos = IntVector3(chunkPosition.x, chunkPosition.y + 1, chunkPosition.z)
+                                val aboveChunk = chunkDataMap[aboveChunkPos]
+                                aboveChunk?.getBlockByLocal(localX, 0, localZ)
+                            } else {
+                                val aboveChunkPos = IntVector3(chunkPosition.x, chunkPosition.y + 1, chunkPosition.z)
+                                val aboveChunk = chunkDataMap[aboveChunkPos]
+                                aboveChunk?.getBlockByLocal(localX, 1, localZ)
+                            }
+
+                            if (aboveBlock == BlockType.AIR && aboveAboveBlock == BlockType.AIR) {
+                                val worldX = chunkPosition.x * chunkData.chunkWidth + localX
+                                val worldY = chunkPosition.y * chunkData.chunkHeight + localY + 2
+                                val worldZ = chunkPosition.z * chunkData.chunkWidth + localZ
+
+                                return Vector3(worldX.toFloat(), worldY.toFloat(), worldZ.toFloat())
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        return null
+    }
 }

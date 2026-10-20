@@ -1,5 +1,6 @@
 package core.terrain
 
+import com.badlogic.gdx.math.Vector2
 import com.gigapi.effects.LaunchedEffect
 import com.gigapi.general.GContext
 import com.gigapi.math.noice.NoiceGenerator
@@ -9,8 +10,6 @@ import com.gigapi.math.noice.domain.DomainWarping2D
 import com.gigapi.math.noice.models.NoiseSettings
 import com.gigapi.math.vector.IntVector3
 import core.chunk.ChunkData
-import core.chunk.ChunkWorldUpdater
-import core.chunk.world.WorldDataHelper.floorDiv
 import core.noice.NoiceTypes
 import core.noice.asGenerator
 import core.terrain.biome.BiomeGenerator
@@ -22,9 +21,8 @@ import core.terrain.biome.biomes.MountainBiomeGenerator
 import core.terrain.biome.biomes.SpruceBiomeGenerator
 import core.terrain.biome.models.BiomeType
 import core.terrain.layers.CaveLayerHandler
-import core.terrain.level.StructureSelector
 import math.noice.FastNoise
-import kotlin.random.Random
+import kotlin.math.roundToInt
 
 class TerrainGenerator: LaunchedEffect {
 
@@ -37,7 +35,6 @@ class TerrainGenerator: LaunchedEffect {
     }
 
     private lateinit var noiseWarp: DomainWarping2D
-    private lateinit var biomeSelector: BiomeSelector
     private lateinit var biomePointGrid: BiomePointGrid
     private lateinit var biomeGenerators: Map<BiomeType, BiomeGenerator>
 
@@ -53,6 +50,7 @@ class TerrainGenerator: LaunchedEffect {
         gContext.setObject(NoiceTypes.RANDOM_WORLD, RandomNoise(worldSeed))
 
         gContext.setObject(BiomeSelector(worldSeed))
+        gContext.setObject(BiomePointGrid())
 
         gContext.setObject(ForestBiomeGenerator())
         gContext.setObject(SpruceBiomeGenerator())
@@ -66,21 +64,29 @@ class TerrainGenerator: LaunchedEffect {
             BiomeType.MOUNTAINS     to gContext.getObject<MountainBiomeGenerator>()
         )
 
-        biomeSelector = gContext.getObject()
         val noise = gContext.getObject<PerlinNoise>(NoiceTypes.PERLIN_WORLD)
         noiseWarp = getNoiseDomainWarping(noise.asGenerator())
-        biomePointGrid = BiomePointGrid(biomeSelector)
-
+        biomePointGrid = gContext.getObject()
     }
 
     fun generateBiomePoints(position: IntVector3) =
-        biomePointGrid.preparePointsAround(position)
-
+        biomePointGrid.getPointsAround(position)
 
     fun generateChunkData(chunkData: ChunkData, points: Map<IntVector3, BiomeType>) {
-        for (x in 0 until chunkData.chunkWidth) {
-            for (z in 0 until chunkData.chunkWidth) {
-                generateColumn(chunkData, x, z, points)
+        val w = chunkData.chunkWidth
+
+        val offsets = Array(w * w) { i ->
+            val lx = i % w; val lz = i / w
+            val wx = chunkData.position.x * w + lx
+            val wz = chunkData.position.z * w + lz
+            noiseWarp.generateDomainOffset(wx, wz)
+        }
+
+        val biomeCache = HashMap<Long, BiomePointGrid.BiomeData>()
+
+        for (x in 0 until w) {
+            for (z in 0 until w) {
+                generateColumn(chunkData, x, z, points, offsets, biomeCache)
             }
         }
     }
@@ -89,36 +95,72 @@ class TerrainGenerator: LaunchedEffect {
         chunkData: ChunkData,
         localX: Int,
         localZ: Int,
-        points: Map<IntVector3, BiomeType>
+        points: Map<IntVector3, BiomeType>,
+        offsets: Array<Vector2>,
+        biomeCache: HashMap<Long, BiomePointGrid.BiomeData>
     ) {
-        val worldX = chunkData.position.x * chunkData.chunkWidth + localX
-        val worldZ = chunkData.position.z * chunkData.chunkWidth + localZ
+        val w = chunkData.chunkWidth
+        val worldX = chunkData.position.x * w + localX
+        val worldZ = chunkData.position.z * w + localZ
 
-        val offset = noiseWarp.generateDomainOffset(worldX, worldZ)
-        val warpX = worldX + offset.x * 8.0f
+        val offset = offsets[localZ * w + localX]
+        val warpX = worldX + offset.x * 10.0f
         val warpZ = worldZ + offset.y * 8.0f
 
-        val biome = biomePointGrid.getBiomeAt(
-            points,
-            warpX.toInt(),
-            warpZ.toInt()
+        val biomeKey = packBiomeKey(warpX.toInt(), warpZ.toInt())
+        val biomeData = biomeCache.getOrPut(biomeKey) {
+            biomePointGrid.getBiomeAt(points, warpX.toInt(), warpZ.toInt())
+        }
+
+        val generator = biomeGenerators[biomeData.currentBiome] ?: return
+
+        var terrainSum = 0.0
+        var surfaceSum = 0.0
+        var weightSum = 0.0
+
+        for ((biome, weight) in biomeData.weights) {
+            val biomeGenerator = biomeGenerators[biome]
+                ?: error("No biome generator for $biome")
+
+            val noise = biomeGenerator.computeSurfaceNoise(
+                warpX.toInt(),
+                warpZ.toInt()
+            )
+
+            terrainSum += noise.first.toDouble() * weight
+            surfaceSum += noise.second.toDouble() * weight
+            weightSum += weight
+        }
+
+        check(weightSum > 0.0)
+
+        val blendedNoise = Pair(
+            (terrainSum / weightSum).toFloat(),
+            (surfaceSum / weightSum).roundToInt()
         )
 
-        val generator = biomeGenerators[biome] ?: return
-        val (terrain, surface) = generator.computeSurfaceNoise(warpX.toInt(), warpZ.toInt())
-        generator.process(chunkData, localX, localZ, Pair(terrain, surface))
+        generator.process(
+            chunkData,
+            biomeData,
+            localX,
+            localZ,
+            blendedNoise
+        )
     }
+
+    private fun packBiomeKey(x: Int, z: Int): Long =
+        (x.toLong() shl 32) or (z.toLong() and 0xFFFFFFFFL)
 
     private fun getNoiseDomainWarping(noiceGenerator: NoiceGenerator): DomainWarping2D {
         val domainXNoiseSettings= NoiseSettings(
-            noiseZoom = 0.005f,
+            noiseZoom = 0.009f,
             octaves = 1,
             persistance = 0.5f,
             redistributionModifier = 1.0f,
             exponent = 1f
         )
         val domainZNoiseSettings = NoiseSettings(
-            noiseZoom = 0.004f,
+            noiseZoom = 0.008f,
             octaves = 1,
             persistance = 0.5f,
             redistributionModifier = 1.0f,
@@ -129,7 +171,7 @@ class TerrainGenerator: LaunchedEffect {
             noiceGenerator = noiceGenerator,
             noiseDomainX = domainXNoiseSettings,
             noiseDomainY = domainZNoiseSettings,
-            amplitudeX = 20,
+            amplitudeX = 40,
             amplitudeY = 20
         )
     }

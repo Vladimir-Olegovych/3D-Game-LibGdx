@@ -10,7 +10,7 @@ class MeshComponent: DisposableEffect, Component() {
     var meshTextureData: GLTexture? = null
 
     override fun dispose() {
-        meshData?.mesh?.dispose()
+        runCatching { meshData?.mesh?.dispose() }
         meshData = null
     }
 }

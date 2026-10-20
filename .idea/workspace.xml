@@ -5,11 +5,27 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="21bb169d-cf41-4c8a-bf73-e63da1eaa6c0" name="Changes" comment="bug fix and optimized chunk updater">
-      <change afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/terrain/biome/BiomePointGrid.kt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/src/main/kotlin/app/feature/game/ecs/components/ColorComponent.kt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/src/main/resources/music/music_2.mp3" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/app/feature/game/GameFragment.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/app/feature/game/GameFragment.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/app/feature/game/ecs/components/MeshComponent.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/app/feature/game/ecs/components/MeshComponent.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/app/feature/game/ecs/systems/DrawSystem.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/app/feature/game/ecs/systems/DrawSystem.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/app/feature/game/ecs/systems/WorldSystem.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/app/feature/game/ecs/systems/WorldSystem.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/app/feature/game/event/ChunkEvent.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/app/feature/game/event/ChunkEvent.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/app/feature/game/event/GameChunkEvent.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/app/feature/game/event/GameChunkEvent.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/core/assets/MusicID.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/assets/MusicID.kt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/core/chunk/ChunkWorldUpdater.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/chunk/ChunkWorldUpdater.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/core/chunk/WorldPendingBlocks.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/core/chunk/world/WorldDataHelper.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/chunk/world/WorldDataHelper.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/core/defaults/DefaultGameSetupManager.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/defaults/DefaultGameSetupManager.kt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/core/terrain/TerrainGenerator.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/terrain/TerrainGenerator.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/core/terrain/biome/BiomeSelector.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/terrain/biome/BiomeSelector.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/core/terrain/biome/BiomeGenerator.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/terrain/biome/BiomeGenerator.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/core/terrain/biome/BiomePointGrid.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/terrain/biome/BiomePointGrid.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/core/terrain/biome/biomes/DesertBiomeGenerator.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/terrain/biome/biomes/DesertBiomeGenerator.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/core/terrain/biome/biomes/ForestBiomeGenerator.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/terrain/biome/biomes/ForestBiomeGenerator.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/core/terrain/biome/biomes/MountainBiomeGenerator.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/terrain/biome/biomes/MountainBiomeGenerator.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/core/terrain/biome/biomes/SpruceBiomeGenerator.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/terrain/biome/biomes/SpruceBiomeGenerator.kt" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -70,11 +86,12 @@
     &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
     &quot;git-widget-placeholder&quot;: &quot;main&quot;,
     &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
-    &quot;last_opened_file_path&quot;: &quot;/home/vladimir/Documents/Java/GDX-3D-TEST/app/src/main/kotlin/core/chunk&quot;
+    &quot;last_opened_file_path&quot;: &quot;/home/vladimir/Documents/Java/GDX-3D-TEST/app/src/main/resources/music&quot;
   }
 }</component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/app/src/main/resources/music" />
       <recent name="$PROJECT_DIR$/app/src/main/kotlin/core/chunk" />
       <recent name="$PROJECT_DIR$/app/src/main/resources/images/block" />
     </key>

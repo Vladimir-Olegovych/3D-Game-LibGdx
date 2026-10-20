@@ -32,8 +32,8 @@ import java.util.concurrent.atomic.AtomicBoolean
 class ChunkWorldUpdater : LaunchedEffect, DisposableEffect, DeltaUpdater(1 / 60F, Dispatchers.Default) {
 
     companion object {
-        const val DRAW_RADIUS_X = 32
-        const val DRAW_RADIUS_Y = 12
+        const val DRAW_RADIUS_X = 16
+        const val DRAW_RADIUS_Y = 8
         const val CHUNK_SIZE = 16
         const val CHUNK_HEIGHT = 16
         const val DATA_RADIUS_EXTRA = 1
@@ -51,8 +51,8 @@ class ChunkWorldUpdater : LaunchedEffect, DisposableEffect, DeltaUpdater(1 / 60F
     private val pendingMeshPositions = ConcurrentHashMap.newKeySet<IntVector3>()
     private val pendingChunkPositions = ConcurrentHashMap.newKeySet<IntVector3>()
 
-    private val chunkDataMap = ConcurrentHashMap<IntVector3, ChunkData>()
-    private val meshDataMap = ConcurrentHashMap<IntVector3, MeshData>()
+    private val createdChunkDataMap = ConcurrentHashMap<IntVector3, ChunkData>()
+    private val createdMeshDataMap = ConcurrentHashMap<IntVector3, MeshData>()
 
     private var chunkEventBus: EventBus? = null
     private lateinit var mainEventBus: EventBus
@@ -76,8 +76,8 @@ class ChunkWorldUpdater : LaunchedEffect, DisposableEffect, DeltaUpdater(1 / 60F
     }
 
     override fun dispose() {
-        chunkDataMap.clear()
-        meshDataMap.clear()
+        createdChunkDataMap.clear()
+        createdMeshDataMap.clear()
         pendingMeshPositions.clear()
         pendingChunkPositions.clear()
         chunkPoolUpdater.clear()
@@ -104,15 +104,15 @@ class ChunkWorldUpdater : LaunchedEffect, DisposableEffect, DeltaUpdater(1 / 60F
         val chunkPositionsToCreate = mutableListOf<IntVector3>()
 
         for (position in generationData.allMeshDataPositionsAround) {
-            if (meshDataMap.containsKey(position)) continue
+            if (createdMeshDataMap.containsKey(position)) continue
             if (!pendingMeshPositions.add(position)) continue
 
-            meshDataMap[position] = MeshData(null)
+            createdMeshDataMap[position] = MeshData(null)
             meshPositionsToCreate.add(position)
         }
 
         for (position in generationData.allChunkDataPositionsAround) {
-            if (chunkDataMap.containsKey(position)) continue
+            if (createdChunkDataMap.containsKey(position)) continue
             if (!pendingChunkPositions.add(position)) continue
 
             chunkPositionsToCreate.add(position)
@@ -147,6 +147,7 @@ class ChunkWorldUpdater : LaunchedEffect, DisposableEffect, DeltaUpdater(1 / 60F
         val createdChunks = HashMap<IntVector3, ChunkData>()
 
         val points = terrainGenerator.generateBiomePoints(preparation.playerPosition)
+            mainEventBus.sendEvent(GameChunkEvent.GameWorldBiomePoints(points))
 
         for (position in preparation.toCreateChunkDates) {
             val entityId = event.entityIds[position] ?: continue
@@ -168,7 +169,7 @@ class ChunkWorldUpdater : LaunchedEffect, DisposableEffect, DeltaUpdater(1 / 60F
         }.awaitAll()
 
 
-        chunkDataMap.putAll(createdChunks)
+        createdChunkDataMap.putAll(createdChunks)
         pendingChunkPositions.removeAll(createdChunks.keys)
 
         chunkEventBus?.sendEvent(
@@ -198,12 +199,9 @@ class ChunkWorldUpdater : LaunchedEffect, DisposableEffect, DeltaUpdater(1 / 60F
     @BusEvent
     fun finalizeCreation(event: ChunkEvent.FinalizeCreation) {
         if (!isFirstGeneration.compareAndSet(true, false)) return
-
         val searchPosition = event.worldChunksPreparation.playerPosition.roundToFloat()
-
-        mainEventBus.sendEvent(
-            ChunkEvent.GameWorldStarted(searchPosition)
-        )
+        val position = WorldDataHelper.findSpawnPosition(createdChunkDataMap, searchPosition)?: searchPosition
+        mainEventBus.sendEvent(GameChunkEvent.GameWorldStarted(position))
     }
 
     private fun removeOutsideChunks(playerPosition: IntVector3) {
@@ -215,7 +213,7 @@ class ChunkWorldUpdater : LaunchedEffect, DisposableEffect, DeltaUpdater(1 / 60F
         val dataRemoveRadiusX = DRAW_RADIUS_X + DATA_RADIUS_EXTRA + REMOVE_MARGIN
         val dataRemoveRadiusY = DRAW_RADIUS_Y + DATA_RADIUS_EXTRA + REMOVE_MARGIN
 
-        val meshesToRemove = meshDataMap.keys.filter { position ->
+        val meshesToRemove = createdMeshDataMap.keys.filter { position ->
             WorldDataHelper.isOutsideRadius(
                 position = position,
                 center = playerChunk,
@@ -224,7 +222,7 @@ class ChunkWorldUpdater : LaunchedEffect, DisposableEffect, DeltaUpdater(1 / 60F
             )
         }
 
-        val chunksToRemove = chunkDataMap.keys.filter { position ->
+        val chunksToRemove = createdChunkDataMap.keys.filter { position ->
             WorldDataHelper.isOutsideRadius(
                 position = position,
                 center = playerChunk,
@@ -234,8 +232,8 @@ class ChunkWorldUpdater : LaunchedEffect, DisposableEffect, DeltaUpdater(1 / 60F
         }
 
         for (position in meshesToRemove) {
-            val meshData = meshDataMap.remove(position) ?: continue
-            val chunkData = chunkDataMap[position]
+            val meshData = createdMeshDataMap.remove(position) ?: continue
+            val chunkData = createdChunkDataMap[position]
             val entityId = chunkData?.entityId
 
             if (entityId != null) {
@@ -251,7 +249,7 @@ class ChunkWorldUpdater : LaunchedEffect, DisposableEffect, DeltaUpdater(1 / 60F
         }
 
         for (position in chunksToRemove) {
-            val chunkData = chunkDataMap.remove(position) ?: continue
+            val chunkData = createdChunkDataMap.remove(position) ?: continue
             val entityId = chunkData.entityId
 
             if (entityId != null) {
@@ -280,18 +278,18 @@ class ChunkWorldUpdater : LaunchedEffect, DisposableEffect, DeltaUpdater(1 / 60F
     }
 
     private suspend fun meshChunk(position: IntVector3) {
-        val chunkData = chunkDataMap[position] ?: return
+        val chunkData = createdChunkDataMap[position] ?: return
         val entityId = chunkData.entityId ?: return
 
-        if (!hasRequiredNeighbors(position)) {
+        if (!WorldDataHelper.hasRequiredNeighbors(createdChunkDataMap, position)) {
             // Do not create a mesh yet: wait until all horizontal neighbors exist.
             return
         }
 
-        val rawMeshData = meshGenerator.createMesh(chunkDataMap, chunkData)
+        val rawMeshData = meshGenerator.createMesh(createdChunkDataMap, chunkData)
 
         if (rawMeshData.isEmpty()) {
-            meshDataMap.remove(position)
+            createdMeshDataMap.remove(position)
             return
         }
 
@@ -300,12 +298,12 @@ class ChunkWorldUpdater : LaunchedEffect, DisposableEffect, DeltaUpdater(1 / 60F
         }
 
         // The chunk could have been removed while its mesh was being created.
-        val currentChunkData = chunkDataMap[position] ?: return
+        val currentChunkData = createdChunkDataMap[position] ?: return
         val currentEntityId = currentChunkData.entityId ?: return
 
         if (currentEntityId != entityId) return
 
-        meshDataMap[position] = meshData
+        createdMeshDataMap[position] = meshData
 
         mainEventBus.sendEvent(
             GameChunkEvent.OnCreateChunkMeshData(currentEntityId, meshData)
@@ -314,18 +312,6 @@ class ChunkWorldUpdater : LaunchedEffect, DisposableEffect, DeltaUpdater(1 / 60F
         physicsEventBus.sendEvent(
             PhysicsEvent.OnCreateChunkRigidBody(currentEntityId, currentChunkData)
         )
-    }
-
-    private fun hasRequiredNeighbors(position: IntVector3): Boolean {
-        val north = IntVector3(position.x, position.y, position.z - 1)
-        val south = IntVector3(position.x, position.y, position.z + 1)
-        val west = IntVector3(position.x - 1, position.y, position.z)
-        val east = IntVector3(position.x + 1, position.y, position.z)
-
-        return chunkDataMap.containsKey(north) &&
-                chunkDataMap.containsKey(south) &&
-                chunkDataMap.containsKey(west) &&
-                chunkDataMap.containsKey(east)
     }
 
     private fun getWorldGenerationData(

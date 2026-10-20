@@ -14,6 +14,7 @@ import core.noice.NoiceTypes
 import core.noice.asGenerator
 import core.terrain.TerrainGenerator
 import core.terrain.biome.BiomeGenerator
+import core.terrain.biome.BiomePointGrid
 import core.terrain.layers.CaveLayerHandler
 import core.terrain.layers.ShadowLayerHandler
 import core.terrain.layers.StructureLayerHandler
@@ -25,11 +26,11 @@ import math.noice.FastNoise
 class DesertBiomeGenerator : LaunchedEffect, BiomeGenerator() {
 
     private val baseNoiseSettings = NoiseSettings(
-        noiseZoom = 0.004f,
+        noiseZoom = 0.0001f,
         octaves = 5,
         persistance = 0.5f,
-        redistributionModifier = 1.6f,
-        exponent = 1.8f
+        redistributionModifier = 0.1f,
+        exponent = 1.0f
     )
 
     private lateinit var baseDomainWarping: DomainWarping2D
@@ -64,7 +65,9 @@ class DesertBiomeGenerator : LaunchedEffect, BiomeGenerator() {
         return Pair(terrainHeight, surfaceHeight + (height / 2))
     }
 
-    override fun process(chunkData: ChunkData, x: Int, z: Int, surfaceNoise: Pair<Float, Int>) {
+    override fun process(chunkData: ChunkData,
+                         biomeData: BiomePointGrid.BiomeData,
+                         x: Int, z: Int, surfaceNoise: Pair<Float, Int>) {
         val worldPosition = IntVector3(
             x = chunkData.position.x * chunkData.chunkWidth + x,
             z = chunkData.position.z * chunkData.chunkWidth + z
@@ -83,7 +86,9 @@ class DesertBiomeGenerator : LaunchedEffect, BiomeGenerator() {
         }
     }
 
-    override fun process(chunkData: ChunkData, x: Int, z: Int) {
+    override fun process(chunkData: ChunkData,
+                         biomeData: BiomePointGrid.BiomeData,
+                         x: Int, z: Int) {
         val worldPosition = IntVector3(
             x = chunkData.position.x * chunkData.chunkWidth + x,
             z = chunkData.position.z * chunkData.chunkWidth + z

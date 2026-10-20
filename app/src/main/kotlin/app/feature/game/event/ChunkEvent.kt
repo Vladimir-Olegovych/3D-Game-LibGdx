@@ -1,6 +1,5 @@
 package app.feature.game.event
 
-import com.badlogic.gdx.math.Vector3
 import com.gigapi.math.vector.IntVector3
 import core.blocks.BlockType
 import core.chunk.world.WorldChunksPreparation
@@ -24,5 +23,4 @@ sealed class ChunkEvent {
         val setBlockType: BlockType,
         val isSuccess: Boolean
     )
-    class GameWorldStarted(val position: Vector3): ChunkEvent()
 }
