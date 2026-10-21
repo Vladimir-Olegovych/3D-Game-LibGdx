@@ -9,16 +9,16 @@ import core.blocks.BlockType
 import core.blocks.TextureData
 import core.chunk.ChunkData
 
-class MeshHelper: MeshGenerator, LaunchedEffect {
+class MeshHelper : MeshGenerator, LaunchedEffect {
 
     companion object {
         val directions = listOf(
-            Direction( 1, 0, 0, VertexAttribute3.Normal(1F, 0f, 0f), DirectionType.RIGHT),
+            Direction(1, 0, 0, VertexAttribute3.Normal(1F, 0f, 0f), DirectionType.RIGHT),
             Direction(-1, 0, 0, VertexAttribute3.Normal(-1F, 0f, 0f), DirectionType.LEFT),
-            Direction( 0, 1, 0, VertexAttribute3.Normal(0f, 1F, 0f), DirectionType.UP),
-            Direction( 0,-1, 0, VertexAttribute3.Normal(0f,-1F, 0f), DirectionType.DOWN),
-            Direction( 0, 0, 1, VertexAttribute3.Normal(0f, 0f, 1F), DirectionType.FRONT),
-            Direction( 0, 0,-1, VertexAttribute3.Normal(0f, 0f,-1F), DirectionType.BACK)
+            Direction(0, 1, 0, VertexAttribute3.Normal(0f, 1F, 0f), DirectionType.UP),
+            Direction(0, -1, 0, VertexAttribute3.Normal(0f, -1F, 0f), DirectionType.DOWN),
+            Direction(0, 0, 1, VertexAttribute3.Normal(0f, 0f, 1F), DirectionType.FRONT),
+            Direction(0, 0, -1, VertexAttribute3.Normal(0f, 0f, -1F), DirectionType.BACK)
         )
     }
 
@@ -28,16 +28,68 @@ class MeshHelper: MeshGenerator, LaunchedEffect {
         blockDataManager = gContext.getObject()
     }
 
+    /**
+     * 3x3x3 соседей чанка, найденных один раз на чанк.
+     * Раньше на КАЖДУЮ грань и на каждый AO-запрос создавался IntVector3 и шёл lookup в HashMap.
+     */
+    private class Neighborhood(center: ChunkData, chunkMap: Map<IntVector3, ChunkData>) {
+        private val w = center.chunkWidth
+        private val h = center.chunkHeight
+        private val chunks = arrayOfNulls<ChunkData>(27)
+
+        init {
+            val p = center.position
+            for (dz in -1..1) for (dy in -1..1) for (dx in -1..1) {
+                val idx = (dx + 1) + (dy + 1) * 3 + (dz + 1) * 9
+                chunks[idx] = if (dx == 0 && dy == 0 && dz == 0) {
+                    center
+                } else {
+                    chunkMap[IntVector3(p.x + dx, p.y + dy, p.z + dz)]
+                }
+            }
+        }
+
+        /** Допустимы координаты от -1 до size (соседний чанк), как и в оригинале. */
+        fun block(nx: Int, ny: Int, nz: Int): BlockType {
+            val cx = if (nx < 0) 0 else if (nx >= w) 2 else 1
+            val cy = if (ny < 0) 0 else if (ny >= h) 2 else 1
+            val cz = if (nz < 0) 0 else if (nz >= w) 2 else 1
+            val chunk = chunks[cx + cy * 3 + cz * 9] ?: return BlockType.NOTHING
+            val lx = if (nx < 0) nx + w else if (nx >= w) nx - w else nx
+            val ly = if (ny < 0) ny + h else if (ny >= h) ny - h else ny
+            val lz = if (nz < 0) nz + w else if (nz >= w) nz - w else nz
+            return chunk.getBlockByLocal(lx, ly, lz)
+        }
+    }
+
     override fun createMesh(
         chunkMap: Map<IntVector3, ChunkData>,
         chunkData: ChunkData
     ): RawMeshData {
         val w = chunkData.chunkWidth
         val h = chunkData.chunkHeight
-        val textureMap = blockDataManager.getBlockTextureDataMap()
 
+        if (chunkData.isEmpty) return RawMeshData(FloatArray(0), ShortArray(0))
+
+        val textureMap = blockDataManager.getBlockTextureDataMap()
+        val nb = Neighborhood(chunkData, chunkMap)
+
+        // Лямбда создаётся один раз, а не на каждую грань.
+        val blockExists: (Int, Int, Int) -> Boolean = { wx, wy, wz ->
+            when (nb.block(wx, wy, wz)) {
+                BlockType.AIR, BlockType.NOTHING -> false
+                else -> true
+            }
+        }
+
+        // ВАЖНО: чтобы убрать боксинг Float/Short, поменяй типы параметров
+        // MeshUtils.addChunkFace(verticesList: ArrayList<Float>, indicesList: ArrayList<Short>)
+        // на FloatBuf / ShortBuf из core.lod (у них есть add() и size). Если там больше ничего
+        // кроме add/size не используется — других правок не нужно.
         val verticesList = ArrayList<Float>()
         val indicesList = ArrayList<Short>()
+
+        val dirs = directions
 
         for (x in 0 until w) {
             for (y in 0 until h) {
@@ -47,33 +99,21 @@ class MeshHelper: MeshGenerator, LaunchedEffect {
                     val blockData = textureMap[block] ?: continue
 
                     val currentAllSides = hasActiveAllSides(
-                        block = block,
-                        blockData = blockData,
-                        textureMap = textureMap,
-                        chunkData = chunkData,
-                        chunkMap = chunkMap,
-                        x = x,
-                        y = y,
-                        z = z,
-                        w = w,
-                        h = h,
+                        block, blockData, textureMap, chunkData, nb, x, y, z, w, h
                     )
 
-                    for (dir in directions) {
+                    for (i in dirs.indices) {
+                        val dir = dirs[i]
                         val nx = x + dir.dx
                         val ny = y + dir.dy
                         val nz = z + dir.dz
-                        val neighborBlock = getNeighborBlock(
-                            chunkData, chunkMap,
-                            nx, ny, nz, w, h
-                        )
-                        val neighborBlockData = textureMap[neighborBlock]
+                        val neighborBlock = nb.block(nx, ny, nz)
 
                         val shouldRenderFace =
                             neighborBlock == BlockType.AIR ||
                                     neighborBlock == BlockType.NOTHING ||
                                     currentAllSides ||
-                                    (neighborBlockData?.generateAllSides == true && !blockData.generateAllSides)
+                                    (textureMap[neighborBlock]?.generateAllSides == true && !blockData.generateAllSides)
                         if (!shouldRenderFace) continue
 
                         MeshUtils.addChunkFace(
@@ -84,22 +124,14 @@ class MeshHelper: MeshGenerator, LaunchedEffect {
                             normal = dir.normal,
                             blockType = block,
                             directionType = dir.directionType,
-                            blockExists = { wx, wy, wz ->
-                                when(getNeighborBlock(chunkData, chunkMap, wx, wy, wz, w, h)) {
-                                    BlockType.AIR, BlockType.NOTHING -> false
-                                    else -> true
-                                }
-                            }
+                            blockExists = blockExists
                         )
                     }
                 }
             }
         }
 
-        val vertices = verticesList.toFloatArray()
-        val indices = indicesList.toShortArray()
-
-        return RawMeshData(vertices, indices)
+        return RawMeshData(verticesList.toFloatArray(), indicesList.toShortArray())
     }
 
     private fun hasActiveAllSides(
@@ -107,12 +139,9 @@ class MeshHelper: MeshGenerator, LaunchedEffect {
         blockData: TextureData,
         textureMap: Map<BlockType, TextureData>,
         chunkData: ChunkData,
-        chunkMap: Map<IntVector3, ChunkData>,
-        x: Int,
-        y: Int,
-        z: Int,
-        w: Int,
-        h: Int,
+        nb: Neighborhood,
+        x: Int, y: Int, z: Int,
+        w: Int, h: Int,
     ): Boolean {
         if (!blockData.generateAllSides) return false
 
@@ -120,11 +149,13 @@ class MeshHelper: MeshGenerator, LaunchedEffect {
         val worldY = chunkData.position.y * h + y
         val worldZ = chunkData.position.z * w + z
 
-        for (dir in directions) {
+        val dirs = directions
+        for (i in dirs.indices) {
+            val dir = dirs[i]
             val nx = x + dir.dx
             val ny = y + dir.dy
             val nz = z + dir.dz
-            val neighbor = getNeighborBlock(chunkData, chunkMap, nx, ny, nz, w, h)
+            val neighbor = nb.block(nx, ny, nz)
             if (neighbor != block) continue
             val neighborData = textureMap[neighbor] ?: continue
             if (!neighborData.generateAllSides) continue
@@ -147,66 +178,4 @@ class MeshHelper: MeshGenerator, LaunchedEffect {
         if (ay != by) return ay.compareTo(by)
         return az.compareTo(bz)
     }
-
-    private fun getNeighborBlock(
-        currentChunk: ChunkData,
-        chunkMap: Map<IntVector3, ChunkData>,
-        nx: Int, ny: Int, nz: Int,
-        w: Int, h: Int
-    ): BlockType {
-        if (nx in 0 until w && ny in 0 until h && nz in 0 until w) {
-            return currentChunk.getBlockByLocal(nx, ny, nz)
-        }
-
-        var chunkOffX = 0
-        var chunkOffY = 0
-        var chunkOffZ = 0
-        var localX = nx
-        var localY = ny
-        var localZ = nz
-
-        when {
-            nx < 0 -> {
-                chunkOffX = -1
-                localX = nx + w
-            }
-            nx >= w -> {
-                chunkOffX = 1
-                localX = nx - w
-            }
-        }
-        when {
-            ny < 0 -> {
-                chunkOffY = -1
-                localY = ny + h
-            }
-            ny >= h -> {
-                chunkOffY = 1
-                localY = ny - h
-            }
-        }
-        when {
-            nz < 0 -> {
-                chunkOffZ = -1
-                localZ = nz + w
-            }
-            nz >= w -> {
-                chunkOffZ = 1
-                localZ = nz - w
-            }
-        }
-
-        val neighborChunkPos = IntVector3(
-            currentChunk.position.x + chunkOffX,
-            currentChunk.position.y + chunkOffY,
-            currentChunk.position.z + chunkOffZ
-        )
-        val neighborChunk = chunkMap[neighborChunkPos]
-        return if (neighborChunk != null && localY in 0 until h) {
-            neighborChunk.getBlockByLocal(localX, localY, localZ)
-        } else {
-            BlockType.NOTHING
-        }
-    }
-
 }

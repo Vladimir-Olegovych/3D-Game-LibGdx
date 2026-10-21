@@ -28,6 +28,7 @@ import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.atomic.AtomicInteger
 
 class ChunkWorldUpdater : LaunchedEffect, DisposableEffect, DeltaUpdater(1 / 60F, Dispatchers.Default) {
 
@@ -38,14 +39,20 @@ class ChunkWorldUpdater : LaunchedEffect, DisposableEffect, DeltaUpdater(1 / 60F
         const val CHUNK_HEIGHT = 16
         const val DATA_RADIUS_EXTRA = 1
         const val REMOVE_MARGIN = 1
+
+        const val FIRST_BATCH_CHUNKS = 700
+        const val BATCH_CHUNKS = 96
+        const val BATCH_MESHES = 96
+        const val BATCH_TIMEOUT_MS = 15_000L
     }
 
     private val isFirstGeneration = AtomicBoolean(true)
 
-    private val workerCount = (Runtime.getRuntime().availableProcessors() / 6).coerceAtLeast(2)
+    private val workerCount = (Runtime.getRuntime().availableProcessors() / 4).coerceAtLeast(2)
 
     private val parallelismChunks = Semaphore(workerCount)
     private val parallelismMesh = Semaphore(workerCount)
+    private val uploadGate = Semaphore(1)
     private val chunkPoolUpdater = ChunkPoolUpdater()
 
     private val pendingMeshPositions = ConcurrentHashMap.newKeySet<IntVector3>()
@@ -53,6 +60,13 @@ class ChunkWorldUpdater : LaunchedEffect, DisposableEffect, DeltaUpdater(1 / 60F
 
     private val createdChunkDataMap = ConcurrentHashMap<IntVector3, ChunkData>()
     private val createdMeshDataMap = ConcurrentHashMap<IntVector3, MeshData>()
+
+    private val batchInFlight = AtomicBoolean(false)
+    private val repeatRequested = AtomicBoolean(false)
+    private val batchProgress = AtomicInteger(0)
+    @Volatile private var batchStartedAt = 0L
+    @Volatile private var lastPlayerPosition: IntVector3? = null
+    private var lastBiomePoints: Any? = null
 
     private var chunkEventBus: EventBus? = null
     private lateinit var mainEventBus: EventBus
@@ -90,8 +104,22 @@ class ChunkWorldUpdater : LaunchedEffect, DisposableEffect, DeltaUpdater(1 / 60F
         chunkEventBus?.process()
     }
 
+    // ------------------------------------------------------------------ pipeline
+
     @BusEvent
     fun loadChunksRequest(event: ChunkEvent.LoadAdditionalChunksRequest) {
+        lastPlayerPosition = event.playerPosition
+
+        val now = System.currentTimeMillis()
+        if (!batchInFlight.compareAndSet(false, true)) {
+            if (now - batchStartedAt < BATCH_TIMEOUT_MS) {
+                // Батч ещё идёт: запомним, что игрок сместился, и повторим по его окончании.
+                repeatRequested.set(true)
+                return
+            }
+        }
+        batchStartedAt = now
+
         val generationData = getWorldGenerationData(event.playerPosition)
         chunkEventBus?.sendEvent(ChunkEvent.ChunksPreparation(generationData))
     }
@@ -99,46 +127,59 @@ class ChunkWorldUpdater : LaunchedEffect, DisposableEffect, DeltaUpdater(1 / 60F
     @BusEvent
     fun chunksPreparation(event: ChunkEvent.ChunksPreparation) {
         val generationData = event.worldGenerationData
+        val player = generationData.playerPosition
 
-        val meshPositionsToCreate = mutableListOf<IntVector3>()
-        val chunkPositionsToCreate = mutableListOf<IntVector3>()
+        removeOutsideChunks(player)
 
-        for (position in generationData.allMeshDataPositionsAround) {
-            if (createdMeshDataMap.containsKey(position)) continue
-            if (!pendingMeshPositions.add(position)) continue
-
-            createdMeshDataMap[position] = MeshData(null)
-            meshPositionsToCreate.add(position)
-        }
-
+        val chunkLimit = if (isFirstGeneration.get()) FIRST_BATCH_CHUNKS else BATCH_CHUNKS
+        val chunkCandidates = ArrayList<IntVector3>()
         for (position in generationData.allChunkDataPositionsAround) {
             if (createdChunkDataMap.containsKey(position)) continue
-            if (!pendingChunkPositions.add(position)) continue
+            if (pendingChunkPositions.contains(position)) continue
+            chunkCandidates.add(position)
+        }
+        WorldDataHelper.sortChunksByDistance(chunks = chunkCandidates, playerPosition = player)
 
-            chunkPositionsToCreate.add(position)
+        val chunkPositionsToCreate = ArrayList<IntVector3>()
+        for (position in chunkCandidates) {
+            if (chunkPositionsToCreate.size >= chunkLimit) break
+            if (pendingChunkPositions.add(position)) chunkPositionsToCreate.add(position)
         }
 
-        removeOutsideChunks(generationData.playerPosition)
+        val inBatch = HashSet(chunkPositionsToCreate)
+        fun available(p: IntVector3) = createdChunkDataMap.containsKey(p) || p in inBatch
 
-        WorldDataHelper.sortChunksByDistance(
-            chunks = chunkPositionsToCreate,
-            playerPosition = generationData.playerPosition
-        )
+        val meshCandidates = ArrayList<IntVector3>()
+        for (position in generationData.allMeshDataPositionsAround) {
+            if (createdMeshDataMap.containsKey(position)) continue
+            if (pendingMeshPositions.contains(position)) continue
+            if (!available(position)) continue
+            if (!available(IntVector3(position.x + 1, position.y, position.z))) continue
+            if (!available(IntVector3(position.x - 1, position.y, position.z))) continue
+            if (!available(IntVector3(position.x, position.y, position.z + 1))) continue
+            if (!available(IntVector3(position.x, position.y, position.z - 1))) continue
+            meshCandidates.add(position)
+        }
+        WorldDataHelper.sortChunksByDistance(chunks = meshCandidates, playerPosition = player)
 
-        WorldDataHelper.sortChunksByDistance(
-            chunks = meshPositionsToCreate,
-            playerPosition = generationData.playerPosition
-        )
+        val meshPositionsToCreate = ArrayList<IntVector3>()
+        for (position in meshCandidates) {
+            if (meshPositionsToCreate.size >= BATCH_MESHES) break
+            if (pendingMeshPositions.add(position)) meshPositionsToCreate.add(position)
+        }
+
+        if (chunkPositionsToCreate.isEmpty() && meshPositionsToCreate.isEmpty()) {
+            finishBatch(allowFollowUp = false)
+            return
+        }
 
         val preparation = WorldChunksPreparation(
-            playerPosition = generationData.playerPosition,
+            playerPosition = player,
             toCreateMeshDates = meshPositionsToCreate,
             toCreateChunkDates = chunkPositionsToCreate
         )
 
-        mainEventBus.sendEvent(
-            GameChunkEvent.OnRequireChunkEntityIds(preparation)
-        )
+        mainEventBus.sendEvent(GameChunkEvent.OnRequireChunkEntityIds(preparation))
     }
 
     @BusEvent
@@ -146,62 +187,79 @@ class ChunkWorldUpdater : LaunchedEffect, DisposableEffect, DeltaUpdater(1 / 60F
         val preparation = event.worldChunksPreparation
         val createdChunks = HashMap<IntVector3, ChunkData>()
 
-        val points = terrainGenerator.generateBiomePoints(preparation.playerPosition)
-            mainEventBus.sendEvent(GameChunkEvent.GameWorldBiomePoints(points))
+        try {
+            val points = terrainGenerator.generateBiomePoints(preparation.playerPosition)
+            if (points != lastBiomePoints) {
+                lastBiomePoints = points
+                mainEventBus.sendEvent(GameChunkEvent.GameWorldBiomePoints(points))
+            }
 
-        for (position in preparation.toCreateChunkDates) {
-            val entityId = event.entityIds[position] ?: continue
+            for (position in preparation.toCreateChunkDates) {
+                val entityId = event.entityIds[position] ?: continue
+                val chunkData = chunkPoolUpdater.createChunk(position)
+                chunkData.entityId = entityId
+                createdChunks[position] = chunkData
+            }
 
-            val chunkData = chunkPoolUpdater.createChunk(position)
-            chunkData.entityId = entityId
+            createdChunks.values.map { chunkData ->
+                async(Dispatchers.Default) {
+                    parallelismChunks.withPermit { generateChunk(chunkData, points) }
+                }
+            }.awaitAll()
 
-            createdChunks[position] = chunkData
+            createdChunkDataMap.putAll(createdChunks)
+            batchProgress.addAndGet(createdChunks.size)
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            e.printStackTrace()
+        } finally {
+            pendingChunkPositions.removeAll(preparation.toCreateChunkDates.toSet())
         }
 
-        preparation.toCreateChunkDates.map { position ->
-            async(Dispatchers.Default) {
-                val chunkData = createdChunks[position] ?: return@async
-
-                parallelismChunks.withPermit {
-                    generateChunk(chunkData, points)
-                }
-            }
-        }.awaitAll()
-
-
-        createdChunkDataMap.putAll(createdChunks)
-        pendingChunkPositions.removeAll(createdChunks.keys)
-
-        chunkEventBus?.sendEvent(
-            ChunkEvent.ChunksMeshing(preparation)
-        )
+        chunkEventBus?.sendEvent(ChunkEvent.ChunksMeshing(preparation))
     }
 
     @BusEvent
     fun chunksMeshing(event: ChunkEvent.ChunksMeshing) = lifecycleScope.launch(Dispatchers.Default) {
         val preparation = event.worldChunksPreparation
 
-        preparation.toCreateMeshDates.map { position ->
-            async(Dispatchers.Default) {
-                parallelismMesh.withPermit {
-                    meshChunk(position)
+        try {
+            preparation.toCreateMeshDates.map { position ->
+                async(Dispatchers.Default) {
+                    parallelismMesh.withPermit { meshChunk(position) }
                 }
-            }
-        }.awaitAll()
+            }.awaitAll()
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            e.printStackTrace()
+        } finally {
+            pendingMeshPositions.removeAll(preparation.toCreateMeshDates.toSet())
+        }
 
-        pendingMeshPositions.removeAll(preparation.toCreateMeshDates.toSet())
-
-        chunkEventBus?.sendEvent(
-            ChunkEvent.FinalizeCreation(preparation)
-        )
+        chunkEventBus?.sendEvent(ChunkEvent.FinalizeCreation(preparation))
     }
 
     @BusEvent
     fun finalizeCreation(event: ChunkEvent.FinalizeCreation) {
-        if (!isFirstGeneration.compareAndSet(true, false)) return
-        val searchPosition = event.worldChunksPreparation.playerPosition.roundToFloat()
-        val position = WorldDataHelper.findSpawnPosition(createdChunkDataMap, searchPosition)?: searchPosition
-        mainEventBus.sendEvent(GameChunkEvent.GameWorldStarted(position))
+        if (isFirstGeneration.compareAndSet(true, false)) {
+            val searchPosition = event.worldChunksPreparation.playerPosition.roundToFloat()
+            val position = WorldDataHelper.findSpawnPosition(createdChunkDataMap, searchPosition) ?: searchPosition
+            mainEventBus.sendEvent(GameChunkEvent.GameWorldStarted(position))
+        }
+        finishBatch(allowFollowUp = true)
+    }
+
+    private fun finishBatch(allowFollowUp: Boolean) {
+        val progressed = batchProgress.getAndSet(0) > 0
+        batchInFlight.set(false)
+        val moved = repeatRequested.getAndSet(false)
+        if ((allowFollowUp && progressed) || moved) {
+            lastPlayerPosition?.let {
+                chunkEventBus?.sendEvent(ChunkEvent.LoadAdditionalChunksRequest(it))
+            }
+        }
     }
 
     private fun removeOutsideChunks(playerPosition: IntVector3) {
@@ -213,38 +271,28 @@ class ChunkWorldUpdater : LaunchedEffect, DisposableEffect, DeltaUpdater(1 / 60F
         val dataRemoveRadiusX = DRAW_RADIUS_X + DATA_RADIUS_EXTRA + REMOVE_MARGIN
         val dataRemoveRadiusY = DRAW_RADIUS_Y + DATA_RADIUS_EXTRA + REMOVE_MARGIN
 
-        val meshesToRemove = createdMeshDataMap.keys.filter { position ->
-            WorldDataHelper.isOutsideRadius(
-                position = position,
-                center = playerChunk,
-                radiusXZ = meshRemoveRadiusX,
-                radiusY = meshRemoveRadiusY
-            )
-        }
+        fun outsideMesh(position: IntVector3) = WorldDataHelper.isOutsideRadius(
+            position = position, center = playerChunk,
+            radiusXZ = meshRemoveRadiusX, radiusY = meshRemoveRadiusY
+        )
+
+        val meshesToRemove = createdMeshDataMap.keys.filter { outsideMesh(it) }
 
         val chunksToRemove = createdChunkDataMap.keys.filter { position ->
             WorldDataHelper.isOutsideRadius(
-                position = position,
-                center = playerChunk,
-                radiusXZ = dataRemoveRadiusX,
-                radiusY = dataRemoveRadiusY
+                position = position, center = playerChunk,
+                radiusXZ = dataRemoveRadiusX, radiusY = dataRemoveRadiusY
             )
         }
 
         for (position in meshesToRemove) {
-            val meshData = createdMeshDataMap.remove(position) ?: continue
-            val chunkData = createdChunkDataMap[position]
-            val entityId = chunkData?.entityId
+            createdMeshDataMap.remove(position) ?: continue
+            val entityId = createdChunkDataMap[position]?.entityId
 
             if (entityId != null) {
-                mainEventBus.sendEvent(
-                    GameChunkEvent.OnRemoveChunkMeshData(entityId)
-                )
-                physicsEventBus.sendEvent(
-                    PhysicsEvent.OnRemoveRigidBody(entityId)
-                )
+                mainEventBus.sendEvent(GameChunkEvent.OnRemoveChunkMeshData(entityId))
+                physicsEventBus.sendEvent(PhysicsEvent.OnRemoveRigidBody(entityId))
             }
-
             pendingMeshPositions.remove(position)
         }
 
@@ -253,21 +301,25 @@ class ChunkWorldUpdater : LaunchedEffect, DisposableEffect, DeltaUpdater(1 / 60F
             val entityId = chunkData.entityId
 
             if (entityId != null) {
-                mainEventBus.sendEvent(
-                    GameChunkEvent.OnRemoveChunkData(entityId)
-                )
+                mainEventBus.sendEvent(GameChunkEvent.OnRemoveChunkData(entityId))
             }
 
             chunkPoolUpdater.removeChunk(chunkData)
             pendingChunkPositions.remove(position)
         }
+
+        val r = dataRemoveRadiusX + 1
+        terrainGenerator.retainColumns(
+            playerChunk.x - r, playerChunk.x + r,
+            playerChunk.z - r, playerChunk.z + r
+        )
     }
 
-    private fun generateChunk(chunkData: ChunkData,
-                              points: Map<IntVector3, BiomeType>) {
+    private fun generateChunk(chunkData: ChunkData, points: Map<IntVector3, BiomeType>) {
         val entityId = chunkData.entityId ?: return
 
         terrainGenerator.generateChunkData(chunkData, points)
+        chunkData.recount()
 
         mainEventBus.sendEvent(
             GameChunkEvent.OnCreateChunkTransform(
@@ -277,51 +329,64 @@ class ChunkWorldUpdater : LaunchedEffect, DisposableEffect, DeltaUpdater(1 / 60F
         )
     }
 
+    private fun isBuried(position: IntVector3, chunk: ChunkData): Boolean {
+        if (!chunk.isFull) return false
+        val neighbors = arrayOf(
+            IntVector3(position.x + 1, position.y, position.z),
+            IntVector3(position.x - 1, position.y, position.z),
+            IntVector3(position.x, position.y + 1, position.z),
+            IntVector3(position.x, position.y - 1, position.z),
+            IntVector3(position.x, position.y, position.z + 1),
+            IntVector3(position.x, position.y, position.z - 1),
+        )
+        for (n in neighbors) {
+            val c = createdChunkDataMap[n] ?: return false
+            if (!c.isFull) return false
+        }
+        return true
+    }
+
     private suspend fun meshChunk(position: IntVector3) {
         val chunkData = createdChunkDataMap[position] ?: return
         val entityId = chunkData.entityId ?: return
 
-        if (!WorldDataHelper.hasRequiredNeighbors(createdChunkDataMap, position)) {
-            // Do not create a mesh yet: wait until all horizontal neighbors exist.
+        if (!WorldDataHelper.hasRequiredNeighbors(createdChunkDataMap, position)) return
+
+        if (chunkData.isEmpty || isBuried(position, chunkData)) {
+            createdMeshDataMap[position] = MeshData(null)
+            batchProgress.incrementAndGet()
             return
         }
 
         val rawMeshData = meshGenerator.createMesh(createdChunkDataMap, chunkData)
 
         if (rawMeshData.isEmpty()) {
-            createdMeshDataMap.remove(position)
+            createdMeshDataMap[position] = MeshData(null)
+            batchProgress.incrementAndGet()
             return
         }
 
-        val meshData = withContext(mainScope.coroutineContext) {
-            rawMeshData.createMeshData(chunkMeshParams)
+        val meshData = uploadGate.withPermit {
+            val created = withContext(mainScope.coroutineContext) {
+                rawMeshData.createMeshData(chunkMeshParams)
+            }
+            created
         }
 
-        // The chunk could have been removed while its mesh was being created.
         val currentChunkData = createdChunkDataMap[position] ?: return
         val currentEntityId = currentChunkData.entityId ?: return
-
         if (currentEntityId != entityId) return
 
         createdMeshDataMap[position] = meshData
+        batchProgress.incrementAndGet()
 
-        mainEventBus.sendEvent(
-            GameChunkEvent.OnCreateChunkMeshData(currentEntityId, meshData)
-        )
-
-        physicsEventBus.sendEvent(
-            PhysicsEvent.OnCreateChunkRigidBody(currentEntityId, currentChunkData)
-        )
+        mainEventBus.sendEvent(GameChunkEvent.OnCreateChunkMeshData(currentEntityId, meshData))
+        physicsEventBus.sendEvent(PhysicsEvent.OnCreateChunkRigidBody(currentEntityId, currentChunkData))
     }
 
-    private fun getWorldGenerationData(
-        playerPosition: IntVector3
-    ): WorldGenerationData {
-        val meshPositions =
-            WorldDataHelper.getChunkPositionsAroundPlayer(playerPosition)
-
-        val dataPositions =
-            WorldDataHelper.getDataPositionsAroundPlayer(playerPosition)
+    private fun getWorldGenerationData(playerPosition: IntVector3): WorldGenerationData {
+        val meshPositions = WorldDataHelper.getChunkPositionsAroundPlayer(playerPosition)
+        val dataPositions = WorldDataHelper.getDataPositionsAroundPlayer(playerPosition)
 
         return WorldGenerationData(
             playerPosition = playerPosition,

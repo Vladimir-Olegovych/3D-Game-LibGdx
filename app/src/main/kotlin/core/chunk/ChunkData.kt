@@ -12,30 +12,56 @@ class ChunkData(
 ) {
 
     companion object {
+        private val AIR_BYTE: Byte = BlockType.toByte(BlockType.AIR)
+
         fun create(
             position: IntVector3,
             chunkWidth: Int,
             chunkHeight: Int
         ): ChunkData {
-            val blocks = ByteArray(chunkWidth * chunkHeight * chunkWidth) { BlockType.toByte(BlockType.AIR) }
+            val blocks = ByteArray(chunkWidth * chunkHeight * chunkWidth) { AIR_BYTE }
             return ChunkData(null, position, chunkWidth, chunkHeight, blocks)
         }
     }
 
+    /** Количество блоков AIR. Поддерживается инкрементально в set*, после массовой записи в [blocks] вызови [recount]. */
+    var airCount: Int = 0
+        private set
+
+    init {
+        recount()
+    }
+
+    /** Чанк целиком из воздуха — меш не нужен. */
+    val isEmpty: Boolean get() = airCount == blocks.size
+
+    /** В чанке нет воздуха вообще (полностью забит). */
+    val isFull: Boolean get() = airCount == 0
+
+    /** Пересчитать счётчик воздуха. Дёшево (4096 байт), вызывать после генерации. */
+    fun recount() {
+        var c = 0
+        for (b in blocks) if (b == AIR_BYTE) c++
+        airCount = c
+    }
+
     fun isAllBlock(blockType: BlockType): Boolean {
-        blocks.forEach { if (blockType != BlockType.fromByte(it)) return false }
+        val expected = BlockType.toByte(blockType)
+        for (b in blocks) if (b != expected) return false
         return true
     }
 
-    fun hasNonAirBlock(): Boolean {
-        for (id in blocks) {
-            if (BlockType.fromByte(id) != BlockType.AIR) return true
-        }
-        return false
+    fun hasNonAirBlock(): Boolean = airCount < blocks.size
+
+    private fun putByte(index: Int, newByte: Byte) {
+        val old = blocks[index]
+        if (old == newByte) return
+        if (old == AIR_BYTE) airCount-- else if (newByte == AIR_BYTE) airCount++
+        blocks[index] = newByte
     }
 
-    fun setBlockByIndex(blockType: BlockType, index: Int){
-        blocks[index] = BlockType.toByte(blockType)
+    fun setBlockByIndex(blockType: BlockType, index: Int) {
+        putByte(index, BlockType.toByte(blockType))
     }
 
     fun setBlockByLocal(blockType: BlockType, localPosition: IntVector3): Boolean {
@@ -51,14 +77,12 @@ class ChunkData(
         val lx = localPosition.x + offset.x
         val ly = localPosition.y + offset.y
         val lz = localPosition.z + offset.z
-        if (setBlockByLocal(blockType, lx, ly, lz)) return
+        setBlockByLocal(blockType, lx, ly, lz)
     }
 
     fun setBlockByLocal(blockType: BlockType, x: Int, y: Int, z: Int): Boolean {
         if (x < 0 || y < 0 || z < 0 || x > chunkWidth - 1 || z > chunkWidth - 1 || y > chunkHeight - 1) return false
-        val index: Int = getIndex(x, y, z)
-        if (index < 0 || index >= blocks.size) return false
-        blocks[index] = BlockType.toByte(blockType)
+        putByte(getIndex(x, y, z), BlockType.toByte(blockType))
         return true
     }
 
@@ -67,8 +91,7 @@ class ChunkData(
     }
 
     fun getBlockByLocal(x: Int, y: Int, z: Int): BlockType {
-        val index = getIndex(x, y, z)
-        return BlockType.fromByte(blocks[index])
+        return BlockType.fromByte(blocks[getIndex(x, y, z)])
     }
 
     fun getIndex(x: Int, y: Int, z: Int): Int {
