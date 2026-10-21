@@ -33,7 +33,7 @@ import java.util.concurrent.atomic.AtomicInteger
 class ChunkWorldUpdater : LaunchedEffect, DisposableEffect, DeltaUpdater(1 / 60F, Dispatchers.Default) {
 
     companion object {
-        const val DRAW_RADIUS_X = 16
+        const val DRAW_RADIUS_X = 32
         const val DRAW_RADIUS_Y = 8
         const val CHUNK_SIZE = 16
         const val CHUNK_HEIGHT = 16
@@ -48,7 +48,7 @@ class ChunkWorldUpdater : LaunchedEffect, DisposableEffect, DeltaUpdater(1 / 60F
 
     private val isFirstGeneration = AtomicBoolean(true)
 
-    private val workerCount = (Runtime.getRuntime().availableProcessors() / 4).coerceAtLeast(2)
+    private val workerCount = (Runtime.getRuntime().availableProcessors()).coerceAtLeast(2)
 
     private val parallelismChunks = Semaphore(workerCount)
     private val parallelismMesh = Semaphore(workerCount)

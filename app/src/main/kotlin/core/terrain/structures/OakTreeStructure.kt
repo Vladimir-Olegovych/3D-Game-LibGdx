@@ -1,52 +1,29 @@
 package core.terrain.structures
 
-import com.gigapi.math.vector.IntVector3
 import core.blocks.BlockType
-import core.chunk.ChunkData
-import core.terrain.level.StructureGenerator
+import core.terrain.biome.models.BiomeType
+import core.terrain.level.WorldStructure
+import core.terrain.structures.builder.Place
+import core.terrain.structures.builder.StructureBuilder
 import kotlin.math.sqrt
-import kotlin.random.Random
 
-class OakTreeStructure: StructureGenerator() {
+class OakTreeStructure : WorldStructure() {
 
-    override fun handling(
-        seed: Int,
-        chunkData: ChunkData,
-        localPosition: IntVector3,
-        worldPosition: IntVector3,
-        heightNoice: Pair<Float, Int>
-    ): Boolean {
-        val heightNoice = heightNoice.second
-        val blockType = chunkData.getBlockByLocal(localPosition)
-        if (heightNoice != worldPosition.y || blockType != BlockType.GRASS) return false
-        val random = Random(
-            seed + worldPosition.x * 31 + worldPosition.y * 7919 + worldPosition.z * 104729
-        )
+    override val id = "oak_tree"
+    override val cellSize = 6
+    override val chance = 0.7f
+    override val radius = 5
+    override val above = 12
+    override val biomes = setOf(BiomeType.FOREST)
 
-        if (random.nextFloat() > 0.02f) return false
-        generateTree(chunkData, localPosition, worldPosition, random)
-        return true
-    }
-
-    private fun generateTree(
-        chunkData: ChunkData,
-        localPosition: IntVector3,
-        worldPosition: IntVector3,
-        random: Random,
-    ) {
+    override fun build(b: StructureBuilder) {
+        val random = b.random
         val treeHeight = random.nextInt(5, 9)
-
         val trunkOffset = random.nextInt(-1, 1)
-        for (y in 0 until treeHeight) {
-            val offsetX = if (y > treeHeight / 2) trunkOffset else 0
-            val offsetZ = if (y > treeHeight / 2) trunkOffset else 0
 
-            chunkData.setBlockPending(
-                BlockType.OAK_WOOD,
-                offset = IntVector3(offsetX, y + 1, offsetZ),
-                localPosition = localPosition,
-                worldPosition = worldPosition
-            )
+        for (y in 0 until treeHeight) {
+            val o = if (y > treeHeight / 2) trunkOffset else 0
+            b.set(o, y + 1, o, BlockType.OAK_WOOD, Place.ALWAYS)
         }
 
         val leafRadius = when (treeHeight) {
@@ -55,81 +32,46 @@ class OakTreeStructure: StructureGenerator() {
             else -> 2
         }
 
-        val leafStart = treeHeight - 2
-
-        for (y in leafStart until treeHeight + 2) {
+        for (y in (treeHeight - 2) until treeHeight + 2) {
             val radiusAtLevel = when {
                 y == treeHeight + 1 -> 1
                 y == treeHeight -> 2
                 y >= treeHeight - 1 -> leafRadius
                 else -> leafRadius - 1
             }
-
             for (x in -radiusAtLevel..radiusAtLevel) {
                 for (z in -radiusAtLevel..radiusAtLevel) {
                     val distance = sqrt((x * x + z * z).toDouble())
                     if (distance > radiusAtLevel) continue
-
+                    // ВАЖНО: random вызывается строго в одном и том же порядке независимо от чанка
                     if (random.nextFloat() > 0.85f && distance > 0) continue
 
-                    val leafType = if (distance > radiusAtLevel - 0.5) {
+                    val leaf = if (distance > radiusAtLevel - 0.5) {
                         if (random.nextFloat() > 0.3f) BlockType.LEAVES else null
-                    } else {
-                        BlockType.LEAVES
-                    }
+                    } else BlockType.LEAVES
 
-                    leafType?.let {
-                        chunkData.setBlockPending(
-                            it,
-                            offset = IntVector3(x, y + 1, z),
-                            localPosition = localPosition,
-                            worldPosition = worldPosition
-                        )
-                    }
+                    if (leaf != null) b.set(x, y + 1, z, leaf)
                 }
             }
         }
 
-        val branchesCount = random.nextInt(1, 3)
-        repeat(branchesCount) {
+        repeat(random.nextInt(1, 3)) {
             val branchHeight = random.nextInt(treeHeight / 2, treeHeight - 1)
-            val branchDirection = random.nextInt(0, 4)
-            val branchLength = random.nextInt(2, 4)
+            val dir = random.nextInt(0, 4)
+            val len = random.nextInt(2, 4)
+            val dx = when (dir) { 0 -> 1; 1 -> -1; else -> 0 }
+            val dz = when (dir) { 2 -> 1; 3 -> -1; else -> 0 }
 
-            var xOffset = 0
-            var zOffset = 0
+            for (i in 1..len) {
+                val px = dx * i
+                val pz = dz * i
+                b.set(px, branchHeight + i / 2, pz, BlockType.OAK_WOOD, Place.ALWAYS)
 
-            when (branchDirection) {
-                0 -> xOffset = 1
-                1 -> xOffset = -1
-                2 -> zOffset = 1
-                3 -> zOffset = -1
-            }
-
-            for (i in 1..branchLength) {
-                val posX = xOffset * i
-                val posZ = zOffset * i
-
-                chunkData.setBlockPending(
-                    BlockType.OAK_WOOD,
-                    offset = IntVector3(posX, branchHeight + i/2, posZ),
-                    localPosition = localPosition,
-                    worldPosition = worldPosition
-                )
-
-                if (i == branchLength) {
-                    for (dx in -1..1) {
-                        for (dz in -1..1) {
-                            if (dx == 0 && dz == 0) continue
-                            if (random.nextFloat() > 0.4f) continue
-
-                            chunkData.setBlockPending(
-                                BlockType.LEAVES,
-                                offset = IntVector3(posX + dx, branchHeight + i/2, posZ + dz),
-                                localPosition = localPosition,
-                                worldPosition = worldPosition
-                            )
-                        }
+                if (i == len) {
+                    for (ox in -1..1) for (oz in -1..1) {
+                        if (ox == 0 && oz == 0) continue
+                        if (random.nextFloat() > 0.4f) continue
+                        b.set(px + ox, branchHeight + i / 2, pz + oz, BlockType.LEAVES)
                     }
                 }
             }

@@ -45,12 +45,12 @@ class RockStructure: StructureGenerator() {
                     val noise = random.nextDouble() * 0.3
 
                     if (distance <= rockRadius + noise) {
-                        chunkData.setBlockPending(
-                            BlockType.STONE,
-                            offset = IntVector3(x, y, z),
-                            localPosition = localPosition,
-                            worldPosition = worldPosition
-                        )
+                        //chunkData.setBlockPending(
+                        //    BlockType.STONE,
+                        //    offset = IntVector3(x, y, z),
+                        //    localPosition = localPosition,
+                        //    worldPosition = worldPosition
+                        //)
                     }
                 }
             }

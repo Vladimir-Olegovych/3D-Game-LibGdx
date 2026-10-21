@@ -68,18 +68,6 @@ class ChunkData(
         return setBlockByLocal(blockType, localPosition.x, localPosition.y, localPosition.z)
     }
 
-    fun setBlockPending(
-        blockType: BlockType,
-        offset: IntVector3,
-        localPosition: IntVector3,
-        worldPosition: IntVector3
-    ) {
-        val lx = localPosition.x + offset.x
-        val ly = localPosition.y + offset.y
-        val lz = localPosition.z + offset.z
-        setBlockByLocal(blockType, lx, ly, lz)
-    }
-
     fun setBlockByLocal(blockType: BlockType, x: Int, y: Int, z: Int): Boolean {
         if (x < 0 || y < 0 || z < 0 || x > chunkWidth - 1 || z > chunkWidth - 1 || y > chunkHeight - 1) return false
         putByte(getIndex(x, y, z), BlockType.toByte(blockType))

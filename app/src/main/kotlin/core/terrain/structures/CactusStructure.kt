@@ -37,12 +37,12 @@ class CactusStructure: StructureGenerator() {
     ) {
         val length = random.nextInt(4, 5)
         for (y in 0 .. length) {
-            chunkData.setBlockPending(
-                BlockType.CACTUS,
-                offset = IntVector3(0, y + 1, 0),
-                localPosition = localPosition,
-                worldPosition = worldPosition
-            )
+            //chunkData.setBlockPending(
+            //    BlockType.CACTUS,
+            //    offset = IntVector3(0, y + 1, 0),
+            //    localPosition = localPosition,
+            //    worldPosition = worldPosition
+            //)
         }
     }
 }

@@ -1,58 +1,32 @@
 package core.terrain.structures
 
-import com.gigapi.math.vector.IntVector3
 import core.blocks.BlockType
-import core.chunk.ChunkData
-import core.terrain.level.StructureGenerator
+import core.terrain.biome.models.BiomeType
+import core.terrain.level.WorldStructure
+import core.terrain.structures.builder.Place
+import core.terrain.structures.builder.StructureBuilder
 import kotlin.math.sqrt
 import kotlin.random.Random
 
-class SpruceTreeStructure : StructureGenerator() {
+class SpruceTreeStructure : WorldStructure() {
 
-    override fun handling(
-        seed: Int,
-        chunkData: ChunkData,
-        localPosition: IntVector3,
-        worldPosition: IntVector3,
-        heightNoice: Pair<Float, Int>
-    ): Boolean {
-        val surfaceY = heightNoice.second
-        val blockType = chunkData.getBlockByLocal(localPosition)
-        if (surfaceY != worldPosition.y || blockType != BlockType.GRASS) return false
+    override val id = "spruce_tree"
+    override val cellSize = 5          // раньше 4% колонок ≈ 1 дерево на 25 блоков
+    override val chance = 0.8f         // 0.8 / 25 ≈ 3.2%; подгони плотность под себя
+    override val radius = 4            // maxRadius = 3 + 1 запас
+    override val above = 46            // макс. высота ствола 41 + верхушка + запас
+    override val biomes = setOf(BiomeType.SPRUCE_FOREST)
 
-        val random = Random(
-            seed + worldPosition.x * 31 + worldPosition.y * 7919 + worldPosition.z * 104729
-        )
-
-        if (random.nextFloat() > 0.04f) return false
-        generateTree(chunkData, localPosition, worldPosition, random)
-        return true
-    }
-
-    private fun generateTree(
-        chunkData: ChunkData,
-        localPosition: IntVector3,
-        worldPosition: IntVector3,
-        random: Random,
-    ) {
+    override fun build(b: StructureBuilder) {
+        val random = b.random
         val treeHeight = random.nextInt(32, 42)
 
         for (y in 0 until treeHeight) {
-            chunkData.setBlockPending(
-                BlockType.OAK_WOOD,
-                offset = IntVector3(0, y + 1, 0),
-                localPosition = localPosition,
-                worldPosition = worldPosition
-            )
+            b.set(0, y + 1, 0, BlockType.OAK_WOOD, Place.ALWAYS)
         }
 
-        // Tip leaf above the trunk.
-        chunkData.setBlockPending(
-            BlockType.LEAVES,
-            offset = IntVector3(0, treeHeight + 1, 0),
-            localPosition = localPosition,
-            worldPosition = worldPosition
-        )
+        // Верхушка
+        b.set(0, treeHeight + 1, 0, BlockType.LEAVES)
 
         val leafStart = treeHeight / 3
         val maxRadius = if (treeHeight >= 12) 3 else 2
@@ -60,48 +34,25 @@ class SpruceTreeStructure : StructureGenerator() {
 
         for (y in leafStart until treeHeight) {
             val t = (y - leafStart).toFloat() / leafSpan
-            // Wider rings at the base of the canopy, tapering to 1 at the tip.
             var radius = (maxRadius * (1f - t) + 1f).toInt().coerceIn(1, maxRadius)
-            // Alternate ring widths for a spruce look.
             if ((treeHeight - y) % 2 == 0) radius = (radius + 1).coerceAtMost(maxRadius)
 
-            placeLeafRing(
-                chunkData = chunkData,
-                localPosition = localPosition,
-                worldPosition = worldPosition,
-                random = random,
-                y = y + 1,
-                radius = radius,
-                keepTrunk = true
-            )
+            placeLeafRing(b, random, y + 1, radius)
         }
     }
 
-    private fun placeLeafRing(
-        chunkData: ChunkData,
-        localPosition: IntVector3,
-        worldPosition: IntVector3,
-        random: Random,
-        y: Int,
-        radius: Int,
-        keepTrunk: Boolean,
-    ) {
+    private fun placeLeafRing(b: StructureBuilder, random: Random, y: Int, radius: Int) {
         for (x in -radius..radius) {
             for (z in -radius..radius) {
-                if (keepTrunk && x == 0 && z == 0) continue
+                if (x == 0 && z == 0) continue   // ствол
 
                 val distance = sqrt((x * x + z * z).toDouble())
                 if (distance > radius + 0.3) continue
 
-                // Thin the outer edge a bit so rings don't look like solid discs.
+                // random вызывается в том же порядке в любом чанке
                 if (distance > radius - 0.5 && random.nextFloat() > 0.7f) continue
 
-                chunkData.setBlockPending(
-                    BlockType.LEAVES,
-                    offset = IntVector3(x, y, z),
-                    localPosition = localPosition,
-                    worldPosition = worldPosition
-                )
+                b.set(x, y, z, BlockType.LEAVES)
             }
         }
     }

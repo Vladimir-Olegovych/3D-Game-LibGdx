@@ -40,16 +40,8 @@ class SpruceBiomeGenerator : LaunchedEffect, BiomeGenerator() {
         baseDomainWarping = getSurfaceDomainWarping(noiceGenerator)
 
         startLayerHandler
-            .setNext(ShadowLayerHandler())
             .setNext(UndergroundLayerHandler())
             .setNext(CaveLayerHandler(caveNoise))
-            .setNext(StructureLayerHandler(
-                seed = perlinNoise.seed,
-                structureList = listOf(
-                    SpruceTreeStructure(),
-                    RockStructure(),
-                )
-            ))
     }
 
     override fun computeSurfaceNoise(worldX: Int, worldZ: Int): Pair<Float, Int> {

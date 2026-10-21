@@ -16,11 +16,8 @@ import core.terrain.TerrainGenerator
 import core.terrain.biome.BiomeGenerator
 import core.terrain.biome.BiomePointGrid
 import core.terrain.layers.CaveLayerHandler
-import core.terrain.layers.ShadowLayerHandler
-import core.terrain.layers.StructureLayerHandler
 import core.terrain.layers.SurfaceLayerHandler
 import core.terrain.layers.UndergroundLayerHandler
-import core.terrain.structures.CactusStructure
 import math.noice.FastNoise
 
 class DesertBiomeGenerator : LaunchedEffect, BiomeGenerator() {
@@ -46,15 +43,8 @@ class DesertBiomeGenerator : LaunchedEffect, BiomeGenerator() {
         baseDomainWarping = getSurfaceDomainWarping(noiceGenerator)
 
         startLayerHandler
-            .setNext(ShadowLayerHandler())
             .setNext(UndergroundLayerHandler())
             .setNext(CaveLayerHandler(caveNoise))
-            .setNext(StructureLayerHandler(
-                seed = perlinNoise.seed,
-                structureList = listOf(
-                    CactusStructure()
-                )
-            ))
     }
 
     override fun computeSurfaceNoise(worldX: Int, worldZ: Int): Pair<Float, Int> {

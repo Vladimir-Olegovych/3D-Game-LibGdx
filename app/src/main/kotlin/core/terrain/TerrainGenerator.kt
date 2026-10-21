@@ -20,6 +20,9 @@ import core.terrain.biome.biomes.MountainBiomeGenerator
 import core.terrain.biome.biomes.SpruceBiomeGenerator
 import core.terrain.biome.models.BiomeType
 import core.terrain.layers.CaveLayerHandler
+import core.terrain.level.StructurePlacer
+import core.terrain.structures.OakTreeStructure
+import core.terrain.structures.SpruceTreeStructure
 import math.noice.FastNoise
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.math.max
@@ -60,6 +63,7 @@ class TerrainGenerator : LaunchedEffect {
     private lateinit var noiseWarp: DomainWarping2D
     private lateinit var biomePointGrid: BiomePointGrid
     private lateinit var biomeGenerators: Map<BiomeType, BiomeGenerator>
+    private lateinit var structurePlacer: StructurePlacer
 
     /** Кэш на колонку чанков (x,z): шум/биомы не зависят от Y, раньше считались 17 раз. */
     private val columnCache = ConcurrentHashMap<Long, ColumnInfo>()
@@ -94,6 +98,13 @@ class TerrainGenerator : LaunchedEffect {
         val noise = gContext.getObject<PerlinNoise>(NoiceTypes.PERLIN_WORLD)
         noiseWarp = getNoiseDomainWarping(noise.asGenerator())
         biomePointGrid = gContext.getObject()
+
+        structurePlacer = StructurePlacer(
+            seed = worldSeed,
+            structures = listOf(OakTreeStructure(), SpruceTreeStructure()),
+            surface = ::sampleSurface,
+            worldTopY = WORLD_HEIGHT * 2
+        )
     }
 
     fun generateBiomePoints(position: IntVector3) =
@@ -109,21 +120,22 @@ class TerrainGenerator : LaunchedEffect {
             computeColumn(cx, cz, w, points)
         }
 
-        if (skySkipEnabled) {
-            val chunkMinY = chunkData.position.y * chunkData.chunkHeight
-            if (chunkMinY > column.maxSurface + SKY_MARGIN) return
-        }
+        val chunkMinY = chunkData.position.y * chunkData.chunkHeight
+        val skipTerrain = skySkipEnabled && chunkMinY > column.maxSurface + SKY_MARGIN
 
-        for (x in 0 until w) {
-            for (z in 0 until w) {
-                val i = z * w + x
-                val biomeData = column.biomes[i] ?: continue
-                val noise = column.noise[i] ?: continue
-                biomeGenerators[biomeData.currentBiome]?.process(chunkData, biomeData, x, z, noise)
+        if (!skipTerrain) {
+            for (x in 0 until w) {
+                for (z in 0 until w) {
+                    val i = z * w + x
+                    val biomeData = column.biomes[i] ?: continue
+                    val noise = column.noise[i] ?: continue
+                    biomeGenerators[biomeData.currentBiome]?.process(chunkData, biomeData, x, z, noise)
+                }
             }
         }
-    }
 
+        structurePlacer.apply(chunkData)
+    }
     private fun computeColumn(
         cx: Int, cz: Int, w: Int,
         points: Map<IntVector3, BiomeType>

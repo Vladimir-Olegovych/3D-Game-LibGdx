@@ -16,7 +16,6 @@ import core.terrain.TerrainGenerator
 import core.terrain.biome.BiomeGenerator
 import core.terrain.biome.BiomePointGrid
 import core.terrain.layers.CaveLayerHandler
-import core.terrain.layers.ShadowLayerHandler
 import core.terrain.layers.SurfaceLayerHandler
 import core.terrain.layers.UndergroundLayerHandler
 import math.noice.FastNoise
@@ -44,7 +43,6 @@ class MountainBiomeGenerator : LaunchedEffect, BiomeGenerator() {
         baseDomainWarping = getSurfaceDomainWarping(noiceGenerator)
 
         startLayerHandler
-            .setNext(ShadowLayerHandler())
             .setNext(UndergroundLayerHandler())
             .setNext(CaveLayerHandler(caveNoise))
     }
