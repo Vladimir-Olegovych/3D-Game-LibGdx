@@ -211,7 +211,7 @@ class DrawSystem : BaseEntitySystem() {
             } else {
                 modelShader.setUniformf("objectColor", 1f, 1f, 1f)
             }
-            modelShader.setUniformf("u_useTexture", 0f)
+            modelShader.setUniformf("u_useTexture", 1f)
 
             blenderMapper[entityId]?.let(::drawModelMesh)
             animatorMapper[entityId]?.animator?.let(::drawAnimator)
@@ -282,12 +282,9 @@ class DrawSystem : BaseEntitySystem() {
     }
 
     inner class DrawTaskChunks : DrawTask {
-        val fogVerticalRadius = 5000f
-        /*
-            ChunkWorldUpdater.CHUNK_HEIGHT * ChunkWorldUpdater.DRAW_RADIUS_Y -
+        val fogVerticalRadius = ChunkWorldUpdater.CHUNK_HEIGHT * ChunkWorldUpdater.DRAW_RADIUS_Y -
                     ChunkWorldUpdater.CHUNK_HEIGHT * 2f
 
-         */
 
         override fun draw(entities: IntBag) {
 

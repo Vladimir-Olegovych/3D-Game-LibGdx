@@ -1,5 +1,6 @@
 package core.terrain.level
 
+import com.gigapi.effects.DisposableEffect
 import core.chunk.ChunkData
 import core.terrain.LodSample
 import core.terrain.biome.models.BiomeType
@@ -14,7 +15,7 @@ class StructurePlacer(
     private val surface: (Int, Int) -> LodSample,
     /** Выше этой отметки не бывает ни рельефа, ни структур — чанк пропускается сразу. */
     private val worldTopY: Int
-) {
+): DisposableEffect {
     private class Placed(val x: Int, val y: Int, val z: Int, val seed: Long, val biome: BiomeType)
 
     private val NONE = Placed(0, 0, 0, 0, BiomeType.FOREST)
@@ -87,5 +88,9 @@ class StructurePlacer(
         z = (z xor (z ushr 30)) * -4658895280553007687L
         z = (z xor (z ushr 27)) * -7723592293110705685L
         return z xor (z ushr 31)
+    }
+
+    override fun dispose() {
+        clearCache()
     }
 }

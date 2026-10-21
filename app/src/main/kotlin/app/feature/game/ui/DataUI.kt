@@ -11,6 +11,7 @@ import com.badlogic.gdx.utils.Align
 import com.gigapi.effects.LaunchedEffect
 import com.gigapi.general.GContext
 import core.assets.SkinID
+import core.chunk.ChunkWorldUpdater
 import core.defaults.CameraTypes
 import core.ui.UIGetter
 import kotlin.math.floor
@@ -28,6 +29,7 @@ class DataUI : LaunchedEffect, UIGetter {
     private lateinit var fpsLabel: Label
     private lateinit var timeLabel: Label
     private lateinit var positionLabel: Label
+    private lateinit var drawRadiusLabel: Label
 
     override fun launch(gContext: GContext) {
         timeState = gContext.getObject()
@@ -37,9 +39,11 @@ class DataUI : LaunchedEffect, UIGetter {
         fpsLabel = Label("FPS: Not updated", skin).apply { setAlignment(Align.right) }
         timeLabel = Label("Time: ", skin).apply { setAlignment(Align.right) }
         positionLabel = Label("XYZ: ", skin).apply { setAlignment(Align.right) }
+        drawRadiusLabel = Label("Radius XY: ${ChunkWorldUpdater.DRAW_RADIUS_X}|${ChunkWorldUpdater.DRAW_RADIUS_Y}", skin).apply { setAlignment(Align.right) }
         layout.add(fpsLabel).right().row()
         layout.add(timeLabel).right().row()
-        layout.add(positionLabel).right()
+        layout.add(positionLabel).right().row()
+        layout.add(drawRadiusLabel).right()
     }
 
     private var frameCount = 0

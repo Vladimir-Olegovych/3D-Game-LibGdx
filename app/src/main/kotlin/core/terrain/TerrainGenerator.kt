@@ -1,5 +1,6 @@
 package core.terrain
 
+import com.gigapi.effects.DisposableEffect
 import com.gigapi.effects.LaunchedEffect
 import com.gigapi.general.GContext
 import com.gigapi.math.noice.NoiceGenerator
@@ -32,7 +33,7 @@ import kotlin.math.roundToInt
 /** Результат дешёвой выборки поверхности для LOD (без пещер/деревьев). */
 class LodSample(val height: Int, val biome: BiomeType)
 
-class TerrainGenerator : LaunchedEffect {
+class TerrainGenerator : DisposableEffect, LaunchedEffect {
 
     companion object {
         const val UNDERGROUND_HEIGHT = 80
@@ -66,11 +67,15 @@ class TerrainGenerator : LaunchedEffect {
     private lateinit var biomeGenerators: Map<BiomeType, BiomeGenerator>
     private lateinit var structurePlacer: StructurePlacer
 
-    /** Кэш на колонку чанков (x,z): шум/биомы не зависят от Y, раньше считались 17 раз. */
     private val columnCache = ConcurrentHashMap<Long, ColumnInfo>()
     private val lodPointsCache = ConcurrentHashMap<Long, Map<IntVector3, BiomeType>>()
 
     var worldSeedFromServer: Int? = null
+
+    override fun dispose() {
+        columnCache.clear()
+        lodPointsCache.clear()
+    }
 
     override fun launch(gContext: GContext) {
         val worldSeed = worldSeedFromServer ?: error("worldSeedFromServer is null")
@@ -108,6 +113,7 @@ class TerrainGenerator : LaunchedEffect {
             surface = ::sampleSurface,
             worldTopY = WORLD_HEIGHT * 2
         )
+        gContext.setObject(structurePlacer)
     }
     /** Над чанком (cx,cy,cz) гарантированно только небо (всё выше поверхности + запас). */
     fun isSkyOpenAbove(cx: Int, cy: Int, cz: Int, chunkHeight: Int): Boolean {

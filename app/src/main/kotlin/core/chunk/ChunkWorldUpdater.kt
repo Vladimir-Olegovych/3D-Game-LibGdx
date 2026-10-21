@@ -14,6 +14,8 @@ import com.gigapi.math.vector.IntVector3
 import com.gigapi.math.vector.roundToFloat
 import com.gigapi.mesh.MeshData
 import core.blocks.BlockType
+import core.bullet.raycast.RayCastTypes
+import core.chunk.world.ChunkHelper
 import core.chunk.world.WorldChunksPreparation
 import core.chunk.world.WorldDataHelper
 import core.chunk.world.WorldGenerationData
@@ -37,13 +39,13 @@ class ChunkWorldUpdater : LaunchedEffect, DisposableEffect, DeltaUpdater(1 / 60F
 
     companion object {
         const val DRAW_RADIUS_X = 16
-        const val DRAW_RADIUS_Y = 12
+        const val DRAW_RADIUS_Y = 10
         const val CHUNK_SIZE = 16
         const val CHUNK_HEIGHT = 16
         const val DATA_RADIUS_EXTRA = 1
         const val REMOVE_MARGIN = 1
 
-        const val FIRST_BATCH_CHUNKS = 700
+        const val FIRST_BATCH_CHUNKS = 200
         const val BATCH_CHUNKS = 96
         const val BATCH_MESHES = 96
         const val BATCH_TIMEOUT_MS = 15_000L
@@ -51,11 +53,11 @@ class ChunkWorldUpdater : LaunchedEffect, DisposableEffect, DeltaUpdater(1 / 60F
 
     private val isFirstGeneration = AtomicBoolean(true)
 
-    private val workerCount = Runtime.getRuntime().availableProcessors().coerceAtLeast(2) * 4
+    private val workerCount = (Runtime.getRuntime().availableProcessors() / 2 + 1).coerceAtLeast(2)
 
     private val parallelismChunks = Semaphore(workerCount)
     private val parallelismMesh = Semaphore(workerCount)
-    private val uploadGate = Semaphore(1)
+    private val uploadGate = Semaphore(workerCount)
     private val chunkPoolUpdater = ChunkPoolUpdater()
 
     private val pendingMeshPositions = ConcurrentHashMap.newKeySet<IntVector3>()
@@ -65,12 +67,14 @@ class ChunkWorldUpdater : LaunchedEffect, DisposableEffect, DeltaUpdater(1 / 60F
     private val createdChunkDataMap = ConcurrentHashMap<IntVector3, ChunkData>()
     private val createdMeshDataMap = ConcurrentHashMap<IntVector3, MeshData>()
 
+    private val editRemeshPositions = ConcurrentHashMap.newKeySet<IntVector3>()
+
+    private val remeshRunning = AtomicBoolean(false)
     private val batchInFlight = AtomicBoolean(false)
     private val repeatRequested = AtomicBoolean(false)
     private val batchProgress = AtomicInteger(0)
     @Volatile private var batchStartedAt = 0L
     @Volatile private var lastPlayerPosition: IntVector3? = null
-    private var lastBiomePoints: Any? = null
 
     private var chunkEventBus: EventBus? = null
     private lateinit var lightEngine: LightEngine
@@ -92,6 +96,7 @@ class ChunkWorldUpdater : LaunchedEffect, DisposableEffect, DeltaUpdater(1 / 60F
         )
 
         chunkEventBus?.registerHandler(this)
+        mainEventBus.registerHandler(this)
 
         LightProps.set(BlockType.LEAVES, opacity = 1)
         //LightProps.set(BlockType.TORCH, opacity = 0, emission = 14)
@@ -102,8 +107,10 @@ class ChunkWorldUpdater : LaunchedEffect, DisposableEffect, DeltaUpdater(1 / 60F
             h = CHUNK_HEIGHT,
             chunkAt = { x, y, z ->
                 createdChunkDataMap[IntVector3(x, y, z)]
-            },    // chunkMap должна быть ConcurrentHashMap
-            isSkyOpenAbove = { x, y, z -> terrainGenerator.isSkyOpenAbove(x, y, z, CHUNK_HEIGHT) }
+            },
+            isSkyOpenAbove = { x, y, z ->
+                terrainGenerator.isSkyOpenAbove(x, y, z, CHUNK_HEIGHT)
+            }
         )
     }
 
@@ -207,10 +214,6 @@ class ChunkWorldUpdater : LaunchedEffect, DisposableEffect, DeltaUpdater(1 / 60F
 
         try {
             val points = terrainGenerator.generateBiomePoints(preparation.playerPosition)
-            if (points != lastBiomePoints) {
-                lastBiomePoints = points
-                mainEventBus.sendEvent(GameChunkEvent.GameWorldBiomePoints(points))
-            }
 
             for (position in preparation.toCreateChunkDates) {
                 val entityId = event.entityIds[position] ?: continue
@@ -240,7 +243,7 @@ class ChunkWorldUpdater : LaunchedEffect, DisposableEffect, DeltaUpdater(1 / 60F
                     }
                 }
             }
-
+            if (lightRemeshPositions.isNotEmpty()) scheduleRemesh()
             batchProgress.addAndGet(createdChunks.size)
         } catch (e: CancellationException) {
             throw e
@@ -254,39 +257,23 @@ class ChunkWorldUpdater : LaunchedEffect, DisposableEffect, DeltaUpdater(1 / 60F
     }
 
     @BusEvent
-    fun chunksMeshing(event: ChunkEvent.ChunksMeshing) =
-        lifecycleScope.launch(Dispatchers.Default) {
-            val preparation = event.worldChunksPreparation
-            val positions = preparation.toCreateMeshDates.toMutableSet()
-
-            for (position in lightRemeshPositions.toList()) {
-                positions.add(position)
-            }
-
-            try {
-                positions.map { position ->
-                    async(Dispatchers.Default) {
-                        parallelismMesh.withPermit {
-                            val lightRemeshing = lightRemeshPositions.contains(position)
-                            meshChunk(position, lightRemeshing)
-                            lightRemeshPositions.remove(position)
-                        }
-                    }
-                }.awaitAll()
-            } catch (e: CancellationException) {
-                throw e
-            } catch (e: Exception) {
-                e.printStackTrace()
-            } finally {
-                pendingMeshPositions.removeAll(
-                    preparation.toCreateMeshDates.toSet()
-                )
-            }
-
-            chunkEventBus?.sendEvent(
-                ChunkEvent.FinalizeCreation(preparation)
-            )
+    fun chunksMeshing(event: ChunkEvent.ChunksMeshing) = lifecycleScope.launch(Dispatchers.Default) {
+        val preparation = event.worldChunksPreparation
+        try {
+            preparation.toCreateMeshDates.map { position ->
+                async(Dispatchers.Default) {
+                    parallelismMesh.withPermit { meshChunk(position, remesh = false, rebuildPhysics = false) }
+                }
+            }.awaitAll()
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            e.printStackTrace()
+        } finally {
+            pendingMeshPositions.removeAll(preparation.toCreateMeshDates.toSet())
         }
+        chunkEventBus?.sendEvent(ChunkEvent.FinalizeCreation(preparation))
+    }
 
     @BusEvent
     fun finalizeCreation(event: ChunkEvent.FinalizeCreation) {
@@ -296,6 +283,104 @@ class ChunkWorldUpdater : LaunchedEffect, DisposableEffect, DeltaUpdater(1 / 60F
             mainEventBus.sendEvent(GameChunkEvent.GameWorldStarted(position))
         }
         finishBatch(allowFollowUp = true)
+    }
+    @BusEvent
+    fun setBlock(event: ChunkEvent.OnSetBlock) {
+        fun feedback(removed: BlockType, success: Boolean) {
+            mainEventBus.sendEvent(
+                ChunkEvent.OnSetBlockFeedBack(
+                    owner = event.owner,
+                    isPlaceContext = event.isPlaceContext,
+                    chunkPosition = event.chunkPosition,
+                    blockPosition = event.blockPosition,
+                    removedBlockType = removed,
+                    setBlockType = event.blockType,
+                    isSuccess = success
+                )
+            )
+        }
+
+        val lp = event.blockPosition
+        val chunk = createdChunkDataMap[event.chunkPosition]
+
+        if (chunk?.entityId == null || chunk.light == null ||
+            lp.x !in 0 until CHUNK_SIZE || lp.y !in 0 until CHUNK_HEIGHT || lp.z !in 0 until CHUNK_SIZE
+        ) {
+            feedback(BlockType.AIR, false); return
+        }
+
+        val old = chunk.getBlockByLocal(lp)
+        val allowed = if (event.isPlaceContext) old == BlockType.AIR   // ставим только в воздух
+        else old != BlockType.AIR                        // ломаем только твёрдое (+ проверка на неразрушаемые)
+        if (!allowed || old == event.blockType) {
+            feedback(old, false); return
+        }
+
+        // 1) блок (airCount в ChunkData обновится сам)
+        chunk.setBlockByLocal(event.blockType, lp)
+
+        // 2) свет (ПОСЛЕ смены блока) — вернёт правленый чанк и затронутых соседей
+        val affected = lightEngine.onBlockChanged(chunk, lp.x, lp.y, lp.z)
+
+        // 3) ремеш: правленый чанк — срочно и с коллизией, остальные — только если у них уже есть меш
+        editRemeshPositions.add(event.chunkPosition)
+        for (c in affected) {
+            val p = c.position
+            if (p == event.chunkPosition) continue
+            if (createdMeshDataMap.containsKey(p)) lightRemeshPositions.add(p)
+        }
+        scheduleRemesh()
+
+        feedback(old, true)
+    }
+    @BusEvent
+    fun onRayCastResult(event: PhysicsEvent.OnRayCastResult) {
+        if (event.requestId != RayCastTypes.CHUNK_DIG_RAY_CAST || !event.hasHit) return
+
+        val offset = event.direction.nor().scl(0.5f)
+        val hitPoint = event.hitPoint.add(offset)
+
+        val chunkPosition = WorldDataHelper.getChunkPositionFromWorldPosition(hitPoint)
+        if (pendingChunkPositions.contains(chunkPosition)) return
+        val chunkData = createdChunkDataMap[chunkPosition] ?: return
+        val chunkEntityId = chunkData.entityId ?: return
+        val blockPosition = ChunkHelper.getBlockPositionFromWorldPosition(hitPoint)
+        val currentBlock = chunkData.getBlockByLocal(blockPosition)
+
+        if (currentBlock == BlockType.AIR) return
+        mainEventBus.sendEvent(PhysicsEvent.OnRayCastBlockResult(
+            requestId = RayCastTypes.CHUNK_DIG_RAY_CAST,
+            chunkEntityId = chunkEntityId,
+            blockToSet = BlockType.AIR,
+            blockToRemove = currentBlock,
+            chunkPosition = chunkPosition,
+            blockPosition = blockPosition
+        ))
+    }
+
+    @BusEvent
+    fun onPlaceCastResult(event: PhysicsEvent.OnRayCastResult) {
+        if (event.requestId != RayCastTypes.CHUNK_PLACE_RAY_CAST || !event.hasHit) return
+
+        val normal = event.direction.nor()
+        val offset = normal.scl(0.2f)
+        val hitPoint = event.hitPoint.sub(offset)
+
+        val chunkPosition = WorldDataHelper.getChunkPositionFromWorldPosition(hitPoint)
+        if (pendingChunkPositions.contains(chunkPosition)) return
+        val chunkData = createdChunkDataMap[chunkPosition] ?: return
+        val chunkEntityId = chunkData.entityId ?: return
+        val blockPosition = ChunkHelper.getBlockPositionFromWorldPosition(hitPoint)
+        val currentBlock = chunkData.getBlockByLocal(blockPosition)
+
+        if (currentBlock != BlockType.AIR) return
+
+        mainEventBus.sendEvent(PhysicsEvent.OnRayCastPlaceBlockResult(
+            chunkEntityId = chunkEntityId,
+            blockToRemove = currentBlock,
+            chunkPosition = chunkPosition,
+            blockPosition = blockPosition
+        ))
     }
 
     private fun finishBatch(allowFollowUp: Boolean) {
@@ -362,6 +447,38 @@ class ChunkWorldUpdater : LaunchedEffect, DisposableEffect, DeltaUpdater(1 / 60F
         )
     }
 
+    private fun scheduleRemesh() {
+        if (!remeshRunning.compareAndSet(false, true)) return
+
+        lifecycleScope.launch(Dispatchers.Default) {
+            try {
+                while (true) {
+                    val edited = editRemeshPositions.toList()
+                    editRemeshPositions.removeAll(edited.toSet())
+
+                    val lit = lightRemeshPositions.filter { it !in edited }
+                    lightRemeshPositions.removeAll(lit.toSet())
+
+                    if (edited.isEmpty() && lit.isEmpty()) break
+
+                    edited.map { p ->
+                        async { parallelismMesh.withPermit { meshChunk(p, remesh = true, rebuildPhysics = true) } }
+                    }.awaitAll()
+                    lit.map { p ->
+                        async { parallelismMesh.withPermit { meshChunk(p, remesh = true, rebuildPhysics = false) } }
+                    }.awaitAll()
+                }
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                e.printStackTrace()
+            } finally {
+                remeshRunning.set(false)
+                if (editRemeshPositions.isNotEmpty() || lightRemeshPositions.isNotEmpty()) scheduleRemesh()
+            }
+        }
+    }
+
     private fun generateChunk(chunkData: ChunkData, points: Map<IntVector3, BiomeType>) {
         val entityId = chunkData.entityId ?: return
 
@@ -393,45 +510,47 @@ class ChunkWorldUpdater : LaunchedEffect, DisposableEffect, DeltaUpdater(1 / 60F
         return true
     }
 
-    private suspend fun meshChunk(position: IntVector3, isLightRemeshing: Boolean) {
+    private suspend fun meshChunk(position: IntVector3, remesh: Boolean, rebuildPhysics: Boolean) {
         val chunkData = createdChunkDataMap[position] ?: return
         val entityId = chunkData.entityId ?: return
 
         if (!WorldDataHelper.hasRequiredNeighbors(createdChunkDataMap, position)) return
 
-        if (chunkData.isEmpty || isBuried(position, chunkData)) {
-            createdMeshDataMap[position] = MeshData(null)
-            batchProgress.incrementAndGet()
-            return
-        }
+        val hadMesh = createdMeshDataMap[position]?.mesh != null
 
-        val rawMeshData = meshGenerator.createMesh(createdChunkDataMap, chunkData)
+        val rawMeshData =
+            if (chunkData.isEmpty || isBuried(position, chunkData)) null
+            else meshGenerator.createMesh(createdChunkDataMap, chunkData).takeUnless { it.isEmpty() }
 
-        if (rawMeshData.isEmpty()) {
+        if (rawMeshData == null) {
             createdMeshDataMap[position] = MeshData(null)
-            batchProgress.incrementAndGet()
+            if (!remesh) batchProgress.incrementAndGet()
+            if (hadMesh) {
+                mainEventBus.sendEvent(GameChunkEvent.OnRemoveChunkMeshData(entityId))
+                physicsEventBus.sendEvent(PhysicsEvent.OnRemoveRigidBody(entityId))
+            }
             return
         }
 
         val meshData = uploadGate.withPermit {
-            val created = withContext(mainScope.coroutineContext) {
-                rawMeshData.createMeshData(chunkMeshParams)
-            }
-            created
+            withContext(mainScope.coroutineContext) { rawMeshData.createMeshData(chunkMeshParams) }
         }
 
-        val currentChunkData = createdChunkDataMap[position] ?: return
-        val currentEntityId = currentChunkData.entityId ?: return
-        if (currentEntityId != entityId) return
+        val current = createdChunkDataMap[position] ?: return
+        if (current.entityId != entityId) return
 
         createdMeshDataMap[position] = meshData
-        batchProgress.incrementAndGet()
+        if (!remesh) batchProgress.incrementAndGet()
 
-        if (!isLightRemeshing) {
-            mainEventBus.sendEvent(GameChunkEvent.OnCreateChunkMeshData(currentEntityId, meshData))
-            physicsEventBus.sendEvent(PhysicsEvent.OnCreateChunkRigidBody(currentEntityId, currentChunkData))
+        if (hadMesh) {
+            mainEventBus.sendEvent(GameChunkEvent.OnUpdateChunkMeshData(entityId, meshData))
+            if (rebuildPhysics) {                            // геометрия поменялась — пересобираем коллизию
+                physicsEventBus.sendEvent(PhysicsEvent.OnRemoveRigidBody(entityId))
+                physicsEventBus.sendEvent(PhysicsEvent.OnCreateChunkRigidBody(entityId, current))
+            }
         } else {
-            mainEventBus.sendEvent(GameChunkEvent.OnUpdateChunkMeshData(currentEntityId, meshData))
+            mainEventBus.sendEvent(GameChunkEvent.OnCreateChunkMeshData(entityId, meshData))
+            physicsEventBus.sendEvent(PhysicsEvent.OnCreateChunkRigidBody(entityId, current))
         }
     }
 
