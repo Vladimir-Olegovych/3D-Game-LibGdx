@@ -32,8 +32,9 @@ val chunkMeshParams = MeshParams(
         VertexAttribute(VertexAttributes.Usage.Normal, 3, "a_Normal"),
         VertexAttribute(VertexAttributes.Usage.TextureCoordinates, 2, "a_TexCoord"),
         VertexAttribute(VertexAttributes.Usage.Generic, 1, "a_AO"),
+        VertexAttribute(VertexAttributes.Usage.Generic, 2, "a_Light"),   // x = небо, y = блоки
     ),
-    stride = 9
+    stride = 11
 )
 
 val defaultPlayerHitBox = createHitboxModel(1F, 1.8F)
@@ -449,6 +450,7 @@ object MeshUtils {
         normal: VertexAttribute3.Normal,
         blockType: BlockType,
         directionType: DirectionType,
+        lightAt: (Int, Int, Int) -> Int,
         blockExists: (Int, Int, Int) -> Boolean
     ) {
         val x = bx.toFloat()
@@ -499,8 +501,14 @@ object MeshUtils {
         }
 
         val ao = ShadowCompilerAO.computeFaceAO(bx, by, bz, nx, ny, nz, blockExists)
+        val lt = LightMesher.computeFaceLight(bx, by, bz, nx, ny, nz, lightAt)
 
-        val flip = ao[0] + ao[2] < ao[1] + ao[3]
+// диагональ режем с учётом и AO, и света — иначе на градиентах света видны «ромбы»
+        val b0 = ao[0] * (0.2f + maxOf(lt[0], lt[1]))
+        val b1 = ao[1] * (0.2f + maxOf(lt[2], lt[3]))
+        val b2 = ao[2] * (0.2f + maxOf(lt[4], lt[5]))
+        val b3 = ao[3] * (0.2f + maxOf(lt[6], lt[7]))
+        val flip = b0 + b2 < b1 + b3
 
         val uvs = blockDataManager.faceUVs(directionType, blockType)
 
@@ -518,6 +526,8 @@ object MeshUtils {
             verticesList.add(uv.x)
             verticesList.add(uv.y)
             verticesList.add(ao[i])
+            verticesList.add(lt[i * 2])
+            verticesList.add(lt[i * 2 + 1])
         }
 
         if (flip) {

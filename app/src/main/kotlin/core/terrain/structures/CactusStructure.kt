@@ -1,48 +1,25 @@
 package core.terrain.structures
 
-import com.gigapi.math.vector.IntVector3
 import core.blocks.BlockType
-import core.chunk.ChunkData
-import core.terrain.TerrainGenerator
-import core.terrain.level.StructureGenerator
-import kotlin.math.sqrt
-import kotlin.random.Random
+import core.terrain.biome.models.BiomeType
+import core.terrain.level.WorldStructure
+import core.terrain.structures.builder.Place
+import core.terrain.structures.builder.StructureBuilder
 
-class CactusStructure: StructureGenerator() {
+class CactusStructure : WorldStructure() {
 
-    override fun handling(
-        seed: Int,
-        chunkData: ChunkData,
-        localPosition: IntVector3,
-        worldPosition: IntVector3,
-        heightNoice: Pair<Float, Int>
-    ): Boolean {
-        val heightNoice = heightNoice.second
-        val blockType = chunkData.getBlockByLocal(localPosition)
-        if (heightNoice != worldPosition.y || blockType != BlockType.SAND) return false
-        val random = Random(
-            seed + worldPosition.x * 31 + worldPosition.y * 7919 + worldPosition.z * 104729
-        )
+    override val id = "cactus"
+    override val cellSize = 6
+    override val chance = 0.15f
+    override val radius = 0
+    override val above = 5
+    override val biomes = setOf(BiomeType.DESERT)
 
-        if (random.nextFloat() > 0.004f) return false
-        generateCactus(chunkData, localPosition, worldPosition, random)
-        return true
-    }
+    override fun build(b: StructureBuilder) {
+        val height = 5
 
-    private fun generateCactus(
-        chunkData: ChunkData,
-        localPosition: IntVector3,
-        worldPosition: IntVector3,
-        random: Random,
-    ) {
-        val length = random.nextInt(4, 5)
-        for (y in 0 .. length) {
-            //chunkData.setBlockPending(
-            //    BlockType.CACTUS,
-            //    offset = IntVector3(0, y + 1, 0),
-            //    localPosition = localPosition,
-            //    worldPosition = worldPosition
-            //)
+        for (y in 1..height) {
+            b.set(0, y, 0, BlockType.CACTUS, Place.ALWAYS)
         }
     }
 }

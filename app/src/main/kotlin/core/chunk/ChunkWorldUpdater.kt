@@ -13,9 +13,12 @@ import com.gigapi.general.GContext
 import com.gigapi.math.vector.IntVector3
 import com.gigapi.math.vector.roundToFloat
 import com.gigapi.mesh.MeshData
+import core.blocks.BlockType
 import core.chunk.world.WorldChunksPreparation
 import core.chunk.world.WorldDataHelper
 import core.chunk.world.WorldGenerationData
+import core.light.LightEngine
+import core.light.LightProps
 import core.math.createMatrixForChunk
 import core.mesh.MeshGenerator
 import core.mesh.MeshHelper
@@ -33,8 +36,8 @@ import java.util.concurrent.atomic.AtomicInteger
 class ChunkWorldUpdater : LaunchedEffect, DisposableEffect, DeltaUpdater(1 / 60F, Dispatchers.Default) {
 
     companion object {
-        const val DRAW_RADIUS_X = 32
-        const val DRAW_RADIUS_Y = 8
+        const val DRAW_RADIUS_X = 16
+        const val DRAW_RADIUS_Y = 12
         const val CHUNK_SIZE = 16
         const val CHUNK_HEIGHT = 16
         const val DATA_RADIUS_EXTRA = 1
@@ -48,7 +51,7 @@ class ChunkWorldUpdater : LaunchedEffect, DisposableEffect, DeltaUpdater(1 / 60F
 
     private val isFirstGeneration = AtomicBoolean(true)
 
-    private val workerCount = (Runtime.getRuntime().availableProcessors()).coerceAtLeast(2)
+    private val workerCount = Runtime.getRuntime().availableProcessors().coerceAtLeast(2)
 
     private val parallelismChunks = Semaphore(workerCount)
     private val parallelismMesh = Semaphore(workerCount)
@@ -58,6 +61,7 @@ class ChunkWorldUpdater : LaunchedEffect, DisposableEffect, DeltaUpdater(1 / 60F
     private val pendingMeshPositions = ConcurrentHashMap.newKeySet<IntVector3>()
     private val pendingChunkPositions = ConcurrentHashMap.newKeySet<IntVector3>()
 
+    private val lightRemeshPositions = ConcurrentHashMap.newKeySet<IntVector3>()
     private val createdChunkDataMap = ConcurrentHashMap<IntVector3, ChunkData>()
     private val createdMeshDataMap = ConcurrentHashMap<IntVector3, MeshData>()
 
@@ -69,6 +73,7 @@ class ChunkWorldUpdater : LaunchedEffect, DisposableEffect, DeltaUpdater(1 / 60F
     private var lastBiomePoints: Any? = null
 
     private var chunkEventBus: EventBus? = null
+    private lateinit var lightEngine: LightEngine
     private lateinit var mainEventBus: EventBus
     private lateinit var physicsEventBus: EventBus
 
@@ -87,6 +92,19 @@ class ChunkWorldUpdater : LaunchedEffect, DisposableEffect, DeltaUpdater(1 / 60F
         )
 
         chunkEventBus?.registerHandler(this)
+
+        LightProps.set(BlockType.LEAVES, opacity = 1)
+// LightProps.set(BlockType.TORCH, opacity = 0, emission = 14)
+        LightProps.set(BlockType.CACTUS, opacity = 0, emission = 14)
+
+        lightEngine = LightEngine(
+            w = CHUNK_SIZE,
+            h = CHUNK_HEIGHT,
+            chunkAt = { x, y, z ->
+                createdChunkDataMap[IntVector3(x, y, z)]
+            },    // chunkMap должна быть ConcurrentHashMap
+            isSkyOpenAbove = { x, y, z -> terrainGenerator.isSkyOpenAbove(x, y, z, CHUNK_HEIGHT) }
+        )
     }
 
     override fun dispose() {
@@ -208,6 +226,21 @@ class ChunkWorldUpdater : LaunchedEffect, DisposableEffect, DeltaUpdater(1 / 60F
             }.awaitAll()
 
             createdChunkDataMap.putAll(createdChunks)
+
+            for (chunk in createdChunks.values) {
+                val toRemesh = lightEngine.onChunkLoaded(chunk)
+
+                for (affected in toRemesh) {
+                    val position = affected.position
+
+                    // Новые меши построятся обычным путём.
+                    // Здесь запоминаем только уже существующие.
+                    if (createdMeshDataMap.containsKey(position)) {
+                        lightRemeshPositions.add(position)
+                    }
+                }
+            }
+
             batchProgress.addAndGet(createdChunks.size)
         } catch (e: CancellationException) {
             throw e
@@ -221,25 +254,39 @@ class ChunkWorldUpdater : LaunchedEffect, DisposableEffect, DeltaUpdater(1 / 60F
     }
 
     @BusEvent
-    fun chunksMeshing(event: ChunkEvent.ChunksMeshing) = lifecycleScope.launch(Dispatchers.Default) {
-        val preparation = event.worldChunksPreparation
+    fun chunksMeshing(event: ChunkEvent.ChunksMeshing) =
+        lifecycleScope.launch(Dispatchers.Default) {
+            val preparation = event.worldChunksPreparation
+            val positions = preparation.toCreateMeshDates.toMutableSet()
 
-        try {
-            preparation.toCreateMeshDates.map { position ->
-                async(Dispatchers.Default) {
-                    parallelismMesh.withPermit { meshChunk(position) }
-                }
-            }.awaitAll()
-        } catch (e: CancellationException) {
-            throw e
-        } catch (e: Exception) {
-            e.printStackTrace()
-        } finally {
-            pendingMeshPositions.removeAll(preparation.toCreateMeshDates.toSet())
+            for (position in lightRemeshPositions.toList()) {
+                positions.add(position)
+            }
+
+            try {
+                positions.map { position ->
+                    async(Dispatchers.Default) {
+                        parallelismMesh.withPermit {
+                            val lightRemeshing = lightRemeshPositions.contains(position)
+                            meshChunk(position, lightRemeshing)
+                            lightRemeshPositions.remove(position)
+                        }
+                    }
+                }.awaitAll()
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                e.printStackTrace()
+            } finally {
+                pendingMeshPositions.removeAll(
+                    preparation.toCreateMeshDates.toSet()
+                )
+            }
+
+            chunkEventBus?.sendEvent(
+                ChunkEvent.FinalizeCreation(preparation)
+            )
         }
-
-        chunkEventBus?.sendEvent(ChunkEvent.FinalizeCreation(preparation))
-    }
 
     @BusEvent
     fun finalizeCreation(event: ChunkEvent.FinalizeCreation) {
@@ -346,7 +393,7 @@ class ChunkWorldUpdater : LaunchedEffect, DisposableEffect, DeltaUpdater(1 / 60F
         return true
     }
 
-    private suspend fun meshChunk(position: IntVector3) {
+    private suspend fun meshChunk(position: IntVector3, isLightRemeshing: Boolean) {
         val chunkData = createdChunkDataMap[position] ?: return
         val entityId = chunkData.entityId ?: return
 
@@ -380,8 +427,12 @@ class ChunkWorldUpdater : LaunchedEffect, DisposableEffect, DeltaUpdater(1 / 60F
         createdMeshDataMap[position] = meshData
         batchProgress.incrementAndGet()
 
-        mainEventBus.sendEvent(GameChunkEvent.OnCreateChunkMeshData(currentEntityId, meshData))
-        physicsEventBus.sendEvent(PhysicsEvent.OnCreateChunkRigidBody(currentEntityId, currentChunkData))
+        if (!isLightRemeshing) {
+            mainEventBus.sendEvent(GameChunkEvent.OnCreateChunkMeshData(currentEntityId, meshData))
+            physicsEventBus.sendEvent(PhysicsEvent.OnCreateChunkRigidBody(currentEntityId, currentChunkData))
+        } else {
+            mainEventBus.sendEvent(GameChunkEvent.OnUpdateChunkMeshData(currentEntityId, meshData))
+        }
     }
 
     private fun getWorldGenerationData(playerPosition: IntVector3): WorldGenerationData {

@@ -60,6 +60,20 @@ class MeshHelper : MeshGenerator, LaunchedEffect {
             val lz = if (nz < 0) nz + w else if (nz >= w) nz - w else nz
             return chunk.getBlockByLocal(lx, ly, lz)
         }
+        /** packed (sky shl 4 | block), либо -1 если клетка непрозрачна или чанк ещё не просчитан. */
+        fun light(nx: Int, ny: Int, nz: Int): Int {
+            val cx = if (nx < 0) 0 else if (nx >= w) 2 else 1
+            val cy = if (ny < 0) 0 else if (ny >= h) 2 else 1
+            val cz = if (nz < 0) 0 else if (nz >= w) 2 else 1
+            val chunk = chunks[cx + cy * 3 + cz * 9] ?: return -1
+            val arr = chunk.light ?: return -1
+            val lx = if (nx < 0) nx + w else if (nx >= w) nx - w else nx
+            val ly = if (ny < 0) ny + h else if (ny >= h) ny - h else ny
+            val lz = if (nz < 0) nz + w else if (nz >= w) nz - w else nz
+            val idx = chunk.getIndex(lx, ly, lz)
+            if (core.light.LightProps.opacity(chunk.blocks[idx]) >= 15) return -1
+            return arr[idx].toInt() and 0xFF
+        }
     }
 
     override fun createMesh(
@@ -81,7 +95,9 @@ class MeshHelper : MeshGenerator, LaunchedEffect {
                 else -> true
             }
         }
-
+        val lightAt: (Int, Int, Int) -> Int = { x, y, z ->
+            nb.light(x, y, z)
+        }
         // ВАЖНО: чтобы убрать боксинг Float/Short, поменяй типы параметров
         // MeshUtils.addChunkFace(verticesList: ArrayList<Float>, indicesList: ArrayList<Short>)
         // на FloatBuf / ShortBuf из core.lod (у них есть add() и size). Если там больше ничего
@@ -124,6 +140,7 @@ class MeshHelper : MeshGenerator, LaunchedEffect {
                             normal = dir.normal,
                             blockType = block,
                             directionType = dir.directionType,
+                            lightAt = lightAt,
                             blockExists = blockExists
                         )
                     }

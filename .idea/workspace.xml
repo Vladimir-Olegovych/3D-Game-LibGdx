@@ -4,26 +4,22 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="21bb169d-cf41-4c8a-bf73-e63da1eaa6c0" name="Changes" comment="ai updated 1">
-      <change afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/terrain/level/StructurePlacer.kt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/terrain/level/WorldStructure.kt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/terrain/structures/builder/StructureBuilder.kt" afterDir="false" />
+    <list default="true" id="21bb169d-cf41-4c8a-bf73-e63da1eaa6c0" name="Changes" comment="ai updated 2 structures">
+      <change afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/light/LightEngine.kt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/light/LightProps.kt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/mesh/LightMesher.kt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/core/chunk/ChunkData.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/chunk/ChunkData.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/core/chunk/ChunkPoolUpdater.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/chunk/ChunkPoolUpdater.kt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/core/chunk/ChunkWorldUpdater.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/chunk/ChunkWorldUpdater.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/core/mesh/MeshHelper.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/mesh/MeshHelper.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/core/mesh/MeshUtils.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/mesh/MeshUtils.kt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/core/terrain/TerrainGenerator.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/terrain/TerrainGenerator.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/core/terrain/biome/biomes/DesertBiomeGenerator.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/terrain/biome/biomes/DesertBiomeGenerator.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/core/terrain/biome/biomes/ForestBiomeGenerator.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/terrain/biome/biomes/ForestBiomeGenerator.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/core/terrain/biome/biomes/MountainBiomeGenerator.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/terrain/biome/biomes/MountainBiomeGenerator.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/core/terrain/biome/biomes/SpruceBiomeGenerator.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/terrain/biome/biomes/SpruceBiomeGenerator.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/core/terrain/layers/ShadowLayerHandler.kt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/core/terrain/layers/StructureLayerHandler.kt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/core/terrain/level/StructureSelector.kt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/core/terrain/level/StructureType.kt" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/core/terrain/structures/CactusStructure.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/terrain/structures/CactusStructure.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/core/terrain/structures/OakTreeStructure.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/terrain/structures/OakTreeStructure.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/core/terrain/structures/RockStructure.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/terrain/structures/RockStructure.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/core/terrain/structures/SpruceTreeStructure.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/terrain/structures/SpruceTreeStructure.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/core/terrain/structures/TestStructure.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/terrain/structures/TestStructure.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/resources/shaders/chunk/fragment_shader_chunk.glsl" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/resources/shaders/chunk/fragment_shader_chunk.glsl" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/resources/shaders/chunk/vertex_shader_chunk.glsl" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/resources/shaders/chunk/vertex_shader_chunk.glsl" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/src/main/kotlin/ecs/states/TimeState.kt" beforeDir="false" afterPath="$PROJECT_DIR$/server/src/main/kotlin/ecs/states/TimeState.kt" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -98,7 +94,7 @@
       <recent name="core.items" />
     </key>
   </component>
-  <component name="RunManager" selected="Kotlin.DesktopMainKt">
+  <component name="RunManager" selected="Kotlin.ServerMainKt">
     <configuration name="DesktopMainKt" type="JetRunConfigurationType" temporary="true" nameIsGenerated="true">
       <option name="MAIN_CLASS_NAME" value="com.gigcreator.DesktopMainKt" />
       <module name="GDX-3D-TEST.desktop.main" />
@@ -179,6 +175,7 @@
     <MESSAGE value="bug fix and optimized chunk updater" />
     <MESSAGE value="bug fix and new biome generation" />
     <MESSAGE value="ai updated 1" />
-    <option name="LAST_COMMIT_MESSAGE" value="ai updated 1" />
+    <MESSAGE value="ai updated 2 structures" />
+    <option name="LAST_COMMIT_MESSAGE" value="ai updated 2 structures" />
   </component>
 </project>

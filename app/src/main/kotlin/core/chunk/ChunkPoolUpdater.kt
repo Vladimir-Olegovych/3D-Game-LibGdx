@@ -16,6 +16,7 @@ class ChunkPoolUpdater(
         return if (pooled != null) {
             pooled.entityId = null
             pooled.position = position
+            pooled.light?.let { fill(it, 0) }
             fill(pooled.blocks, BlockType.toByte(BlockType.AIR))
             pooled
         } else {

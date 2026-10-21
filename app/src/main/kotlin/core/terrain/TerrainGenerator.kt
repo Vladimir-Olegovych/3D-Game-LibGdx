@@ -21,6 +21,7 @@ import core.terrain.biome.biomes.SpruceBiomeGenerator
 import core.terrain.biome.models.BiomeType
 import core.terrain.layers.CaveLayerHandler
 import core.terrain.level.StructurePlacer
+import core.terrain.structures.CactusStructure
 import core.terrain.structures.OakTreeStructure
 import core.terrain.structures.SpruceTreeStructure
 import math.noice.FastNoise
@@ -101,12 +102,41 @@ class TerrainGenerator : LaunchedEffect {
 
         structurePlacer = StructurePlacer(
             seed = worldSeed,
-            structures = listOf(OakTreeStructure(), SpruceTreeStructure()),
+            structures = listOf(
+                OakTreeStructure(), SpruceTreeStructure(), CactusStructure()
+            ),
             surface = ::sampleSurface,
             worldTopY = WORLD_HEIGHT * 2
         )
     }
+    /** Над чанком (cx,cy,cz) гарантированно только небо (всё выше поверхности + запас). */
+    fun isSkyOpenAbove(cx: Int, cy: Int, cz: Int, chunkHeight: Int): Boolean {
+        val col = columnCache[packKey(cx, cz)] ?: return false
+        return (cy + 1) * chunkHeight > col.maxSurface + SKY_MARGIN
+    }
+    fun isTerrainSkyOpenAbove(
+        cx: Int,
+        cy: Int,
+        cz: Int,
+        localX: Int,
+        localZ: Int,
+        chunkWidth: Int,
+        chunkHeight: Int
+    ): Boolean? {
+        require(localX in 0 until chunkWidth)
+        require(localZ in 0 until chunkWidth)
 
+        val column = columnCache[packKey(cx, cz)] ?: return null
+
+        val surfaceY =
+            column.noise[localZ * chunkWidth + localX]?.second
+                ?: return null
+
+        // Первый мировой Y непосредственно над чанком.
+        val aboveY = (cy + 1) * chunkHeight
+
+        return aboveY > surfaceY
+    }
     fun generateBiomePoints(position: IntVector3) =
         biomePointGrid.getPointsAround(position)
 

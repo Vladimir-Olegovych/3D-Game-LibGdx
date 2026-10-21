@@ -48,22 +48,22 @@ class TestStructure: StructureGenerator() {
 
         for (i in 0 .. length) {
             val (rx, rz) = rotate(i, 0)
-            chunkData.setBlockPending(
-                BlockType.SAND,
-                offset = IntVector3(rx, 0, rz),
-                localPosition = localPosition,
-                worldPosition = worldPosition
-            )
+            //chunkData.setBlockPending(
+            //    BlockType.SAND,
+            //    offset = IntVector3(rx, 0, rz),
+            //   localPosition = localPosition,
+            //    worldPosition = worldPosition
+            //)
         }
 
         for (z in -1 .. 1) {
             val (rx, rz) = rotate(length, z)
-            chunkData.setBlockPending(
-                BlockType.SAND,
-                offset = IntVector3(rx, 0, rz),
-                localPosition = localPosition,
-                worldPosition = worldPosition
-            )
+            //chunkData.setBlockPending(
+            //    BlockType.SAND,
+            //    offset = IntVector3(rx, 0, rz),
+            //    localPosition = localPosition,
+            //    worldPosition = worldPosition
+            //)
         }
     }
 }

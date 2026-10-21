@@ -1,6 +1,7 @@
 attribute vec3 a_Position;
 attribute vec3 a_Normal;
 attribute vec2 a_TexCoord;
+attribute vec2 a_Light;
 
 attribute float a_AO;
 attribute float a_Shadow;
@@ -17,6 +18,7 @@ varying vec3 v_WorldPos;
 varying float v_FogFactor;
 
 varying float v_AO;
+varying vec2 v_Light;
 
 void main() {
     vec4 worldPosition = transform * vec4(a_Position, 1.0);
@@ -24,6 +26,7 @@ void main() {
     v_Normal   = normalize(mat3(transform) * a_Normal);
     v_TexCoord = a_TexCoord;
     v_AO       = a_AO;
+    v_Light = a_Light;
 
     float fogStart = 0.7;
     float fogEnd   = 0.95;

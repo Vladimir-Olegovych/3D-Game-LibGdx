@@ -23,7 +23,9 @@ class ChunkData(
             return ChunkData(null, position, chunkWidth, chunkHeight, blocks)
         }
     }
-
+    /** Свет: старшие 4 бита — небо, младшие 4 — блоки. null пока чанк не просчитан движком света. */
+    @Volatile
+    var light: ByteArray? = null
     /** Количество блоков AIR. Поддерживается инкрементально в set*, после массовой записи в [blocks] вызови [recount]. */
     var airCount: Int = 0
         private set
