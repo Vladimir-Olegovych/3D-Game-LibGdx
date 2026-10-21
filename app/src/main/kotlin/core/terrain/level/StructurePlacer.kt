@@ -48,7 +48,20 @@ class StructurePlacer(
                 if (p.z < minZ - s.radius || p.z > maxZ + s.radius) continue
                 if (p.y - s.below > maxY || p.y + s.above < minY) continue
 
-                s.build(StructureBuilder(chunk, p.x, p.y, p.z, Random(p.seed), p.biome))
+                val builder = StructureBuilder(
+                    chunk, p.x, p.y, p.z,
+                    Random(p.seed), p.biome
+                )
+
+                s.buildClipped(
+                    b = builder,
+                    minX = minX - p.x,
+                    maxX = maxX - p.x,
+                    minY = minY - p.y,
+                    maxY = maxY - p.y,
+                    minZ = minZ - p.z,
+                    maxZ = maxZ - p.z
+                )
             }
         }
     }

@@ -24,6 +24,7 @@ import core.terrain.layers.CaveLayerHandler
 import core.terrain.level.StructurePlacer
 import core.terrain.structures.CactusStructure
 import core.terrain.structures.OakTreeStructure
+import core.terrain.structures.OldHouseStructure
 import core.terrain.structures.SpruceTreeStructure
 import math.noice.FastNoise
 import java.util.concurrent.ConcurrentHashMap
@@ -108,7 +109,8 @@ class TerrainGenerator : DisposableEffect, LaunchedEffect {
         structurePlacer = StructurePlacer(
             seed = worldSeed,
             structures = listOf(
-                OakTreeStructure(), SpruceTreeStructure(), CactusStructure()
+                OakTreeStructure(), SpruceTreeStructure(),
+                CactusStructure(), OldHouseStructure()
             ),
             surface = ::sampleSurface,
             worldTopY = WORLD_HEIGHT * 2

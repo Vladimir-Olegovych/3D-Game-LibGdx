@@ -37,4 +37,13 @@ abstract class WorldStructure {
 
     /** Строит структуру. Точка (0,0,0) билдера = блок поверхности в точке привязки. */
     abstract fun build(b: StructureBuilder)
+
+    open fun buildClipped(
+        b: StructureBuilder,
+        minX: Int, maxX: Int,
+        minY: Int, maxY: Int,
+        minZ: Int, maxZ: Int
+    ) {
+        build(b)
+    }
 }
