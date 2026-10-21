@@ -51,7 +51,7 @@ class ChunkWorldUpdater : LaunchedEffect, DisposableEffect, DeltaUpdater(1 / 60F
 
     private val isFirstGeneration = AtomicBoolean(true)
 
-    private val workerCount = Runtime.getRuntime().availableProcessors().coerceAtLeast(2)
+    private val workerCount = Runtime.getRuntime().availableProcessors().coerceAtLeast(2) * 4
 
     private val parallelismChunks = Semaphore(workerCount)
     private val parallelismMesh = Semaphore(workerCount)
@@ -94,8 +94,8 @@ class ChunkWorldUpdater : LaunchedEffect, DisposableEffect, DeltaUpdater(1 / 60F
         chunkEventBus?.registerHandler(this)
 
         LightProps.set(BlockType.LEAVES, opacity = 1)
-// LightProps.set(BlockType.TORCH, opacity = 0, emission = 14)
-        LightProps.set(BlockType.CACTUS, opacity = 0, emission = 14)
+        //LightProps.set(BlockType.TORCH, opacity = 0, emission = 14)
+        //LightProps.set(BlockType.CACTUS, opacity = 0, emission = 14)
 
         lightEngine = LightEngine(
             w = CHUNK_SIZE,

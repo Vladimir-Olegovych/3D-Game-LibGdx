@@ -18,16 +18,88 @@ class LightEngine(
         const val DOWN = 3
     }
 
-    private class Queue {
-        var pos = LongArray(2048)
-        var lvl = IntArray(2048)
-        var head = 0
-        var tail = 0
-        fun push(p: Long, l: Int) {
-            if (tail == pos.size) { pos = pos.copyOf(tail * 2); lvl = lvl.copyOf(tail * 2) }
-            pos[tail] = p; lvl[tail] = l; tail++
+    private class Queue(initialCapacity: Int = 2048) {
+        private var positions = LongArray(initialCapacity.coerceAtLeast(1))
+        private var levels = IntArray(positions.size)
+
+        private var head = 0
+        private var tail = 0
+
+        var size = 0
+            private set
+
+        val isNotEmpty: Boolean
+            get() = size > 0
+
+        val firstPosition: Long
+            get() {
+                check(size > 0)
+                return positions[head]
+            }
+
+        val firstLevel: Int
+            get() {
+                check(size > 0)
+                return levels[head]
+            }
+
+        fun push(position: Long, level: Int) {
+            if (size == positions.size) grow()
+
+            positions[tail] = position
+            levels[tail] = level
+
+            tail++
+            if (tail == positions.size) tail = 0
+
+            size++
         }
-        fun clear() { head = 0; tail = 0 }
+
+        fun removeFirst() {
+            check(size > 0)
+
+            head++
+            if (head == positions.size) head = 0
+
+            size--
+
+            if (size == 0) {
+                head = 0
+                tail = 0
+            }
+        }
+
+        fun clear() {
+            head = 0
+            tail = 0
+            size = 0
+        }
+
+        private fun grow() {
+            val oldCapacity = positions.size
+            check(oldCapacity <= Int.MAX_VALUE / 2) {
+                "Light queue capacity overflow: $oldCapacity"
+            }
+
+            val newPositions = LongArray(oldCapacity * 2)
+            val newLevels = IntArray(oldCapacity * 2)
+
+            val firstPart = minOf(size, oldCapacity - head)
+
+            positions.copyInto(newPositions, 0, head, head + firstPart)
+            levels.copyInto(newLevels, 0, head, head + firstPart)
+
+            val secondPart = size - firstPart
+            if (secondPart > 0) {
+                positions.copyInto(newPositions, firstPart, 0, secondPart)
+                levels.copyInto(newLevels, firstPart, 0, secondPart)
+            }
+
+            positions = newPositions
+            levels = newLevels
+            head = 0
+            tail = size
+        }
     }
 
     private val lock = Any()
@@ -161,10 +233,10 @@ class LightEngine(
     // ───────────────────────── BFS ─────────────────────────
 
     private fun spread(q: Queue, sky: Boolean) {
-        while (q.head < q.tail) {
-            val p = q.pos[q.head]
-            val l = q.lvl[q.head]
-            q.head++
+        while (q.isNotEmpty) {
+            val p = q.firstPosition
+            val l = q.firstLevel
+            q.removeFirst()
             val x = ux(p); val y = uy(p); val z = uz(p)
             for (d in 0 until 6) {
                 val nx = x + DX[d]; val ny = y + DY[d]; val nz = z + DZ[d]
@@ -183,10 +255,10 @@ class LightEngine(
 
     private fun unspread(sky: Boolean) {
         val q = remQ
-        while (q.head < q.tail) {
-            val p = q.pos[q.head]
-            val l = q.lvl[q.head]
-            q.head++
+        while (q.isNotEmpty) {
+            val p = q.firstPosition
+            val l = q.firstLevel
+            q.removeFirst()
             val x = ux(p); val y = uy(p); val z = uz(p)
             for (d in 0 until 6) {
                 val nx = x + DX[d]; val ny = y + DY[d]; val nz = z + DZ[d]
