@@ -31,14 +31,14 @@ void main() {
     vec3 nightTint = vec3(0.55, 0.65, 1.0);
     albedo = mix(albedo, albedo * nightTint, blueAmount);
 
-    float ambient = 0.03;
+    float ambient = 0.05;
     float ao      = v_AO;
 
     float nightFactor = mix(u_maxShadowThreshold, 1.0, u_dayPhase);
-    float skyB   = curve(v_Light.x * nightFactor);   // небо зависит от времени суток
-    float blockB = curve(v_Light.y);
-    vec3 warm    = vec3(1.0, 0.82, 0.62);            // тёплый цвет факелов
-    vec3 lightRGB = max(vec3(skyB), blockB * warm);
+    float skyB   = curve(v_Light.x * nightFactor);         // неба
+    float blockB = curve(v_Light.y) * 1.6;                 // +60% факелов
+    vec3 warm    = vec3(1.0, 0.82, 0.45);                  // тёплый цвет факелов
+    vec3 lightRGB = max(vec3(skyB), blockB * warm) * 1.2;  // общий буст
 
     float dirLight;
     if      (v_Normal.y >  0.5) dirLight = 1.00;

@@ -100,7 +100,7 @@ class ChunkWorldUpdater : LaunchedEffect, DisposableEffect, DeltaUpdater(1 / 60F
 
         LightProps.set(BlockType.LEAVES, opacity = 1)
         //LightProps.set(BlockType.TORCH, opacity = 0, emission = 14)
-        //LightProps.set(BlockType.CACTUS, opacity = 0, emission = 14)
+        LightProps.set(BlockType.OAK_WOODEN_PLANKS, opacity = 0, emission = 14)
 
         lightEngine = LightEngine(
             w = CHUNK_SIZE,
