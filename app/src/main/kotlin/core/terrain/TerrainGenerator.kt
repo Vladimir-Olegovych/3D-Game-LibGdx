@@ -25,6 +25,7 @@ import core.terrain.level.StructurePlacer
 import core.terrain.structures.CactusStructure
 import core.terrain.structures.OakTreeStructure
 import core.terrain.structures.OldHouseStructure
+import core.terrain.structures.RockStructure
 import core.terrain.structures.SpruceTreeStructure
 import math.noice.FastNoise
 import java.util.concurrent.ConcurrentHashMap
@@ -42,11 +43,8 @@ class TerrainGenerator : DisposableEffect, LaunchedEffect {
         const val CAVE_LEVEL = -UNDERGROUND_HEIGHT
         const val WORLD_HEIGHT = 300
         const val WORLD_SURFACE = WORLD_HEIGHT / 1.5
-
-        /** Запас над поверхностью (деревья и т.п.): выше этого чанк гарантированно пустой. */
         const val SKY_MARGIN = 40
-
-        /** Размер ячейки (в блоках) для кэша биомных точек LOD. */
+        const val SURFACE_HEIGHT = WORLD_SURFACE - SKY_MARGIN
         const val LOD_POINT_CELL = 1024
 
         /**
@@ -110,7 +108,8 @@ class TerrainGenerator : DisposableEffect, LaunchedEffect {
             seed = worldSeed,
             structures = listOf(
                 OakTreeStructure(), SpruceTreeStructure(),
-                CactusStructure(), OldHouseStructure()
+                CactusStructure(), RockStructure(),
+                OldHouseStructure()
             ),
             surface = ::sampleSurface,
             worldTopY = WORLD_HEIGHT * 2

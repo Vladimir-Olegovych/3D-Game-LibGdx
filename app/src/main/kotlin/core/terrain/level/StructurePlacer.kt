@@ -50,7 +50,8 @@ class StructurePlacer(
 
                 val builder = StructureBuilder(
                     chunk, p.x, p.y, p.z,
-                    Random(p.seed), p.biome
+                    Random(p.seed xor (p.x.toLong() shl 32) xor (p.y.toLong() shl 16) xor p.z.toLong()),
+                    p.biome
                 )
 
                 s.buildClipped(

@@ -1,6 +1,7 @@
 package core.terrain.structures
 
 import core.blocks.BlockType
+import core.terrain.TerrainGenerator.Companion.SURFACE_HEIGHT
 import core.terrain.biome.models.BiomeType
 import core.terrain.level.WorldStructure
 import core.terrain.structures.builder.StructureBuilder
@@ -22,9 +23,6 @@ class OldHouseStructure : WorldStructure() {
 
     override val id: String = "old_house" // можно переименовать в "castle"
 
-    override fun canSpawn(surfaceY: Int, biome: BiomeType): Boolean {
-        return surfaceY < 160 && super.canSpawn(surfaceY, biome)
-    }
     // --- Габариты (симметрия вокруг 0) ---
     private val halfW = 44          // куртина: |x| <= 44
     private val halfD = 44          // куртина: |z| <= 44
@@ -39,7 +37,7 @@ class OldHouseStructure : WorldStructure() {
     private val wood = BlockType.OAK_WOOD
 
     override val cellSize: Int = 8
-    override val chance: Float = 0.0001f
+    override val chance: Float = 0.0002f
     override val biomes = setOf(BiomeType.FOREST, BiomeType.SPRUCE_FOREST)
 
     override val radius: Int = halfW + 7   // угловые башни выступают до halfW + 5
@@ -51,6 +49,10 @@ class OldHouseStructure : WorldStructure() {
 
     private enum class Kind {
         CORNER_TOWER, GATE_TOWER, MID_TOWER, GATE, CURTAIN, KEEP, BRIDGE, HOUSE, PATH, EMPTY
+    }
+
+    override fun canSpawn(surfaceY: Int, biome: BiomeType): Boolean {
+        return surfaceY < SURFACE_HEIGHT && super.canSpawn(surfaceY, biome)
     }
 
     override fun buildClipped(

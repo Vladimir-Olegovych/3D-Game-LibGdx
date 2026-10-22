@@ -9,13 +9,12 @@ class RockStructure : WorldStructure() {
 
     override val id = "rock"
     override val cellSize = 6
-    override val chance = 0.2f
+    override val chance = 0.0008f
 
-    override val radius = 11
+    override val radius = 10
 
-    // rockRadius максимум 9, координата блока по Y = y + 1.
-    override val below = 8
-    override val above = 10
+    override val below = radius / 2 + 1
+    override val above = radius / 2 + 1
 
     override val biomes = setOf(
         BiomeType.FOREST,
@@ -41,7 +40,7 @@ class RockStructure : WorldStructure() {
 
     private fun generate(b: StructureBuilder, clip: StructureClip) {
         val random = b.random
-        val rockRadius = random.nextInt(1, 10)
+        val rockRadius = random.nextInt(1, radius - 1)
 
         for (x in -rockRadius..rockRadius) {
             for (y in -rockRadius..rockRadius) {
