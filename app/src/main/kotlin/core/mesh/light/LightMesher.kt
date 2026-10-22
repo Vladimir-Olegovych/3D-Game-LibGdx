@@ -1,4 +1,4 @@
-package core.mesh
+package core.mesh.light
 
 object LightMesher {
 

@@ -1,8 +1,7 @@
 package core.mesh
 
-import com.badlogic.gdx.Gdx
+import com.badlogic.gdx.graphics.GL20
 import com.badlogic.gdx.graphics.Mesh
-import com.badlogic.gdx.graphics.Pixmap
 import com.badlogic.gdx.graphics.VertexAttribute
 import com.badlogic.gdx.graphics.VertexAttributes
 import com.badlogic.gdx.graphics.g2d.TextureAtlas
@@ -17,6 +16,8 @@ import core.blocks.BlockDataManager
 import core.blocks.BlockType
 import core.items.Item
 import core.mesh.MeshUtils.createHitboxModel
+import core.mesh.light.LightMesher
+import core.mesh.light.ShadowCompilerAO
 
 val rawMeshParams = MeshParams(
     attributes = arrayOf(
@@ -28,13 +29,12 @@ val rawMeshParams = MeshParams(
 
 val chunkMeshParams = MeshParams(
     attributes = arrayOf(
-        VertexAttribute(VertexAttributes.Usage.Position, 3, "a_Position"),
-        VertexAttribute(VertexAttributes.Usage.Normal, 3, "a_Normal"),
-        VertexAttribute(VertexAttributes.Usage.TextureCoordinates, 2, "a_TexCoord"),
-        VertexAttribute(VertexAttributes.Usage.Generic, 1, "a_AO"),
-        VertexAttribute(VertexAttributes.Usage.Generic, 2, "a_Light"),   // x = небо, y = блоки
+        VertexAttribute(VertexAttributes.Usage.Generic, 4, GL20.GL_UNSIGNED_BYTE, false, "a_Pos"),
+        VertexAttribute(VertexAttributes.Usage.Generic, 4, GL20.GL_UNSIGNED_BYTE, false, "a_Tile"),
+        VertexAttribute(VertexAttributes.Usage.Generic, 4, GL20.GL_UNSIGNED_BYTE, true,  "a_Shade"),
+        VertexAttribute(VertexAttributes.Usage.Generic, 2, GL20.GL_UNSIGNED_SHORT, true, "a_Origin"),
     ),
-    stride = 11
+    stride = 4
 )
 
 val defaultPlayerHitBox = createHitboxModel(1F, 1.8F)

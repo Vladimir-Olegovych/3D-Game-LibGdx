@@ -15,6 +15,7 @@ import com.artemis.annotations.Wire
 import com.artemis.utils.IntBag
 import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.graphics.GL20
+import com.badlogic.gdx.graphics.Mesh
 import com.badlogic.gdx.graphics.PerspectiveCamera
 import com.badlogic.gdx.graphics.glutils.ShaderProgram
 import com.badlogic.gdx.math.Matrix4
@@ -23,11 +24,12 @@ import com.gigapi.texture.DefaultsTextures
 import core.animator.ModelAnimator
 import core.chunk.ChunkWorldUpdater
 import core.defaults.CameraTypes
+import core.mesh.generators.ChunkMeshSplit
+import core.mesh.generators.GreedyChunkMesher
 import core.renderers.StarRenderer
 import core.renderers.SkyPlanetRenderer
 import core.shaders.ShaderTypes
 import app.feature.game.ecs.states.TimeState
-import kotlin.math.sqrt
 
 @One(MeshComponent::class, BlenderModelComponent::class)
 class DrawSystem : BaseEntitySystem() {
@@ -282,65 +284,107 @@ class DrawSystem : BaseEntitySystem() {
     }
 
     inner class DrawTaskChunks : DrawTask {
-        val fogVerticalRadius = ChunkWorldUpdater.CHUNK_HEIGHT * ChunkWorldUpdater.DRAW_RADIUS_Y -
+
+        private val fogVerticalRadius =
+            ChunkWorldUpdater.CHUNK_HEIGHT * ChunkWorldUpdater.DRAW_RADIUS_Y -
                     ChunkWorldUpdater.CHUNK_HEIGHT * 2f
 
+        /** Вторая программа: тот же код, но с #define CUTOUT (discard для листвы и т.п.). */
+        private val cutoutShader: ShaderProgram by lazy {
+            val program = ShaderProgram(
+                chunkShader.vertexShaderSource,
+                "#define CUTOUT\n" + chunkShader.fragmentShaderSource
+            )
+            check(program.isCompiled) { "Cutout chunk shader failed:\n${program.log}" }
+            program
+        }
 
-        override fun draw(entities: IntBag) {
+        private var opaqueTransformLoc = -1
+        private var cutoutTransformLoc = -1
 
+        // видимые чанки текущего кадра (тест видимости делается один раз на оба прохода)
+        private var visCount = 0
+        private var visMesh = arrayOfNulls<Mesh>(2048)
+        private var visTransform = arrayOfNulls<Matrix4>(2048)
+        private var visSplit = IntArray(2048)
 
-            chunkShader.bind()
-            chunkShader.setUniformi("u_texture", 0)
-            chunkShader.setUniformMatrix("modelViewProjection", camera.combined)
-            chunkShader.setUniformf("viewPosition", camera.position)
-            chunkShader.setUniformf("horizontalRadius", camera.far)
-            chunkShader.setUniformf("verticalRadius", fogVerticalRadius)
+        private fun pushVisible(mesh: Mesh, transform: Matrix4) {
+            if (visCount == visMesh.size) {
+                val n = visCount * 2
+                visMesh = visMesh.copyOf(n)
+                visTransform = visTransform.copyOf(n)
+                visSplit = visSplit.copyOf(n)
+            }
+            visMesh[visCount] = mesh
+            visTransform[visCount] = transform
+            visSplit[visCount] = ChunkMeshSplit.get(mesh)
+            visCount++
+        }
+
+        private fun bindCommon(shader: ShaderProgram) {
+            shader.bind()
+            shader.setUniformi("u_texture", 0)
+            shader.setUniformMatrix("modelViewProjection", camera.combined)
+            shader.setUniformf("viewPosition", camera.position)
+            shader.setUniformf("horizontalRadius", camera.far)
+            shader.setUniformf("verticalRadius", fogVerticalRadius)
+            shader.setUniformf("u_tileSize", GreedyChunkMesher.tileSizeU, GreedyChunkMesher.tileSizeV)
 
             val fog = timeState.fogColor()
+            shader.setUniformf("fogColor", fog[0], fog[1], fog[2])
+            shader.setUniformf("u_dayPhase", timeState.dayPhase)
+            shader.setUniformf("u_maxShadowThreshold", timeState.maxShadowThreshold)
+            shader.setUniformf("u_nightBlueFilter", timeState.nightBlueFilter)
+        }
 
-            chunkShader.setUniformf(
-                "fogColor",
-                fog[0],
-                fog[1],
-                fog[2]
-            )
-            chunkShader.setUniformf("u_dayPhase", timeState.dayPhase)
-            chunkShader.setUniformf(
-                "u_maxShadowThreshold",
-                timeState.maxShadowThreshold
-            )
-            chunkShader.setUniformf(
-                "u_nightBlueFilter",
-                timeState.nightBlueFilter
-            )
-
+        override fun draw(entities: IntBag) {
+            // 1. видимость (один раз)
+            visCount = 0
+            var firstMeshComponent: MeshComponent? = null
             for (i in 0 until entities.size()) {
-                singleCall(entities[i])
+                val id = entities[i]
+                if (chunkMapper[id] == null) continue
+                val transform = transformMapper[id]?.transform ?: continue
+                if (!isChunkVisible(transform)) continue
+                val meshComponent = meshMapper[id] ?: continue
+                val mesh = meshComponent.meshData?.mesh ?: continue
+                if (firstMeshComponent == null) firstMeshComponent = meshComponent
+                pushVisible(mesh, transform)
+            }
+            if (visCount == 0) return
+
+            val texture = firstMeshComponent?.meshTextureData ?: DefaultsTextures.WHITE
+            texture.bind(0) // атлас один на все чанки
+
+            // 2. непрозрачный проход: без discard, early-Z работает полностью
+            bindCommon(chunkShader)
+            if (opaqueTransformLoc < 0) opaqueTransformLoc = chunkShader.fetchUniformLocation("transform", true)
+            for (k in 0 until visCount) {
+                val split = visSplit[k]
+                if (split <= 0) continue
+                chunkShader.setUniformMatrix(opaqueTransformLoc, visTransform[k]!!)
+                visMesh[k]!!.render(chunkShader, GL20.GL_TRIANGLES, 0, split)
+            }
+
+            // 3. cutout-проход (листва и т.п.) — после непрозрачных
+            var cutoutBound = false
+            for (k in 0 until visCount) {
+                val mesh = visMesh[k]!!
+                val split = visSplit[k]
+                val count = mesh.numIndices - split
+                if (count <= 0) continue
+                if (!cutoutBound) {
+                    bindCommon(cutoutShader)
+                    if (cutoutTransformLoc < 0) {
+                        cutoutTransformLoc = cutoutShader.fetchUniformLocation("transform", true)
+                    }
+                    cutoutBound = true
+                }
+                cutoutShader.setUniformMatrix(cutoutTransformLoc, visTransform[k]!!)
+                mesh.render(cutoutShader, GL20.GL_TRIANGLES, split, count)
             }
         }
 
-        override fun singleCall(entityId: Int) {
-            if (chunkMapper[entityId] == null) return
-
-            val transformComponent = transformMapper[entityId] ?: return
-            val transform = transformComponent.transform ?: return
-
-            if (!isChunkVisible(transform)) return
-
-            val meshComponent = meshMapper[entityId] ?: return
-            val mesh = meshComponent.meshData?.mesh ?: return
-            val texture = meshComponent.meshTextureData
-                ?: DefaultsTextures.WHITE
-
-            chunkShader.setUniformMatrix("transform", transform)
-            chunkShader.setUniformf("objectColor", 1f, 1f, 1f)
-
-            texture.bind(0)
-
-            mesh.render(
-                chunkShader,
-                GL20.GL_TRIANGLES
-            )
-        }
+        override fun singleCall(entityId: Int) = Unit // чанки рисуются целиком в draw()
     }
 }

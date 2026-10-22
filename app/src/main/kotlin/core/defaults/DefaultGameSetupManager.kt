@@ -13,7 +13,8 @@ import com.gigapi.kryo.GameClient
 import com.gigapi.viewport.UnfairViewport
 import core.blocks.BlockDataManager
 import core.chunk.ChunkWorldUpdater
-import core.mesh.MeshHelper
+import core.mesh.generators.GreedyChunkMesher
+import core.mesh.generators.ChunkMesher
 import core.scope.DispatcherTypes
 import core.terrain.TerrainGenerator
 import core.viewport.ViewportTypes
@@ -48,7 +49,8 @@ object DefaultGameSetupManager: Executor, LaunchedEffect {
         //---
         gContext.setObject(BlockDataManager())
         //---
-        gContext.setObject(MeshHelper())
+        gContext.setObject(GreedyChunkMesher())
+        gContext.setObject(ChunkMesher())
         //---
         gContext.setObject<CoroutineDispatcher>(DispatcherTypes.MAIN, asCoroutineDispatcher())
         //---

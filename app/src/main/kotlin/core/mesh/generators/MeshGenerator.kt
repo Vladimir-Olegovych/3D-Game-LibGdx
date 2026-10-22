@@ -1,4 +1,4 @@
-package core.mesh
+package core.mesh.generators
 
 import com.gigapi.math.vector.IntVector3
 import com.gigapi.mesh.RawMeshData

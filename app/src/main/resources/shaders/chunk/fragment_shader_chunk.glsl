@@ -1,16 +1,17 @@
 #ifdef GL_ES
+#ifdef GL_FRAGMENT_PRECISION_HIGH
+precision highp float;
+#else
 precision mediump float;
 #endif
+#endif
 
-varying vec2 v_TexCoord;
-varying vec3 v_Normal;
-varying vec3 v_WorldPos;
-varying float v_FogFactor;
-varying float v_AO;
-varying vec2 v_Light;
+varying vec4 v_TileA;
+varying vec4 v_TileB;
+varying vec2 v_Misc;
 
 uniform sampler2D u_texture;
-uniform vec3 objectColor;
+uniform vec2 u_tileSize;
 uniform vec3 fogColor;
 uniform float u_dayPhase;
 uniform float u_maxShadowThreshold;
@@ -19,39 +20,36 @@ uniform float u_nightBlueFilter;
 float curve(float l) { return pow(l, 1.7); }
 
 void main() {
-    vec4 texSample = texture2D(u_texture, v_TexCoord);
-    if (texSample.a <= 0.9) {
-        discard;
+    float fog = v_Misc.y;
+
+#ifndef CUTOUT
+    // полностью в тумане: ни текстуры, ни освещения
+    if (fog >= 1.0) {
+        gl_FragColor = vec4(fogColor, 1.0);
+        return;
     }
+#endif
 
-    vec3 texColor = texSample.rgb;
-    vec3 albedo   = mix(objectColor, texColor, texSample.a);
+    // повтор тайла в атласе; clamp защищает края квада от перескока в соседний тайл
+    vec2 local = clamp(v_TileA.xy, vec2(0.0), v_TileA.zw - vec2(0.0005));
+    vec2 uv = v_TileB.xy + fract(local) * u_tileSize;
+    vec4 texSample = texture2D(u_texture, uv);
 
+#ifdef CUTOUT
+    if (texSample.a <= 0.9) discard;
+#endif
+
+    vec3 albedo = texSample.rgb;
     float blueAmount = (1.0 - u_dayPhase) * u_nightBlueFilter;
-    vec3 nightTint = vec3(0.55, 0.65, 1.0);
-    albedo = mix(albedo, albedo * nightTint, blueAmount);
-
-    float ambient = 0.05;
-    float ao      = v_AO;
+    albedo = mix(albedo, albedo * vec3(0.55, 0.65, 1.0), blueAmount);
 
     float nightFactor = mix(u_maxShadowThreshold, 1.0, u_dayPhase);
-    float skyB   = curve(v_Light.x * nightFactor);         // неба
-    float blockB = curve(v_Light.y) * 1.6;                 // +60% факелов
-    vec3 warm    = vec3(1.0, 0.82, 0.45);                  // тёплый цвет факелов
-    vec3 lightRGB = max(vec3(skyB), blockB * warm) * 1.2;  // общий буст
+    float skyB   = curve(v_TileB.z * nightFactor);
+    float blockB = curve(v_TileB.w) * 1.6;
+    vec3 lightRGB = max(vec3(skyB), blockB * vec3(1.0, 0.82, 0.45)) * 1.2;
 
-    float dirLight;
-    if      (v_Normal.y >  0.5) dirLight = 1.00;
-    else if (v_Normal.y < -0.5) dirLight = 0.50;
-    else if (abs(v_Normal.z) > 0.5) dirLight = 0.80;
-    else                        dirLight = 0.65;
-                            // в пещере без света почти чёрно, но не абсолютно
-    vec3 lit = ambient + (1.0 - ambient) * lightRGB * v_AO * dirLight;
+    vec3 lit = 0.05 + 0.95 * lightRGB * v_Misc.x;
+    vec3 litColor = albedo * clamp(lit, 0.0, 1.5);
 
-    vec3 litColor   = albedo * clamp(lit, 0.0, 1.5);
-
-    vec3 finalColor = mix(fogColor, litColor, 1.0 - v_FogFactor);
-
-    float outAlpha = mix(1.0, texSample.a, texSample.a);
-    gl_FragColor = vec4(finalColor, outAlpha);
+    gl_FragColor = vec4(mix(fogColor, litColor, 1.0 - fog), 1.0);
 }

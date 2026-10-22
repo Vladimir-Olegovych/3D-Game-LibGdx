@@ -1,4 +1,4 @@
-package core.mesh
+package core.mesh.generators
 
 import com.gigapi.effects.LaunchedEffect
 import com.gigapi.general.GContext
@@ -8,8 +8,13 @@ import core.blocks.BlockDataManager
 import core.blocks.BlockType
 import core.blocks.TextureData
 import core.chunk.ChunkData
+import core.light.LightProps
+import core.mesh.Direction
+import core.mesh.DirectionType
+import core.mesh.MeshUtils
+import core.mesh.VertexAttribute3
 
-class MeshHelper : MeshGenerator, LaunchedEffect {
+class ChunkMesher : MeshGenerator, LaunchedEffect {
 
     companion object {
         val directions = listOf(
@@ -32,7 +37,7 @@ class MeshHelper : MeshGenerator, LaunchedEffect {
      * 3x3x3 соседей чанка, найденных один раз на чанк.
      * Раньше на КАЖДУЮ грань и на каждый AO-запрос создавался IntVector3 и шёл lookup в HashMap.
      */
-    private class Neighborhood(center: ChunkData, chunkMap: Map<IntVector3, ChunkData>) {
+    class Neighborhood(center: ChunkData, chunkMap: Map<IntVector3, ChunkData>) {
         private val w = center.chunkWidth
         private val h = center.chunkHeight
         private val chunks = arrayOfNulls<ChunkData>(27)
@@ -71,7 +76,7 @@ class MeshHelper : MeshGenerator, LaunchedEffect {
             val ly = if (ny < 0) ny + h else if (ny >= h) ny - h else ny
             val lz = if (nz < 0) nz + w else if (nz >= w) nz - w else nz
             val idx = chunk.getIndex(lx, ly, lz)
-            if (core.light.LightProps.opacity(chunk.blocks[idx]) >= 15) return -1
+            if (LightProps.opacity(chunk.blocks[idx]) >= 15) return -1
             return arr[idx].toInt() and 0xFF
         }
     }

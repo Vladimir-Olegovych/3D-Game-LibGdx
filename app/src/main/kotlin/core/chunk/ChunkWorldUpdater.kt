@@ -22,9 +22,10 @@ import core.chunk.world.WorldGenerationData
 import core.light.LightEngine
 import core.light.LightProps
 import core.math.createMatrixForChunk
-import core.mesh.MeshGenerator
-import core.mesh.MeshHelper
 import core.mesh.chunkMeshParams
+import core.mesh.generators.ChunkMeshSplit
+import core.mesh.generators.GreedyChunkMesher
+import core.mesh.generators.MeshGenerator
 import core.scope.DispatcherTypes
 import core.terrain.TerrainGenerator
 import core.terrain.biome.models.BiomeType
@@ -88,7 +89,7 @@ class ChunkWorldUpdater : LaunchedEffect, DisposableEffect, DeltaUpdater(1 / 60F
     override fun launch(gContext: GContext) {
         chunkEventBus = gContext.getObject(EventBusTypes.CHUNK_EVENT_BUS)
         physicsEventBus = gContext.getObject(EventBusTypes.PHYSICS_EVENT_BUS)
-        meshGenerator = gContext.getObject<MeshHelper>()
+        meshGenerator = gContext.getObject<GreedyChunkMesher>()
         terrainGenerator = gContext.getObject()
         mainEventBus = gContext.getObject(EventBusTypes.MAIN_EVENT_BUS)
         mainScope = CoroutineScope(
@@ -532,8 +533,13 @@ class ChunkWorldUpdater : LaunchedEffect, DisposableEffect, DeltaUpdater(1 / 60F
             return
         }
 
+        val split = GreedyChunkMesher.splitOf(rawMeshData)
         val meshData = uploadGate.withPermit {
-            withContext(mainScope.coroutineContext) { rawMeshData.createMeshData(chunkMeshParams) }
+            withContext(mainScope.coroutineContext) {
+                rawMeshData.createMeshData(chunkMeshParams).also { md ->
+                    md.mesh?.let { ChunkMeshSplit.register(it, split) }
+                }
+            }
         }
 
         val current = createdChunkDataMap[position] ?: return
