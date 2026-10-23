@@ -13,7 +13,7 @@ import com.gigapi.eventbus.EventBus
 import com.gigapi.eventbus.annotation.BusEvent
 import com.gigapi.general.GContext
 import core.assets.SkinID
-import core.controls.PlayerInputProcessor
+import core.controls.PInputProcessor
 import core.items.InventoryManager
 import core.ui.UIGetter
 
@@ -37,7 +37,7 @@ class InventoryUI: LaunchedEffect, UIGetter {
         val btnAtlas = assetManager.get<TextureAtlas>(SkinID.BUTTON.atlas)
         itemBoxOff = btnAtlas.findRegion("ic_item_box_off")
         itemBoxOn = btnAtlas.findRegion("ic_item_box_on")
-        val playerInputProcessor = gContext.getObject<PlayerInputProcessor>()
+        val playerInputProcessor = gContext.getObject<PInputProcessor>()
         val inventoryManager = gContext.getObject<InventoryManager>()
         val eventBus = gContext.getObject<EventBus>(EventBusTypes.MAIN_EVENT_BUS)
         eventBus.registerHandler(this)

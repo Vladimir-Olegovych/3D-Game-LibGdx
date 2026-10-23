@@ -17,7 +17,7 @@ import com.gigapi.mesh.ModelAssetManager
 import com.gigcreator.NetEntityType
 import core.animator.ModelAnimator
 import core.assets.ModelID
-import core.defaults.WorldConstants
+import core.defaults.PlayerConstants
 import core.items.ItemManager
 import core.mesh.defaultPlayerHitBox
 
@@ -44,7 +44,7 @@ class WorldSystem: BaseSystem() {
     private lateinit var colorMapper: ComponentMapper<ColorComponent>
 
     override fun setWorld(world: World?) {
-        world?.let { WorldConstants.initializeLocalPlayer(world) }
+        world?.let { PlayerConstants.initializeLocalPlayer(world) }
         super.setWorld(world)
     }
 
@@ -52,12 +52,12 @@ class WorldSystem: BaseSystem() {
 
     @BusEvent
     fun onWorldGenerated(event: GameChunkEvent.GameWorldStarted) {
-        val playerEntityId = WorldConstants.getLocalPlayerEntityId()
+        val playerEntityId = PlayerConstants.getLocalPlayerEntityId()
         val playerPhysicalModel = defaultPlayerHitBox
 
         val playerBlenderModel = modelAssetManager.getRenderModel(ModelID.M_PLAYER_MODEL)
         playerBlenderModel.subMeshes.forEach {
-            it.mesh.transform(Matrix4().translate(0F, 0F, 0F))
+            it.mesh.transform(Matrix4().translate(0F, -PlayerConstants.cameraOffset.y, 0F))
             it.mesh.scale(0.35f, 0.35f, 0.35f)
         }
         blenderMapper.create(playerEntityId).apply {

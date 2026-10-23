@@ -13,7 +13,7 @@ import com.gigapi.effects.LaunchedEffect
 import com.gigapi.eventbus.EventBus
 import com.gigapi.eventbus.annotation.BusEvent
 import com.gigapi.general.GContext
-import core.controls.PlayerInputProcessor
+import core.defaults.PlayerConstants
 import core.ui.UIGetter
 
 class AimUI : DisposableEffect, LaunchedEffect, UIGetter {
@@ -27,7 +27,7 @@ class AimUI : DisposableEffect, LaunchedEffect, UIGetter {
 
     @BusEvent
     fun onCameraMode(event: HotKeyEvent.OnCameraMode) {
-        layout.isVisible = event.mode == PlayerInputProcessor.VIEW_FIRST_PERSON
+        layout.isVisible = event.mode == PlayerConstants.VIEW_FIRST_PERSON
     }
 
     override fun dispose() {

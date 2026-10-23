@@ -20,7 +20,7 @@ import com.gigcreator.NetVector3
 import com.gigcreator.NetworkEvent
 import core.animator.ModelAnimator
 import core.assets.ModelID
-import core.defaults.WorldConstants
+import core.defaults.PlayerConstants
 import core.mesh.defaultPlayerHitBox
 import core.mesh.rawMeshParams
 import core.network.*
@@ -74,7 +74,7 @@ class NetworkSystem: BaseSystem() {
         val hello = received.event as NetworkEvent.HelloFromServer
         networkState.localPlayerId = hello.playerId
 
-        val localEntityId = WorldConstants.getLocalPlayerEntityId()
+        val localEntityId = PlayerConstants.getLocalPlayerEntityId()
         networkEntityMapper[localEntityId]?.networkId = hello.playerId
     }
 
@@ -127,7 +127,7 @@ class NetworkSystem: BaseSystem() {
     private fun sendLocalState() {
         if (networkState.localPlayerId < 0) return
 
-        val localEntityId = WorldConstants.getLocalPlayerEntityId()
+        val localEntityId = PlayerConstants.getLocalPlayerEntityId()
         val networkEntity = networkEntityMapper[localEntityId] ?: return
         if (networkEntity.networkId != networkState.localPlayerId) {
             networkEntity.networkId = networkState.localPlayerId

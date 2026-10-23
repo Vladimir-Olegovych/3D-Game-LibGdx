@@ -23,7 +23,7 @@ import com.gigapi.math.vector.IntVector3
 import core.assets.SkinID
 import core.chunk.ChunkWorldUpdater
 import core.defaults.CameraTypes
-import core.defaults.WorldConstants
+import core.defaults.PlayerConstants
 import core.mesh.MeshUtils
 
 @All(MeshComponent::class)
@@ -60,8 +60,7 @@ class ChunkSystem: BaseSystem() {
     }
 
     override fun processSystem() {
-        //println(chunkWorldUpdater.isA)
-        val playerEntityId = WorldConstants.getLocalPlayerEntityId()
+        val playerEntityId = PlayerConstants.getLocalPlayerEntityId()
         val playerTransform = transformMapper[playerEntityId]?.transform
 
         timeSinceLastUpdate += world.delta

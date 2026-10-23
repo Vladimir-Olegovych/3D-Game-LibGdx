@@ -14,8 +14,8 @@ import com.gigapi.eventbus.annotation.BusEvent
 import core.blocks.BlockDataManager
 import core.blocks.types.BlockType
 import core.bullet.raycast.RayCastTypes
-import core.controls.PlayerInputProcessor
-import core.defaults.WorldConstants
+import core.controls.PInputProcessor
+import core.defaults.PlayerConstants
 import core.items.InventoryManager
 
 @All(DiggingComponent::class)
@@ -24,7 +24,7 @@ class BlockProcessingSystem: IteratingSystem() {
     @Wire(name = EventBusTypes.MAIN_EVENT_BUS)
     private lateinit var mainEventBus: EventBus
     @Wire
-    private lateinit var playerInputProcessor: PlayerInputProcessor
+    private lateinit var playerInputProcessor: PInputProcessor
     @Wire
     private lateinit var inventoryManager: InventoryManager
     @Wire
@@ -51,7 +51,7 @@ class BlockProcessingSystem: IteratingSystem() {
 
     @BusEvent
     fun onBlockPlaceRayCastResult(event: PhysicsEvent.OnRayCastPlaceBlockResult) {
-        val owner = WorldConstants.getLocalPlayerEntityId()
+        val owner = PlayerConstants.getLocalPlayerEntityId()
         val slot = playerInputProcessor.getSelectedSlot()
         val itemToSet = inventoryManager.getInventoryItem(slot)?: return
         println(itemToSet.item.name)
@@ -115,7 +115,7 @@ class BlockProcessingSystem: IteratingSystem() {
 
     override fun process(entityId: Int) {
         val owner = if (playerDiggingComponentId == entityId) {
-            WorldConstants.getLocalPlayerEntityId()
+            PlayerConstants.getLocalPlayerEntityId()
         } else {
             null
         }

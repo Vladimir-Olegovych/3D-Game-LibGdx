@@ -1,109 +1,157 @@
 package core.terrain.biome
 
+import com.gigapi.effects.DisposableEffect
 import com.gigapi.effects.LaunchedEffect
 import com.gigapi.general.GContext
 import com.gigapi.math.vector.IntVector3
 import core.chunk.ChunkWorldUpdater
 import core.terrain.biome.models.BiomeType
+import java.util.EnumMap
 import kotlin.math.sqrt
 
-class BiomePointGrid: LaunchedEffect {
+/** Неизменяемое окно биомов вокруг ячейки: плоский массив вместо Map<IntVector3, BiomeType>. */
+class BiomePoints internal constructor(
+    private val minCellX: Int,
+    private val minCellZ: Int,
+    private val size: Int,
+    private val biomes: Array<BiomeType>
+) {
+    fun biomeAtCell(cellX: Int, cellZ: Int): BiomeType? {
+        val ix = cellX - minCellX
+        val iz = cellZ - minCellZ
+        if (ix < 0 || iz < 0 || ix >= size || iz >= size) return null
+        return biomes[iz * size + ix]
+    }
+}
+
+/** Ограниченный потокобезопасный LRU: память не растёт, ничего не нужно чистить вручную. */
+internal class LruCache<K : Any, V : Any>(private val capacity: Int) {
+    private val map = object : LinkedHashMap<K, V>(capacity, 0.75f, true) {
+        override fun removeEldestEntry(eldest: MutableMap.MutableEntry<K, V>) = size > capacity
+    }
+
+    /** Тяжёлое вычисление идёт вне блокировки; при гонке побеждает первый записавший. */
+    inline fun getOrCompute(key: K, compute: () -> V): V {
+        synchronized(this) { get(key) }?.let { return it }
+        val value = compute()
+        return synchronized(this) { putIfAbsentLocked(key, value) }
+    }
+
+    fun get(key: K): V? = map[key]
+
+    fun putIfAbsentLocked(key: K, value: V): V = map[key] ?: value.also { map[key] = it }
+
+    fun clear() = synchronized(this) { map.clear() }
+}
+
+class BiomePointGrid : LaunchedEffect, DisposableEffect {
 
     companion object {
         const val STEP_ADD = 32
         const val POINT_RADIUS = ChunkWorldUpdater.DRAW_RADIUS_X / 2
         const val POINT_WORLD_STEP = ChunkWorldUpdater.CHUNK_SIZE * STEP_ADD
         const val BLEND_DISTANCE = POINT_WORLD_STEP * 0.4
+
+        private const val HALF_GRID = POINT_RADIUS / 2
+        private const val GRID_SIZE = HALF_GRID * 2
+
+        /**
+         * Точка влияет, только если dist < minDist + BLEND_DISTANCE (<= ~1.11 шага),
+         * а центр ячейки на расстоянии 2 шагов уже дальше. Радиус 2 исчерпывающий.
+         */
+        private const val SEARCH_RADIUS = 2
+
+        private const val WINDOW_CACHE_SIZE = 256
+
+        private val ALL_BIOMES: Array<BiomeType> = BiomeType.entries.toTypedArray()
     }
 
     private lateinit var selector: BiomeSelector
+    private val windows = LruCache<Long, BiomePoints>(WINDOW_CACHE_SIZE)
 
     override fun launch(gContext: GContext) {
         selector = gContext.getObject()
     }
+
+    override fun dispose() = windows.clear()
 
     data class BiomeData(
         val currentBiome: BiomeType,
         val weights: Map<BiomeType, Float>
     )
 
-    fun getBiomeAt(
-        points: Map<IntVector3, BiomeType>,
-        worldX: Int,
-        worldZ: Int
-    ): BiomeData {
-        val nearestByBiome = HashMap<BiomeType, Double>()
+    fun getBiomeAt(points: BiomePoints, worldX: Int, worldZ: Int): BiomeData {
+        val cellX = Math.floorDiv(worldX, POINT_WORLD_STEP)
+        val cellZ = Math.floorDiv(worldZ, POINT_WORLD_STEP)
 
-        for ((point, biome) in points) {
-            val dx = worldX.toDouble() - point.x.toDouble()
-            val dz = worldZ.toDouble() - point.z.toDouble()
-            val distance = sqrt(dx * dx + dz * dz)
+        // Ближайшая точка каждого биома — по квадрату расстояния, sqrt только на финале.
+        val nearestSq = DoubleArray(ALL_BIOMES.size) { Double.MAX_VALUE }
 
-            val previous = nearestByBiome[biome]
-
-            if (previous == null || distance < previous) {
-                nearestByBiome[biome] = distance
+        for (cz in cellZ - SEARCH_RADIUS..cellZ + SEARCH_RADIUS) {
+            for (cx in cellX - SEARCH_RADIUS..cellX + SEARCH_RADIUS) {
+                val biome = points.biomeAtCell(cx, cz) ?: continue
+                val dx = worldX.toDouble() - (cx * POINT_WORLD_STEP + POINT_WORLD_STEP / 2)
+                val dz = worldZ.toDouble() - (cz * POINT_WORLD_STEP + POINT_WORLD_STEP / 2)
+                val d2 = dx * dx + dz * dz
+                if (d2 < nearestSq[biome.ordinal]) nearestSq[biome.ordinal] = d2
             }
         }
 
-        val nearest = nearestByBiome.minByOrNull { it.value }
-            ?: return BiomeData(
-                currentBiome = BiomeType.FOREST,
-                weights = mapOf(BiomeType.FOREST to 1f)
-            )
+        var nearestOrdinal = -1
+        for (o in nearestSq.indices) {
+            if (nearestSq[o] != Double.MAX_VALUE &&
+                (nearestOrdinal < 0 || nearestSq[o] < nearestSq[nearestOrdinal])
+            ) nearestOrdinal = o
+        }
+        if (nearestOrdinal < 0) {
+            return BiomeData(BiomeType.FOREST, mapOf(BiomeType.FOREST to 1f))
+        }
 
-        val minDistance = nearest.value
-        val rawWeights = HashMap<BiomeType, Double>()
-        var totalWeight = 0.0
+        val nearestBiome = ALL_BIOMES[nearestOrdinal]
+        val minDistance = sqrt(nearestSq[nearestOrdinal])
 
-        for ((biome, distance) in nearestByBiome) {
-            val t = (
-                    (distance - minDistance) / BLEND_DISTANCE
-                    ).coerceIn(0.0, 1.0)
-
-            val weight = 1.0 - t * t * (3.0 - 2.0 * t)
-
-            if (weight > 0.0) {
-                rawWeights[biome] = weight
-                totalWeight += weight
+        val raw = DoubleArray(ALL_BIOMES.size)
+        var total = 0.0
+        var count = 0
+        for (o in nearestSq.indices) {
+            if (nearestSq[o] == Double.MAX_VALUE) continue
+            val t = ((sqrt(nearestSq[o]) - minDistance) / BLEND_DISTANCE).coerceIn(0.0, 1.0)
+            val w = 1.0 - t * t * (3.0 - 2.0 * t)
+            if (w > 0.0) {
+                raw[o] = w
+                total += w
+                count++
             }
         }
 
-        return BiomeData(
-            currentBiome = nearest.key,
-            weights = rawWeights.mapValues { (_, weight) ->
-                (weight / totalWeight).toFloat()
-            }
-        )
+        // Типичный случай (внутри одного биома) — без лишних аллокаций.
+        if (count == 1) return BiomeData(nearestBiome, mapOf(nearestBiome to 1f))
+
+        val weights = EnumMap<BiomeType, Float>(BiomeType::class.java)
+        for (o in raw.indices) if (raw[o] > 0.0) weights[ALL_BIOMES[o]] = (raw[o] / total).toFloat()
+        return BiomeData(nearestBiome, weights)
     }
 
-    fun getPointsAround(position: IntVector3): Map<IntVector3, BiomeType> {
-        val result = HashMap<IntVector3, BiomeType>(16 * 16)
+    fun getPointsAround(position: IntVector3): BiomePoints = getPointsAround(position.x, position.z)
 
-        val centerCellX = floorDiv(position.x, POINT_WORLD_STEP)
-        val centerCellZ = floorDiv(position.z, POINT_WORLD_STEP)
+    fun getPointsAround(worldX: Int, worldZ: Int): BiomePoints {
+        val centerCellX = Math.floorDiv(worldX, POINT_WORLD_STEP)
+        val centerCellZ = Math.floorDiv(worldZ, POINT_WORLD_STEP)
+        val key = (centerCellX.toLong() shl 32) or (centerCellZ.toLong() and 0xFFFFFFFFL)
 
-        val halfGrid = POINT_RADIUS / 2
-
-        for (gx in -halfGrid until halfGrid) {
-            for (gz in -halfGrid until halfGrid) {
-                val cellX = centerCellX + gx
-                val cellZ = centerCellZ + gz
-
-                val pointX = cellX * POINT_WORLD_STEP + POINT_WORLD_STEP / 2
-                val pointZ = cellZ * POINT_WORLD_STEP + POINT_WORLD_STEP / 2
-
-                val point = IntVector3(pointX, 0, pointZ)
-                result[point] = selector.getBiomeAt(pointX, pointZ)
+        // Все чанки одной ячейки делят одно окно — раньше оно строилось на каждый чанк заново.
+        return windows.getOrCompute(key) {
+            val minX = centerCellX - HALF_GRID
+            val minZ = centerCellZ - HALF_GRID
+            val biomes = Array(GRID_SIZE * GRID_SIZE) { idx ->
+                val cellX = minX + idx % GRID_SIZE
+                val cellZ = minZ + idx / GRID_SIZE
+                selector.getBiomeAt(
+                    cellX * POINT_WORLD_STEP + POINT_WORLD_STEP / 2,
+                    cellZ * POINT_WORLD_STEP + POINT_WORLD_STEP / 2
+                )
             }
+            BiomePoints(minX, minZ, GRID_SIZE, biomes)
         }
-
-        return result
-    }
-
-    private fun floorDiv(value: Int, divisor: Int): Int {
-        val q = value / divisor
-        val r = value % divisor
-        return if (r != 0 && ((r < 0) != (divisor < 0))) q - 1 else q
     }
 }

@@ -120,6 +120,7 @@ class GameFragment(
             WorldSystem(),
             TimeSystem(),
             PhysicSystem(),
+            CameraSystem(),
             PlayerSystem(),
             BlockProcessingSystem(),
             MoveSystem(),

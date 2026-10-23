@@ -15,8 +15,8 @@ import com.badlogic.gdx.scenes.scene2d.Stage
 import com.gigapi.dialogs.DialogManager
 import com.gigapi.eventbus.annotation.BusEvent
 import com.gigapi.viewport.UnfairViewport
-import core.controls.AndroidControls
-import core.controls.PlayerInputProcessor
+import app.feature.game.ui.AndroidControls
+import core.controls.PInputProcessor
 import core.controls.UiInputProcessor
 import core.viewport.ViewportTypes
 
@@ -39,7 +39,7 @@ class UISystem: BaseSystem() {
     @Wire
     private lateinit var inputMultiplexer: InputMultiplexer
     @Wire
-    private lateinit var playerInputProcessor: PlayerInputProcessor
+    private lateinit var playerInputProcessor: PInputProcessor
     @Wire
     private lateinit var uiInputProcessor: UiInputProcessor
 

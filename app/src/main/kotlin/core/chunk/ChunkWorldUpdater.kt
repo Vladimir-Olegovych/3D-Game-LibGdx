@@ -27,6 +27,7 @@ import core.mesh.generators.GreedyChunkMesher
 import core.mesh.generators.MeshGenerator
 import core.scope.DispatcherTypes
 import core.terrain.TerrainGenerator
+import core.terrain.biome.BiomePoints
 import core.terrain.biome.models.BiomeType
 import kotlinx.coroutines.*
 import kotlinx.coroutines.sync.Semaphore
@@ -38,14 +39,14 @@ import java.util.concurrent.atomic.AtomicInteger
 class ChunkWorldUpdater : LaunchedEffect, DisposableEffect, DeltaUpdater(1 / 60F, Dispatchers.Default) {
 
     companion object {
-        const val DRAW_RADIUS_X = 16
-        const val DRAW_RADIUS_Y = 10
-        const val CHUNK_SIZE = 16
-        const val CHUNK_HEIGHT = 16
+        const val DRAW_RADIUS_X = 14
+        const val DRAW_RADIUS_Y = 8
+        const val CHUNK_SIZE = 24
+        const val CHUNK_HEIGHT = 24
         const val DATA_RADIUS_EXTRA = 1
         const val REMOVE_MARGIN = 1
 
-        const val FIRST_BATCH_CHUNKS = 200
+        const val FIRST_BATCH_CHUNKS = 700
         const val BATCH_CHUNKS = 96
         const val BATCH_MESHES = 96
         const val BATCH_TIMEOUT_MS = 15_000L
@@ -53,10 +54,11 @@ class ChunkWorldUpdater : LaunchedEffect, DisposableEffect, DeltaUpdater(1 / 60F
 
     private val isFirstGeneration = AtomicBoolean(true)
 
-    private val workerCount = (Runtime.getRuntime().availableProcessors() / 2 + 1).coerceAtLeast(2)
+    private val workerCount = (Runtime.getRuntime().availableProcessors() / 6 + 1).coerceAtLeast(2)
 
     private val parallelismChunks = Semaphore(workerCount)
     private val parallelismMesh = Semaphore(workerCount)
+    private val parallelismLight = Semaphore(workerCount)
     private val uploadGate = Semaphore(workerCount)
     private val chunkPoolUpdater = ChunkPoolUpdater()
 
@@ -225,19 +227,24 @@ class ChunkWorldUpdater : LaunchedEffect, DisposableEffect, DeltaUpdater(1 / 60F
 
             createdChunkDataMap.putAll(createdChunks)
 
-            for (chunk in createdChunks.values) {
-                val toRemesh = lightEngine.onChunkLoaded(chunk)
+            val lightJobs = createdChunks.values.map { chunkData ->
+                async(Dispatchers.Default) {
+                    parallelismLight.withPermit {
+                        lightEngine.onChunkLoaded(chunkData)
+                    }
+                }
+            }
 
+            lightJobs.forEach {
+                val toRemesh = it.await()
                 for (affected in toRemesh) {
                     val position = affected.position
-
-                    // Новые меши построятся обычным путём.
-                    // Здесь запоминаем только уже существующие.
                     if (createdMeshDataMap.containsKey(position)) {
                         lightRemeshPositions.add(position)
                     }
                 }
             }
+
             if (lightRemeshPositions.isNotEmpty()) scheduleRemesh()
             batchProgress.addAndGet(createdChunks.size)
         } catch (e: CancellationException) {
@@ -474,7 +481,7 @@ class ChunkWorldUpdater : LaunchedEffect, DisposableEffect, DeltaUpdater(1 / 60F
         }
     }
 
-    private fun generateChunk(chunkData: ChunkData, points: Map<IntVector3, BiomeType>) {
+    private fun generateChunk(chunkData: ChunkData, points: BiomePoints) {
         val entityId = chunkData.entityId ?: return
 
         terrainGenerator.generateChunkData(chunkData, points)

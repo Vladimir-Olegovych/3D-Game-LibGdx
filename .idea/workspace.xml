@@ -4,62 +4,29 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="21bb169d-cf41-4c8a-bf73-e63da1eaa6c0" name="Changes" comment="updated meshing">
-      <change afterPath="$PROJECT_DIR$/app/src/main/kotlin/app/feature/game/ui/AndroidControls.kt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/blocks/types/BlockShape.kt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/bullet/raycast/PhysicsGroups.kt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/mesh/model/BlockModels.kt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/terrain/structures/houses/OldHouseStructure.kt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/terrain/structures/nature/PlantPatch.kt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/terrain/structures/nature/RockStructure.kt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/terrain/structures/trees/OakTreeStructure.kt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/terrain/structures/trees/SpruceTreeStructure.kt" afterDir="false" />
+    <list default="true" id="21bb169d-cf41-4c8a-bf73-e63da1eaa6c0" name="Changes" comment="updated structures">
+      <change afterPath="$PROJECT_DIR$/app/src/main/kotlin/app/feature/game/ecs/systems/CameraSystem.kt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/controls/PInputProcessor.kt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/app/feature/game/ecs/components/DiggingComponent.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/app/feature/game/ecs/components/DiggingComponent.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/app/feature/game/GameFragment.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/app/feature/game/GameFragment.kt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/app/feature/game/ecs/systems/BlockProcessingSystem.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/app/feature/game/ecs/systems/BlockProcessingSystem.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/app/feature/game/ecs/systems/ChunkSystem.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/app/feature/game/ecs/systems/ChunkSystem.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/app/feature/game/ecs/systems/NetworkSystem.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/app/feature/game/ecs/systems/NetworkSystem.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/app/feature/game/ecs/systems/PlayerSystem.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/app/feature/game/ecs/systems/PlayerSystem.kt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/app/feature/game/ecs/systems/UISystem.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/app/feature/game/ecs/systems/UISystem.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/app/feature/game/event/ChunkEvent.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/app/feature/game/event/ChunkEvent.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/app/feature/game/event/InventoryEvent.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/app/feature/game/event/InventoryEvent.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/app/feature/game/event/PhysicsEvent.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/app/feature/game/event/PhysicsEvent.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/core/blocks/BlockDataManager.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/blocks/BlockDataManager.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/core/blocks/BlockDataSO.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/blocks/BlockDataSO.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/core/blocks/BlockType.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/blocks/types/BlockType.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/core/bullet/PhysicalData.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/bullet/PhysicalData.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/core/bullet/PhysicsUtils.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/bullet/PhysicsUtils.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/app/feature/game/ecs/systems/WorldSystem.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/app/feature/game/ecs/systems/WorldSystem.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/app/feature/game/ui/AimUI.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/app/feature/game/ui/AimUI.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/app/feature/game/ui/AndroidControls.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/app/feature/game/ui/AndroidControls.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/app/feature/game/ui/InventoryUI.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/app/feature/game/ui/InventoryUI.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/core/bullet/raycast/RayCastTypes.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/bullet/raycast/RayCastTypes.kt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/core/bullet/world/PhysicsWorldUpdater.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/bullet/world/PhysicsWorldUpdater.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/core/chunk/ChunkData.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/chunk/ChunkData.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/core/chunk/ChunkPoolUpdater.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/chunk/ChunkPoolUpdater.kt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/core/chunk/ChunkWorldUpdater.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/chunk/ChunkWorldUpdater.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/core/chunk/world/WorldDataHelper.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/chunk/world/WorldDataHelper.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/core/controls/PlayerInputProcessor.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/controls/PlayerInputProcessor.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/core/debug/Tests.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/debug/Tests.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/core/items/InventoryManager.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/items/InventoryManager.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/core/items/ItemManager.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/items/ItemManager.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/core/light/LightProps.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/light/LightProps.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/core/mesh/MeshUtils.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/mesh/MeshUtils.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/core/mesh/generators/ChunkMesher.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/mesh/generators/ChunkMesher.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/core/mesh/generators/GreedyChunkMesher.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/mesh/generators/GreedyChunkMesher.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/core/controls/PlayerInputProcessor.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/core/defaults/DefaultWorldSetupManager.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/defaults/DefaultWorldSetupManager.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/core/defaults/WorldConstants.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/defaults/PlayerConstants.kt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/core/terrain/TerrainGenerator.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/terrain/TerrainGenerator.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/core/terrain/biome/biomes/DesertBiomeGenerator.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/terrain/biome/biomes/DesertBiomeGenerator.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/core/terrain/biome/biomes/ForestBiomeGenerator.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/terrain/biome/biomes/ForestBiomeGenerator.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/core/terrain/biome/biomes/MountainBiomeGenerator.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/terrain/biome/biomes/MountainBiomeGenerator.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/core/terrain/biome/biomes/SpruceBiomeGenerator.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/terrain/biome/biomes/SpruceBiomeGenerator.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/core/terrain/layers/CaveLayerHandler.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/terrain/layers/CaveLayerHandler.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/core/terrain/layers/SurfaceLayerHandler.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/terrain/layers/SurfaceLayerHandler.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/core/terrain/layers/UndergroundLayerHandler.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/terrain/layers/UndergroundLayerHandler.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/core/terrain/level/StructurePlacer.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/terrain/level/StructurePlacer.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/core/terrain/level/WorldStructure.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/terrain/level/WorldStructure.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/core/terrain/structures/CactusStructure.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/terrain/structures/trees/CactusStructure.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/core/terrain/structures/ExampleStructure.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/terrain/structures/ExampleStructure.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/core/terrain/structures/OakTreeStructure.kt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/core/terrain/structures/OldHouseStructure.kt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/core/terrain/structures/RockStructure.kt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/core/terrain/structures/SpruceTreeStructure.kt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/core/terrain/structures/StructureClip.kt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/core/terrain/structures/builder/StructureBuilder.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/terrain/structures/builder/StructureBuilder.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/resources/configs/BLOCK_DATA_SO.json" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/resources/configs/BLOCK_DATA_SO.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/resources/configs/CRAFTING_RECIPES_SO.json" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/resources/configs/CRAFTING_RECIPES_SO.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/resources/images/block/block.atlas" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/resources/images/block/block.atlas" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/core/terrain/biome/BiomePointGrid.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/terrain/biome/BiomePointGrid.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/core/terrain/biome/BiomeSelector.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/terrain/biome/BiomeSelector.kt" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -184,7 +151,7 @@
       <recent name="core.blocks.types" />
     </key>
   </component>
-  <component name="RunManager" selected="Kotlin.DesktopMainKt">
+  <component name="RunManager" selected="Kotlin.ServerMainKt">
     <configuration name="GDX-3D-TEST [:app:assemble]" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
       <ExternalSystemSettings>
         <option name="executionName" />
@@ -349,6 +316,7 @@
     <MESSAGE value="added new structures" />
     <MESSAGE value="updatet torch color" />
     <MESSAGE value="updated meshing" />
-    <option name="LAST_COMMIT_MESSAGE" value="updated meshing" />
+    <MESSAGE value="updated structures" />
+    <option name="LAST_COMMIT_MESSAGE" value="updated structures" />
   </component>
 </project>

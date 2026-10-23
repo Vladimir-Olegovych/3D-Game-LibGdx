@@ -17,7 +17,7 @@ import core.bullet.PhysicalData
 import core.bullet.PhysicsUtils
 import core.bullet.raycast.PhysicsGroups
 import core.chunk.ChunkData
-import core.defaults.WorldConstants
+import core.defaults.PlayerConstants
 import kotlinx.coroutines.Dispatchers
 
 class PhysicsWorldUpdater: LaunchedEffect, DeltaUpdater(1 / 20F, Dispatchers.Default) {
@@ -46,7 +46,7 @@ class PhysicsWorldUpdater: LaunchedEffect, DeltaUpdater(1 / 20F, Dispatchers.Def
     fun onRayCastRequest(event: PhysicsEvent.OnRayCastRequest) {
         val rayFrom = event.from
         val rayTo = Vector3(event.direction).scl(event.maxDistance).add(rayFrom)
-        val ignoreEntityId = WorldConstants.getLocalPlayerEntityId()
+        val ignoreEntityId = PlayerConstants.getLocalPlayerEntityId()
         val callback = IgnoreEntityRayCallback(rayFrom, rayTo, ignoreEntityId)
         callback.collisionFilterGroup = PhysicsGroups.RAY
         physicsWorld.world.rayTest(rayFrom, rayTo, callback)

@@ -2,6 +2,10 @@ package core.defaults
 
 import app.feature.game.dialogs.InventoryDialog
 import app.feature.game.dialogs.PauseDialog
+import app.feature.game.ecs.states.ClientNetworkState
+import app.feature.game.ecs.states.NetworkOutboundState
+import app.feature.game.ecs.states.RemotePlayerRegistry
+import app.feature.game.ecs.states.TimeState
 import app.feature.game.event.EventBusTypes
 import app.feature.game.ui.AimUI
 import app.feature.game.ui.DataUI
@@ -11,23 +15,19 @@ import com.badlogic.gdx.scenes.scene2d.Stage
 import com.gigapi.effects.LaunchedEffect
 import com.gigapi.eventbus.EventBus
 import com.gigapi.general.GContext
+import com.gigapi.kryo.GameClient
 import com.gigapi.sounds.MusicPlayer
 import core.bullet.world.PhysicsWorldUpdater
 import core.chunk.ChunkWorldUpdater
-import core.controls.PlayerInputProcessor
+import core.client.ClientAcceptor
+import core.controls.PInputProcessor
 import core.controls.UiInputProcessor
 import core.items.InventoryManager
-import core.renderers.StarRenderer
-import core.renderers.SkyPlanetRenderer
-import core.terrain.TerrainGenerator
-import app.feature.game.ecs.states.RemotePlayerRegistry
-import app.feature.game.ecs.states.ClientNetworkState
-import app.feature.game.ecs.states.NetworkOutboundState
-import core.network.NetworkStateUpdater
-import app.feature.game.ecs.states.TimeState
-import com.gigapi.kryo.GameClient
-import core.client.ClientAcceptor
 import core.items.ItemManager
+import core.network.NetworkStateUpdater
+import core.renderers.SkyPlanetRenderer
+import core.renderers.StarRenderer
+import core.terrain.TerrainGenerator
 
 object DefaultWorldSetupManager: LaunchedEffect {
 
@@ -42,7 +42,7 @@ object DefaultWorldSetupManager: LaunchedEffect {
         gameClient.prepare()
         gameClient.addListener(ClientAcceptor(mainEventBus))
         //---
-        val playerInputProcessor = PlayerInputProcessor()
+        val playerInputProcessor = PInputProcessor()
         gContext.setObject(playerInputProcessor)
         //---
         val uiInputProcessor = UiInputProcessor()

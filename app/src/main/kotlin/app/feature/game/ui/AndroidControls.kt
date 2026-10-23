@@ -1,4 +1,4 @@
-package core.controls
+package app.feature.game.ui
 
 import com.badlogic.gdx.graphics.Color
 import com.badlogic.gdx.graphics.Pixmap
@@ -9,7 +9,9 @@ import com.badlogic.gdx.scenes.scene2d.InputListener
 import com.badlogic.gdx.scenes.scene2d.Stage
 import com.badlogic.gdx.scenes.scene2d.ui.Image
 import com.badlogic.gdx.scenes.scene2d.ui.Touchpad
+import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable
+import core.controls.PInputProcessor
 
 /**
  * Простое управление для Android:
@@ -18,7 +20,7 @@ import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable
  *  - кнопка справа   -> прыжок
  */
 class AndroidControls(
-    private val input: PlayerInputProcessor,
+    private val input: PInputProcessor,
     private val stage: Stage
 ) {
 
@@ -74,7 +76,7 @@ class AndroidControls(
                 override fun touchDown(e: InputEvent, x: Float, y: Float, p: Int, b: Int) = true
             })
         }
-        touchpad.addListener(object : com.badlogic.gdx.scenes.scene2d.utils.ChangeListener() {
+        touchpad.addListener(object : ChangeListener() {
             override fun changed(event: ChangeEvent?, actor: Actor?) {
                 input.setMoveInput(touchpad.knobPercentX, touchpad.knobPercentY)
             }
