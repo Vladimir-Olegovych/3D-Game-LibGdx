@@ -49,6 +49,21 @@ class PlayerInputProcessor: LaunchedEffect, InputProcessor {
             0 to Keys.NUM_0
         )
     }
+    // переключатель; true -> сенсорное управление, клавиатура/мышь игнорируются
+    var isAndroid = false
+
+    fun setMoveInput(x: Float, y: Float) {
+        // джойстик: вправо = +x, вверх = +y.
+        // В твоей схеме D даёт отрицательный x, W даёт положительный z
+        moveDirection.set(-x * PLAYER_SPEED, 0f, y * PLAYER_SPEED)
+    }
+
+    fun setJump(value: Boolean) { jump = value }
+
+    fun addLook(dx: Float, dy: Float) {
+        deltaMouseX += dx
+        deltaMouseY += dy
+    }
 
     private lateinit var mainEventBus: EventBus
     private lateinit var physicsEventBus: EventBus
@@ -277,6 +292,7 @@ class PlayerInputProcessor: LaunchedEffect, InputProcessor {
         pointer: Int,
         button: Int
     ): Boolean {
+        if (isAndroid) return false
         when (button) {
             Buttons.LEFT -> isMouseLeftHold = true
             Buttons.RIGHT -> isMouseRightHold = true
@@ -290,6 +306,7 @@ class PlayerInputProcessor: LaunchedEffect, InputProcessor {
         pointer: Int,
         button: Int
     ): Boolean {
+        if (isAndroid) return false
         when (button) {
             Buttons.LEFT -> isMouseLeftHold = false
             Buttons.RIGHT -> isMouseRightHold = false
@@ -311,6 +328,7 @@ class PlayerInputProcessor: LaunchedEffect, InputProcessor {
     }
 
     override fun touchDragged(screenX: Int, screenY: Int, pointer: Int): Boolean {
+        if (isAndroid) return false
         updateCameraPosition(screenX, screenY)
         return false
     }

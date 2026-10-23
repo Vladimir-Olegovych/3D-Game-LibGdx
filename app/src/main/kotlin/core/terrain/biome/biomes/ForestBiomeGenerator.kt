@@ -40,6 +40,7 @@ class ForestBiomeGenerator : LaunchedEffect, BiomeGenerator() {
         baseDomainWarping = getSurfaceDomainWarping(noiceGenerator)
 
         startLayerHandler
+            //.setNext(SurfacePlantLayerHandler())
             .setNext(UndergroundLayerHandler())
             .setNext(CaveLayerHandler(caveNoise))
     }

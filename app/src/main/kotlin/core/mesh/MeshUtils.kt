@@ -13,7 +13,7 @@ import com.gigapi.mesh.MeshParams
 import com.gigapi.mesh.RawMeshData
 import com.gigapi.mesh.blender.BlenderParser
 import core.blocks.BlockDataManager
-import core.blocks.BlockType
+import core.blocks.types.BlockType
 import core.items.Item
 import core.mesh.MeshUtils.createHitboxModel
 import core.mesh.light.LightMesher

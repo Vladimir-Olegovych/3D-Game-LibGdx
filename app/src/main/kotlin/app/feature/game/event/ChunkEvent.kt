@@ -1,7 +1,7 @@
 package app.feature.game.event
 
 import com.gigapi.math.vector.IntVector3
-import core.blocks.BlockType
+import core.blocks.types.BlockType
 import core.chunk.world.WorldChunksPreparation
 import core.chunk.world.WorldGenerationData
 

@@ -1,9 +1,10 @@
-package core.terrain.structures
+package core.terrain.structures.houses
 
-import core.blocks.BlockType
+import core.blocks.types.BlockType
 import core.terrain.TerrainGenerator.Companion.SURFACE_HEIGHT
 import core.terrain.biome.models.BiomeType
 import core.terrain.level.WorldStructure
+import core.terrain.structures.builder.Place
 import core.terrain.structures.builder.StructureBuilder
 import kotlin.math.abs
 
@@ -44,7 +45,14 @@ class OldHouseStructure : WorldStructure() {
     override val above: Int = 33           // самое высокое — финал башенок донжона (y = 31)
 
     override fun build(b: StructureBuilder) {
-        buildClipped(b, -(halfW + 6), halfW + 6, 0, above - 1, -(halfD + 6), halfD + 6)
+        val rx = halfW + 6
+        val rz = halfD + 6
+        b.columns(-rx, -rz, rx, rz) { x, z ->
+            val kind = kindOf(x, z)
+            if (kind != Kind.EMPTY) {
+                b.column(x, z, 0, above - 1, Place.ALWAYS) { y -> blockAt(x, y, z, kind) }
+            }
+        }
     }
 
     private enum class Kind {
@@ -53,32 +61,6 @@ class OldHouseStructure : WorldStructure() {
 
     override fun canSpawn(surfaceY: Int, biome: BiomeType): Boolean {
         return surfaceY < SURFACE_HEIGHT && super.canSpawn(surfaceY, biome)
-    }
-
-    override fun buildClipped(
-        b: StructureBuilder,
-        minX: Int, maxX: Int,
-        minY: Int, maxY: Int,
-        minZ: Int, maxZ: Int
-    ) {
-        val x0 = maxOf(-(halfW + 6), minX)
-        val x1 = minOf(halfW + 6, maxX)
-        val y0 = maxOf(0, minY)
-        val y1 = minOf(above - 1, maxY)
-        val z0 = maxOf(-(halfD + 6), minZ)
-        val z1 = minOf(halfD + 6, maxZ)
-        if (x0 > x1 || y0 > y1 || z0 > z1) return
-
-        for (x in x0..x1) {
-            for (z in z0..z1) {
-                val kind = kindOf(x, z)
-                if (kind == Kind.EMPTY) continue
-                for (y in y0..y1) {
-                    val block = blockAt(x, y, z, kind) ?: continue
-                    b.set(x, y, z, block) // AIR тоже ставим — пробиваем проёмы
-                }
-            }
-        }
     }
 
     // ==================== КЛАССИФИКАЦИЯ КОЛОННЫ (x, z) ====================

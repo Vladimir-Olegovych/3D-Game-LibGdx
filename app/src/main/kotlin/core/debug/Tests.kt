@@ -4,7 +4,6 @@ import app.feature.game.ecs.components.BoundRadiusComponent
 import app.feature.game.ecs.components.MeshComponent
 import app.feature.game.ecs.components.TransformComponent
 import app.feature.game.event.EventBusTypes
-import app.feature.game.event.GameChunkEvent
 import app.feature.game.event.PhysicsEvent
 import com.artemis.World
 import com.badlogic.gdx.assets.AssetManager
@@ -14,7 +13,7 @@ import com.gigapi.eventbus.EventBus
 import com.gigapi.mesh.blender.BlenderParser
 import core.assets.SkinID
 import core.blocks.BlockDataManager
-import core.blocks.BlockType
+import core.blocks.types.BlockType
 import core.mesh.MeshUtils
 
 fun World.startTest100Box() {

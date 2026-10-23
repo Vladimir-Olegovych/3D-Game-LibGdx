@@ -1,0 +1,3 @@
+package core.blocks.types
+
+enum class BlockShape { CUBE, CROSS }   // потом: SLAB, TORCH, FENCE ...

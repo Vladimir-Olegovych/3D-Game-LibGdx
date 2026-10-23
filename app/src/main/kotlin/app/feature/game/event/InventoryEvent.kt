@@ -1,6 +1,6 @@
 package app.feature.game.event
 
-import core.blocks.BlockType
+import core.blocks.types.BlockType
 import core.items.InventoryItem
 
 sealed class InventoryEvent {

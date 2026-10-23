@@ -15,6 +15,7 @@ import com.badlogic.gdx.scenes.scene2d.Stage
 import com.gigapi.dialogs.DialogManager
 import com.gigapi.eventbus.annotation.BusEvent
 import com.gigapi.viewport.UnfairViewport
+import core.controls.AndroidControls
 import core.controls.PlayerInputProcessor
 import core.controls.UiInputProcessor
 import core.viewport.ViewportTypes
@@ -49,10 +50,16 @@ class UISystem: BaseSystem() {
     @Wire
     private lateinit var dataUI: DataUI
 
+    private var androidControls: AndroidControls? = null
+
     override fun initialize() {
         stage.addActor(aimUI.getUI())
         stage.addActor(dataUI.getUI())
         stage.addActor(inventoryUI.getUI())
+
+        if (playerInputProcessor.isAndroid) {
+            androidControls = AndroidControls(playerInputProcessor, stage).also { it.show() }
+        }
     }
 
     @BusEvent
@@ -96,6 +103,7 @@ class UISystem: BaseSystem() {
     }
 
     override fun dispose() {
+        androidControls?.dispose()
         stage.clear()
     }
 }

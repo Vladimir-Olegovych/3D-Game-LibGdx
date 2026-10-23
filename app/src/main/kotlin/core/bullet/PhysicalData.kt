@@ -9,6 +9,8 @@ import com.badlogic.gdx.physics.bullet.linearmath.btDefaultMotionState
 import com.badlogic.gdx.utils.Disposable
 
 class PhysicalData(val isStatic: Boolean) : Disposable {
+
+
     val compounds = mutableListOf<btCompoundShape>()
     val shapes = mutableListOf<btBoxShape>()
     val motionStates = mutableListOf<btDefaultMotionState>()
@@ -17,6 +19,7 @@ class PhysicalData(val isStatic: Boolean) : Disposable {
     val triangleMeshes = mutableListOf<btTriangleMesh>()
 
     private var body: btRigidBody? = null
+    private var pickBody: btRigidBody? = null
 
     fun getBodyOrNull() = body
     fun getBody() = body!!
@@ -24,6 +27,9 @@ class PhysicalData(val isStatic: Boolean) : Disposable {
     fun setBody(body: btRigidBody) {
         this.body = body
     }
+
+    fun getPickBodyOrNull() = pickBody
+    fun setPickBody(b: btRigidBody) { pickBody = b }
 
     override fun dispose() {
         rigidBodies.forEach { if (!it.isDisposed) it.dispose() }

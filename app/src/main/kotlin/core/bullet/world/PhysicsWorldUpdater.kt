@@ -12,14 +12,17 @@ import com.gigapi.effects.LaunchedEffect
 import com.gigapi.eventbus.EventBus
 import com.gigapi.eventbus.annotation.BusEvent
 import com.gigapi.general.GContext
+import core.blocks.BlockDataManager
 import core.bullet.PhysicalData
 import core.bullet.PhysicsUtils
+import core.bullet.raycast.PhysicsGroups
 import core.chunk.ChunkData
 import core.defaults.WorldConstants
 import kotlinx.coroutines.Dispatchers
 
 class PhysicsWorldUpdater: LaunchedEffect, DeltaUpdater(1 / 20F, Dispatchers.Default) {
 
+    private lateinit var blockData: BlockDataManager
     private lateinit var physicalEventBus: EventBus
     private lateinit var mainEventBus: EventBus
     private lateinit var physicsWorld: PhysicsWorld
@@ -33,6 +36,7 @@ class PhysicsWorldUpdater: LaunchedEffect, DeltaUpdater(1 / 20F, Dispatchers.Def
     private val tmpImpulse = Vector3()
 
     override fun launch(gContext: GContext) {
+        blockData = gContext.getObject()
         physicalEventBus = gContext.getObject(EventBusTypes.PHYSICS_EVENT_BUS)
         mainEventBus = gContext.getObject(EventBusTypes.MAIN_EVENT_BUS)
         physicalEventBus.registerHandler(this)
@@ -44,6 +48,7 @@ class PhysicsWorldUpdater: LaunchedEffect, DeltaUpdater(1 / 20F, Dispatchers.Def
         val rayTo = Vector3(event.direction).scl(event.maxDistance).add(rayFrom)
         val ignoreEntityId = WorldConstants.getLocalPlayerEntityId()
         val callback = IgnoreEntityRayCallback(rayFrom, rayTo, ignoreEntityId)
+        callback.collisionFilterGroup = PhysicsGroups.RAY
         physicsWorld.world.rayTest(rayFrom, rayTo, callback)
 
         var hitEntityId: Int? = null
@@ -150,10 +155,8 @@ class PhysicsWorldUpdater: LaunchedEffect, DeltaUpdater(1 / 20F, Dispatchers.Def
 
     override fun dispose() {
         for ((_, data) in physicBodies) {
-            val body = data.getBodyOrNull()
-            if (body != null && !body.isDisposed) {
-                physicsWorld.world.removeRigidBody(body)
-            }
+            data.rigidBodies.forEach { if (!it.isDisposed)
+                physicsWorld.world.removeRigidBody(it) }
             data.dispose()
         }
         physicBodies.clear()
@@ -175,23 +178,26 @@ class PhysicsWorldUpdater: LaunchedEffect, DeltaUpdater(1 / 20F, Dispatchers.Def
 
     private fun replaceChunkBody(entityId: Int, chunkData: ChunkData) {
         removeBody(entityId)
-        val physicalData = PhysicsUtils.createChunkBody(entityId, chunkData)
-        physicBodies[entityId] = physicalData
-        physicsWorld.world.addRigidBody(physicalData.getBody())
+        val data = PhysicsUtils.createChunkBody(
+            entityId, chunkData,
+            collides = { blockData.hasCollider(it) },
+            pickOnly = { blockData.isPickOnly(it) }
+        )
+        physicBodies[entityId] = data
+        physicsWorld.world.addRigidBody(data.getBody())
+        data.getPickBodyOrNull()?.let {
+            physicsWorld.world.addRigidBody(it, PhysicsGroups.PICK, PhysicsGroups.RAY)
+        }
     }
 
     private fun removeBody(entityId: Int) {
         val physicalData = physicBodies.remove(entityId) ?: return
         try {
-            val body = physicalData.getBodyOrNull()
-            if (body != null && !body.isDisposed) {
-                physicsWorld.world.removeRigidBody(body)
+            physicalData.rigidBodies.forEach {
+                if (!it.isDisposed) physicsWorld.world.removeRigidBody(it)
             }
         } finally {
-            try {
-                physicalData.dispose()
-            } catch (_: Throwable) {
-            }
+            try { physicalData.dispose() } catch (_: Throwable) {}
         }
     }
 

@@ -8,7 +8,7 @@ import com.gigapi.math.noice.domain.DomainWarping2D
 import com.gigapi.math.noice.models.NoiceUtils
 import com.gigapi.math.noice.models.NoiseSettings
 import com.gigapi.math.vector.IntVector3
-import core.blocks.BlockType
+import core.blocks.types.BlockType
 import core.chunk.ChunkData
 import core.noice.NoiceTypes
 import core.noice.asGenerator

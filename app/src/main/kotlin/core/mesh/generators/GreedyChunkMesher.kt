@@ -6,7 +6,8 @@ import com.gigapi.general.GContext
 import com.gigapi.math.vector.IntVector3
 import com.gigapi.mesh.RawMeshData
 import core.blocks.BlockDataManager
-import core.blocks.BlockType
+import core.blocks.types.BlockShape
+import core.blocks.types.BlockType
 import core.chunk.ChunkData
 import core.mesh.light.LightMesher
 import java.util.Collections
@@ -15,6 +16,8 @@ import kotlin.math.abs
 import kotlin.math.max
 import core.mesh.generators.ChunkMesher.Neighborhood
 import core.mesh.light.ShadowCompilerAO
+import core.mesh.model.BlockModels
+import core.mesh.model.ModelQuad
 import java.util.Arrays
 
 /**
@@ -121,6 +124,8 @@ class GreedyChunkMesher: LaunchedEffect, MeshGenerator {
         val volume = w * h * w
         val textureMap = blockDataManager.getBlockTextureDataMap()
 
+        val model = BooleanArray(TYPES.size)    // блок с кастомной геометрией
+        val castsAo = BooleanArray(TYPES.size)  // участвует в AO как "блок"
         val occludes = BooleanArray(TYPES.size)
         val drawable = BooleanArray(TYPES.size)
         val special = BooleanArray(TYPES.size)   // generateAllSides -> cutout
@@ -151,10 +156,8 @@ class GreedyChunkMesher: LaunchedEffect, MeshGenerator {
         val tiles = arrayOfNulls<TileInfo>(6 * TYPES.size)
 
         val blockExists: (Int, Int, Int) -> Boolean = { x, y, z ->
-            when (nb.block(x, y, z)) {
-                BlockType.AIR, BlockType.NOTHING -> false
-                else -> true
-            }
+            val b = nb.block(x, y, z)
+            b != BlockType.AIR && b != BlockType.NOTHING && castsAo[b.ordinal]
         }
         val lightAt: (Int, Int, Int) -> Int = { x, y, z -> nb.light(x, y, z) }
 
@@ -163,10 +166,13 @@ class GreedyChunkMesher: LaunchedEffect, MeshGenerator {
             for (t in TYPES) {
                 if (t == BlockType.AIR || t == BlockType.NOTHING) continue
                 val td = textureMap[t]
+                val isModel = td != null && td.shape != BlockShape.CUBE
                 val allSides = td?.generateAllSides == true
-                occludes[t.ordinal] = !allSides
-                drawable[t.ordinal] = td != null && !allSides
-                special[t.ordinal] = td != null && allSides
+                occludes[t.ordinal] = !allSides && !isModel
+                drawable[t.ordinal] = td != null && !allSides && !isModel
+                special[t.ordinal] = td != null && allSides && !isModel
+                model[t.ordinal] = isModel
+                castsAo[t.ordinal] = !isModel
             }
         }
 
@@ -207,7 +213,7 @@ class GreedyChunkMesher: LaunchedEffect, MeshGenerator {
                     drw[1][col(1, x, y, z)] = drw[1][col(1, x, y, z)] or (1 shl y)
                     drw[2][col(2, x, y, z)] = drw[2][col(2, x, y, z)] or (1 shl z)
                 }
-                if (special[o]) specials.add(idx)
+                if (special[o] || model[o]) specials.add(idx)
             }
             for (y in 0 until h) for (z in 0 until w) {
                 val ci = col(0, 0, y, z)
@@ -438,6 +444,12 @@ class GreedyChunkMesher: LaunchedEffect, MeshGenerator {
                 val y = (idx / w) % h
                 val x = idx / (w * h)
                 val o = ids[idx]
+
+                if (model[o]) {
+                    emitModel(BlockModels.of(textureMap[TYPES[o]]!!.shape)!!, x, y, z, o)
+                    continue
+                }
+
                 val block = TYPES[o]
                 val all = hasActiveAllSides(block, x, y, z)
 
@@ -454,6 +466,28 @@ class GreedyChunkMesher: LaunchedEffect, MeshGenerator {
                     emitSingle(d, x, y, z, o, ao, lt)
                 }
             }
+        }
+
+        private fun emitModel(quadsList: List<ModelQuad>, x: Int, y: Int, z: Int, o: Int) {
+            // берём "боковую" текстуру: направление 0 (+X) -> faceUVs отдаёт side
+            val t = tileInfo(0, o)
+            // свет клетки самого блока (нормаль вверх), без AO
+            val nrm = DIRS[2].normal
+            val lt = LightMesher.computeFaceLight(x, y, z, nrm.x, nrm.y, nrm.z, lightAt)
+            for (q in quadsList) pushModelQuad(q, x, y, z, t, lt[0], lt[1])
+        }
+
+        private fun pushModelQuad(q: ModelQuad, x: Int, y: Int, z: Int, t: TileInfo, sky: Float, blk: Float) {
+            quads++
+            val base = vb.n / STRIDE
+            for (i in 0 until 4) {
+                vb.add(pack(x + q.corners[i * 3], y + q.corners[i * 3 + 1], z + q.corners[i * 3 + 2], q.dir))
+                vb.add(pack(Math.round(t.loc[i * 2]), Math.round(t.loc[i * 2 + 1]), 1, 1))
+                vb.add(pack(255, q8(sky), q8(blk), 0))
+                vb.add(t.originWord)
+            }
+            ibCutout.add(base);     ibCutout.add(base + 1); ibCutout.add(base + 2)
+            ibCutout.add(base);     ibCutout.add(base + 2); ibCutout.add(base + 3)
         }
 
         private fun hasActiveAllSides(block: BlockType, x: Int, y: Int, z: Int): Boolean {

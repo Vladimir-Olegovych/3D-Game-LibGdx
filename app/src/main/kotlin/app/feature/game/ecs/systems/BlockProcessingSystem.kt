@@ -12,7 +12,7 @@ import com.artemis.systems.IteratingSystem
 import com.gigapi.eventbus.EventBus
 import com.gigapi.eventbus.annotation.BusEvent
 import core.blocks.BlockDataManager
-import core.blocks.BlockType
+import core.blocks.types.BlockType
 import core.bullet.raycast.RayCastTypes
 import core.controls.PlayerInputProcessor
 import core.defaults.WorldConstants

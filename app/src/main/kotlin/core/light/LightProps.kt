@@ -1,6 +1,6 @@
 package core.light
 
-import core.blocks.BlockType
+import core.blocks.types.BlockType
 
 /**
  * opacity: 0 = прозрачный, 1..14 = ослабляет свет дополнительно (листва, вода), 15 = непрозрачный.
@@ -21,8 +21,14 @@ object LightProps {
 
     fun opacity(b: Byte): Int = opacity[b.toInt() and 0xFF].toInt()
     fun emission(b: Byte): Int = emission[b.toInt() and 0xFF].toInt()
-}
 
-// Пример настройки (один раз при старте):
-// LightProps.set(BlockType.LEAVES, opacity = 1)
-// LightProps.set(BlockType.TORCH, opacity = 0, emission = 14)   // если у тебя есть такой блок
+    init {
+
+        set(BlockType.LEAVES, opacity = 1)
+        set(BlockType.GRASS_PLANT_1, opacity = 1)
+        set(BlockType.GRASS_PLANT_2, opacity = 1)
+        set(BlockType.WHEAT_PLANT_1, opacity = 1)
+        //LightProps.set(BlockType.TORCH, opacity = 0, emission = 14)
+        set(BlockType.OAK_WOODEN_PLANKS, opacity = 0, emission = 14)
+    }
+}

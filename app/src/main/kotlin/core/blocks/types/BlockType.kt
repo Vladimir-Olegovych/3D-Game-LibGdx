@@ -1,4 +1,4 @@
-package core.blocks
+package core.blocks.types
 
 enum class BlockType {
     NOTHING,
@@ -10,7 +10,10 @@ enum class BlockType {
     OAK_WOODEN_PLANKS,
     LEAVES,
     SAND,
-    CACTUS;
+    CACTUS,
+    GRASS_PLANT_1,
+    GRASS_PLANT_2,
+    WHEAT_PLANT_1;
 
     companion object {
         fun fromName(name: String): BlockType? {

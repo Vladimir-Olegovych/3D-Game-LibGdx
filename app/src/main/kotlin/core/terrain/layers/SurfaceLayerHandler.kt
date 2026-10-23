@@ -1,7 +1,7 @@
 package core.terrain.layers
 
 import com.gigapi.math.vector.IntVector3
-import core.blocks.BlockType
+import core.blocks.types.BlockType
 import core.chunk.ChunkData
 import core.terrain.BlockLayerHandler
 

@@ -15,8 +15,6 @@ import core.terrain.TerrainGenerator
 import core.terrain.biome.BiomeGenerator
 import core.terrain.biome.BiomePointGrid
 import core.terrain.layers.*
-import core.terrain.structures.RockStructure
-import core.terrain.structures.SpruceTreeStructure
 import math.noice.FastNoise
 
 class SpruceBiomeGenerator : LaunchedEffect, BiomeGenerator() {

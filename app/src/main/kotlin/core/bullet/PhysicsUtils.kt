@@ -7,7 +7,7 @@ import com.badlogic.gdx.physics.bullet.collision.CollisionConstants.DISABLE_SIMU
 import com.badlogic.gdx.physics.bullet.dynamics.btRigidBody
 import com.badlogic.gdx.physics.bullet.linearmath.btDefaultMotionState
 import com.gigapi.mesh.RawMeshData
-import core.blocks.BlockType
+import core.blocks.types.BlockType
 import core.chunk.ChunkData
 import core.math.createMatrixForChunk
 
@@ -91,96 +91,74 @@ object PhysicsUtils {
         return physicalData
     }
 
-    fun createChunkBody(entityId: Int, chunk: ChunkData): PhysicalData {
-        val physicalData = PhysicalData(true)
+    fun createChunkBody(
+        entityId: Int,
+        chunk: ChunkData,
+        collides: (BlockType) -> Boolean,
+        pickOnly: (BlockType) -> Boolean
+    ): PhysicalData {
+        val data = PhysicalData(true)
+        data.setBody(buildStaticBody(entityId, chunk, data, collides, skipIfEmpty = false)!!)
+        buildStaticBody(entityId, chunk, data, pickOnly, skipIfEmpty = true)?.let { data.setPickBody(it) }
+        return data
+    }
+
+    private fun buildStaticBody(
+        entityId: Int,
+        chunk: ChunkData,
+        physicalData: PhysicalData,
+        test: (BlockType) -> Boolean,
+        skipIfEmpty: Boolean
+    ): btRigidBody? {
+        fun solid(x: Int, y: Int, z: Int) = test(chunk.getBlockByLocal(x, y, z))
+
         val compound = btCompoundShape()
         physicalData.compounds.add(compound)
         val w = chunk.chunkWidth
         val h = chunk.chunkHeight
-
         val used = Array(w) { Array(h) { BooleanArray(w) } }
 
-        for (y in 0 until h) {
-            for (z in 0 until w) {
-                for (x in 0 until w) {
+        for (y in 0 until h) for (z in 0 until w) for (x in 0 until w) {
+            if (used[x][y][z] || !solid(x, y, z)) continue
 
-                    if (used[x][y][z]) continue
-                    if (chunk.getBlockByLocal(x, y, z) == BlockType.AIR) continue
+            var maxX = x
+            while (maxX < w && !used[maxX][y][z] && solid(maxX, y, z)) maxX++
 
-                    var maxX = x
-                    while (maxX < w &&
-                        !used[maxX][y][z] &&
-                        chunk.getBlockByLocal(maxX, y, z) != BlockType.AIR
-                    ) {
-                        maxX++
-                    }
-
-                    var maxZ = z
-                    zLoop@ while (maxZ < w) {
-                        for (xx in x until maxX) {
-                            if (used[xx][y][maxZ] ||
-                                chunk.getBlockByLocal(xx, y, maxZ) == BlockType.AIR
-                            ) break@zLoop
-                        }
-                        maxZ++
-                    }
-
-                    var maxY = y
-                    yLoop@ while (maxY < h) {
-                        for (zz in z until maxZ) {
-                            for (xx in x until maxX) {
-                                if (used[xx][maxY][zz] ||
-                                    chunk.getBlockByLocal(xx, maxY, zz) == BlockType.AIR
-                                ) break@yLoop
-                            }
-                        }
-                        maxY++
-                    }
-
-                    val sizeX = maxX - x
-                    val sizeY = maxY - y
-                    val sizeZ = maxZ - z
-
-                    for (yy in y until maxY) {
-                        for (zz in z until maxZ) {
-                            for (xx in x until maxX) {
-                                used[xx][yy][zz] = true
-                            }
-                        }
-                    }
-
-                    val shape = btBoxShape(
-                        Vector3(sizeX / 2f, sizeY / 2f, sizeZ / 2f)
-                    )
-                    shape.margin = 0.5f
-                    physicalData.shapes.add(shape)
-                    val transform = Matrix4().setToTranslation(
-                        x + sizeX / 2f,
-                        y + sizeY / 2f,
-                        z + sizeZ / 2f
-                    )
-
-                    compound.addChildShape(transform, shape)
-                }
+            var maxZ = z
+            zLoop@ while (maxZ < w) {
+                for (xx in x until maxX) if (used[xx][y][maxZ] || !solid(xx, y, maxZ)) break@zLoop
+                maxZ++
             }
+
+            var maxY = y
+            yLoop@ while (maxY < h) {
+                for (zz in z until maxZ) for (xx in x until maxX)
+                    if (used[xx][maxY][zz] || !solid(xx, maxY, zz)) break@yLoop
+                maxY++
+            }
+
+            val sizeX = maxX - x; val sizeY = maxY - y; val sizeZ = maxZ - z
+            for (yy in y until maxY) for (zz in z until maxZ) for (xx in x until maxX) used[xx][yy][zz] = true
+
+            val shape = btBoxShape(Vector3(sizeX / 2f, sizeY / 2f, sizeZ / 2f))
+            shape.margin = 0.5f
+            physicalData.shapes.add(shape)
+            compound.addChildShape(
+                Matrix4().setToTranslation(x + sizeX / 2f, y + sizeY / 2f, z + sizeZ / 2f),
+                shape
+            )
         }
+
+        if (skipIfEmpty && compound.numChildShapes == 0) return null
 
         val motionState = btDefaultMotionState(createMatrixForChunk(chunk))
         physicalData.motionStates.add(motionState)
-        val info = btRigidBody.btRigidBodyConstructionInfo(
-            0f,
-            motionState,
-            compound,
-            Vector3()
-        )
-
+        val info = btRigidBody.btRigidBodyConstructionInfo(0f, motionState, compound, Vector3())
         val body = btRigidBody(info)
-        body.userData = entityId
+        body.userData = entityId          // тот же id чанка -> игровая логика не меняется
         info.dispose()
-
         body.activationState = DISABLE_SIMULATION
         physicalData.rigidBodies.add(body)
-        physicalData.setBody(body)
-        return physicalData
+        return body
     }
 }

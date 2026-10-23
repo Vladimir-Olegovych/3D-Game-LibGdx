@@ -11,7 +11,7 @@ import com.gigapi.mesh.RawMeshData
 import com.gigapi.storage.json.AppConfig
 import core.assets.SkinID
 import core.blocks.BlockDataManager
-import core.blocks.BlockType
+import core.blocks.types.BlockType
 import core.configs.ConfigTypes
 import core.mesh.MeshUtils
 

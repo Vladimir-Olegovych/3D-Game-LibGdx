@@ -12,8 +12,8 @@ import com.gigapi.math.vector.IntVector3
 import core.chunk.ChunkData
 import core.noice.NoiceTypes
 import core.noice.asGenerator
-import core.terrain.biome.BiomePointGrid
 import core.terrain.biome.BiomeGenerator
+import core.terrain.biome.BiomePointGrid
 import core.terrain.biome.BiomeSelector
 import core.terrain.biome.biomes.DesertBiomeGenerator
 import core.terrain.biome.biomes.ForestBiomeGenerator
@@ -22,11 +22,12 @@ import core.terrain.biome.biomes.SpruceBiomeGenerator
 import core.terrain.biome.models.BiomeType
 import core.terrain.layers.CaveLayerHandler
 import core.terrain.level.StructurePlacer
-import core.terrain.structures.CactusStructure
-import core.terrain.structures.OakTreeStructure
-import core.terrain.structures.OldHouseStructure
-import core.terrain.structures.RockStructure
-import core.terrain.structures.SpruceTreeStructure
+import core.terrain.structures.houses.OldHouseStructure
+import core.terrain.structures.nature.PlantPatch
+import core.terrain.structures.nature.RockStructure
+import core.terrain.structures.trees.CactusStructure
+import core.terrain.structures.trees.OakTreeStructure
+import core.terrain.structures.trees.SpruceTreeStructure
 import math.noice.FastNoise
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.math.max
@@ -44,7 +45,7 @@ class TerrainGenerator : DisposableEffect, LaunchedEffect {
         const val WORLD_HEIGHT = 300
         const val WORLD_SURFACE = WORLD_HEIGHT / 1.5
         const val SKY_MARGIN = 40
-        const val SURFACE_HEIGHT = WORLD_SURFACE - SKY_MARGIN
+        const val SURFACE_HEIGHT = (WORLD_SURFACE - SKY_MARGIN).toInt()
         const val LOD_POINT_CELL = 1024
 
         /**
@@ -101,16 +102,18 @@ class TerrainGenerator : DisposableEffect, LaunchedEffect {
         )
 
         val noise = gContext.getObject<PerlinNoise>(NoiceTypes.PERLIN_WORLD)
-        noiseWarp = getNoiseDomainWarping(noise.asGenerator())
+        val perlinNoiseGenerator = noise.asGenerator()
+        noiseWarp = getNoiseDomainWarping(perlinNoiseGenerator)
         biomePointGrid = gContext.getObject()
 
         structurePlacer = StructurePlacer(
             seed = worldSeed,
             structures = listOf(
-                OakTreeStructure(), SpruceTreeStructure(),
-                CactusStructure(), RockStructure(),
+                *PlantPatch.structures.toTypedArray(), RockStructure(),
+                OakTreeStructure(), SpruceTreeStructure(), CactusStructure(),
                 OldHouseStructure()
             ),
+            noise = perlinNoiseGenerator,
             surface = ::sampleSurface,
             worldTopY = WORLD_HEIGHT * 2
         )

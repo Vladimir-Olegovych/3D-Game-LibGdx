@@ -1,7 +1,7 @@
 package core.chunk
 
 import com.gigapi.math.vector.IntVector3
-import core.blocks.BlockType
+import core.blocks.types.BlockType
 import java.util.Arrays.fill
 import java.util.concurrent.ConcurrentLinkedQueue
 

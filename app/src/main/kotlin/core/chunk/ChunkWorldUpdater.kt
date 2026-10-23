@@ -13,14 +13,13 @@ import com.gigapi.general.GContext
 import com.gigapi.math.vector.IntVector3
 import com.gigapi.math.vector.roundToFloat
 import com.gigapi.mesh.MeshData
-import core.blocks.BlockType
+import core.blocks.types.BlockType
 import core.bullet.raycast.RayCastTypes
 import core.chunk.world.ChunkHelper
 import core.chunk.world.WorldChunksPreparation
 import core.chunk.world.WorldDataHelper
 import core.chunk.world.WorldGenerationData
 import core.light.LightEngine
-import core.light.LightProps
 import core.math.createMatrixForChunk
 import core.mesh.chunkMeshParams
 import core.mesh.generators.ChunkMeshSplit
@@ -95,13 +94,8 @@ class ChunkWorldUpdater : LaunchedEffect, DisposableEffect, DeltaUpdater(1 / 60F
         mainScope = CoroutineScope(
             gContext.getObject<CoroutineDispatcher>(DispatcherTypes.MAIN)
         )
-
         chunkEventBus?.registerHandler(this)
         mainEventBus.registerHandler(this)
-
-        LightProps.set(BlockType.LEAVES, opacity = 1)
-        //LightProps.set(BlockType.TORCH, opacity = 0, emission = 14)
-        LightProps.set(BlockType.OAK_WOODEN_PLANKS, opacity = 0, emission = 14)
 
         lightEngine = LightEngine(
             w = CHUNK_SIZE,

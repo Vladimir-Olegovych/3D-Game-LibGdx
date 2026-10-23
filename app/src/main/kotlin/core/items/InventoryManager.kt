@@ -9,7 +9,7 @@ import com.gigapi.effects.LaunchedEffect
 import com.gigapi.eventbus.EventBus
 import com.gigapi.eventbus.annotation.BusEvent
 import com.gigapi.general.GContext
-import core.blocks.BlockType
+import core.blocks.types.BlockType
 import core.crafting.CraftingRecipeData
 
 class InventoryManager(

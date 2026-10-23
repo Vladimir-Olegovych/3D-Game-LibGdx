@@ -4,7 +4,7 @@ import com.badlogic.gdx.math.Matrix4
 import com.badlogic.gdx.math.Vector3
 import com.gigapi.math.vector.IntVector3
 import com.gigapi.mesh.RawMeshData
-import core.blocks.BlockType
+import core.blocks.types.BlockType
 import core.chunk.ChunkData
 
 sealed class PhysicsEvent {

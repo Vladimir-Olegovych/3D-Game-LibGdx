@@ -4,68 +4,103 @@
     "regionNameUp" : "tile_grass_top",
     "regionNameSide" : "tile_grass_side",
     "regionNameDown" : "tile_dirt",
-    "solid" : true,
+    "pickable" : false,
     "generateAllSides" : false,
-    "generateCollider" : true
+    "generateCollider" : true,
+    "shape" : "CUBE"
   }, {
     "blockType" : "DIRT",
     "regionNameUp" : "tile_dirt",
     "regionNameSide" : "tile_dirt",
     "regionNameDown" : "tile_dirt",
-    "solid" : true,
+    "pickable" : false,
     "generateAllSides" : false,
-    "generateCollider" : true
+    "generateCollider" : true,
+    "shape" : "CUBE"
   }, {
     "blockType" : "STONE",
     "regionNameUp" : "tile_stone",
     "regionNameSide" : "tile_stone",
     "regionNameDown" : "tile_stone",
-    "solid" : true,
+    "pickable" : false,
     "generateAllSides" : false,
-    "generateCollider" : true
+    "generateCollider" : true,
+    "shape" : "CUBE"
   }, {
     "blockType" : "SAND",
     "regionNameUp" : "tile_sand",
     "regionNameSide" : "tile_sand",
     "regionNameDown" : "tile_sand",
-    "solid" : true,
+    "pickable" : false,
     "generateAllSides" : false,
-    "generateCollider" : true
+    "generateCollider" : true,
+    "shape" : "CUBE"
   }, {
     "blockType" : "OAK_WOOD",
     "regionNameUp" : "tile_oak_wood_top",
     "regionNameSide" : "tile_oak_wood_side",
     "regionNameDown" : "tile_oak_wood_top",
-    "solid" : true,
+    "pickable" : false,
     "generateAllSides" : false,
-    "generateCollider" : true
+    "generateCollider" : true,
+    "shape" : "CUBE"
   },
   {
     "blockType" : "OAK_WOODEN_PLANKS",
     "regionNameUp" : "tile_oak_wood_planks",
     "regionNameSide" : "tile_oak_wood_planks",
     "regionNameDown" : "tile_oak_wood_planks",
-    "solid" : true,
+    "pickable" : false,
     "generateAllSides" : false,
-    "generateCollider" : true
+    "generateCollider" : true,
+    "shape" : "CUBE"
   },
   {
     "blockType" : "LEAVES",
     "regionNameUp" : "tile_oak_wood_leaves",
     "regionNameSide" : "tile_oak_wood_leaves",
     "regionNameDown" : "tile_oak_wood_leaves",
-    "solid" : true,
+    "pickable" : false,
     "generateAllSides" : true,
-    "generateCollider" : true
+    "generateCollider" : true,
+    "shape" : "CUBE"
   }, {
     "blockType" : "CACTUS",
     "regionNameUp" : "tile_cactus_top",
     "regionNameSide" : "tile_cactus_side",
     "regionNameDown" : "tile_cactus_top",
-    "solid" : true,
+    "pickable" : false,
     "generateAllSides" : false,
-    "generateCollider" : true
-  } ],
+    "generateCollider" : true,
+    "shape" : "CUBE"
+  }, {
+    "blockType" : "GRASS_PLANT_1",
+    "regionNameUp" : null,
+    "regionNameSide" : "tile_grass_plant_1",
+    "regionNameDown" : null,
+    "pickable" : true,
+    "generateAllSides" : true,
+    "generateCollider" : false,
+    "shape" : "CROSS"
+  }, {
+    "blockType" : "GRASS_PLANT_2",
+    "regionNameUp" : null,
+    "regionNameSide" : "tile_grass_plant_2",
+    "regionNameDown" : null,
+    "pickable" : true,
+    "generateAllSides" : true,
+    "generateCollider" : false,
+    "shape" : "CROSS"
+  }, {
+    "blockType" : "WHEAT_PLANT_1",
+    "regionNameUp" : null,
+    "regionNameSide" : "tile_plant_wheat_1",
+    "regionNameDown" : null,
+    "pickable" : true,
+    "generateAllSides" : true,
+    "generateCollider" : false,
+    "shape" : "CROSS"
+  }],
   "blockInfoList" : [ {
     "blockType" : "GRASS",
     "digTime" : 0.6,
@@ -98,6 +133,17 @@
     "blockType" : "OAK_WOODEN_PLANKS",
     "digTime" : 1.1,
     "digItem" : "AXE"
-  }
-  ]
+  }, {
+    "blockType" : "GRASS_PLANT_1",
+    "digTime" : 0.2,
+    "digItem" : "SWORD"
+  }, {
+    "blockType" : "GRASS_PLANT_2",
+    "digTime" : 0.2,
+    "digItem" : "SWORD"
+  }, {
+    "blockType" : "WHEAT_PLANT_1",
+    "digTime" : 0.2,
+    "digItem" : "SWORD"
+  }]
 }

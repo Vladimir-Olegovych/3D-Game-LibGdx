@@ -1,6 +1,7 @@
 package core.terrain.level
 
 import com.gigapi.effects.DisposableEffect
+import com.gigapi.math.noice.NoiceGenerator
 import core.chunk.ChunkData
 import core.terrain.LodSample
 import core.terrain.biome.models.BiomeType
@@ -11,14 +12,12 @@ import kotlin.random.Random
 class StructurePlacer(
     private val seed: Int,
     private val structures: List<WorldStructure>,
-    /** Поверхность в любой мировой колонке, независимо от чанков (TerrainGenerator::sampleSurface). */
+    private val noise: NoiceGenerator,
     private val surface: (Int, Int) -> LodSample,
-    /** Выше этой отметки не бывает ни рельефа, ни структур — чанк пропускается сразу. */
     private val worldTopY: Int
 ): DisposableEffect {
-    private class Placed(val x: Int, val y: Int, val z: Int, val seed: Long, val biome: BiomeType)
-
-    private val NONE = Placed(0, 0, 0, 0, BiomeType.FOREST)
+    private class Placed(val x: Int, val y: Int, val z: Int, val seed: Long, val biome: BiomeType, val mask: Float)
+    private val NONE = Placed(0, 0, 0, 0, BiomeType.FOREST, 0f)
 
     private val caches = Array(structures.size) { ConcurrentHashMap<Long, Placed>() }
 
@@ -48,21 +47,7 @@ class StructurePlacer(
                 if (p.z < minZ - s.radius || p.z > maxZ + s.radius) continue
                 if (p.y - s.below > maxY || p.y + s.above < minY) continue
 
-                val builder = StructureBuilder(
-                    chunk, p.x, p.y, p.z,
-                    Random(p.seed xor (p.x.toLong() shl 32) xor (p.y.toLong() shl 16) xor p.z.toLong()),
-                    p.biome
-                )
-
-                s.buildClipped(
-                    b = builder,
-                    minX = minX - p.x,
-                    maxX = maxX - p.x,
-                    minY = minY - p.y,
-                    maxY = maxY - p.y,
-                    minZ = minZ - p.z,
-                    maxZ = maxZ - p.z
-                )
+                s.build(StructureBuilder(chunk, p.x, p.y, p.z, Random(p.seed), p.biome, p.mask))
             }
         }
     }
@@ -80,18 +65,19 @@ class StructurePlacer(
 
     private fun compute(s: WorldStructure, cx: Int, cz: Int): Placed? {
         val hash = hash(seed.toLong() xor s.id.hashCode().toLong(), cx, cz)
-
-        val roll = ((hash ushr 40) and 0xFFFFFF).toInt() / 16777216f
-        if (roll >= s.chance) return null
-
         val ax = cx * s.cellSize + (((hash ushr 8) and 0x7FFFFFFF) % s.cellSize).toInt()
         val az = cz * s.cellSize + (((hash ushr 24) and 0x7FFFFFFF) % s.cellSize).toInt()
+
+        // дешёвые отсечки до дорогого surface()
+        val m = s.mask?.weight(noise, ax, az, s.id.hashCode()) ?: 1f
+        val roll = ((hash ushr 40) and 0xFFFFFF).toInt() / 16777216f
+        if (roll >= s.chance * m) return null
 
         val sample = surface(ax, az)
         s.biomes?.let { if (sample.biome !in it) return null }
         if (!s.canSpawn(sample.height, sample.biome)) return null
 
-        return Placed(ax, sample.height, az, splitMix(hash), sample.biome)
+        return Placed(ax, sample.height, az, splitMix(hash), sample.biome, m)
     }
 
     private fun hash(base: Long, a: Int, b: Int): Long =

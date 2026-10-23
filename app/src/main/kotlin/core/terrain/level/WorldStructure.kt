@@ -1,5 +1,6 @@
 package core.terrain.level
 
+import com.gigapi.math.noice.SpawnMask
 import core.terrain.biome.models.BiomeType
 import core.terrain.structures.builder.StructureBuilder
 
@@ -29,6 +30,8 @@ abstract class WorldStructure {
     /** Насколько структура уходит ВВЕРХ от блока поверхности (с запасом!). */
     abstract val above: Int
 
+    open val mask: SpawnMask? = null
+
     /** Допустимые биомы, null = любые. */
     open val biomes: Set<BiomeType>? = null
 
@@ -37,13 +40,4 @@ abstract class WorldStructure {
 
     /** Строит структуру. Точка (0,0,0) билдера = блок поверхности в точке привязки. */
     abstract fun build(b: StructureBuilder)
-
-    open fun buildClipped(
-        b: StructureBuilder,
-        minX: Int, maxX: Int,
-        minY: Int, maxY: Int,
-        minZ: Int, maxZ: Int
-    ) {
-        build(b)
-    }
 }
