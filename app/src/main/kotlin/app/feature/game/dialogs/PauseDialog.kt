@@ -50,11 +50,11 @@ class PauseDialog: LaunchedEffect, Dialog() {
         }
     }
 
-    override fun onCreate() {
+    override fun onShow() {
         stage.addActor(fullscreenOverlay)
     }
 
-    override fun onDestroy() {
+    override fun onHide() {
         fullscreenOverlay.remove()
     }
 

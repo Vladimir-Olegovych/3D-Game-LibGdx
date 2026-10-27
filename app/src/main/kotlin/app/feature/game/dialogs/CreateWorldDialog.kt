@@ -8,6 +8,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Table
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton
 import com.badlogic.gdx.scenes.scene2d.ui.TextField
 import com.badlogic.gdx.scenes.scene2d.Touchable
+import com.gigapi.dialogs.Dialog
 import com.gigapi.general.GContext
 import com.gigapi.setOnClickListener
 import com.gigapi.texture.ColorDrawable
@@ -21,13 +22,13 @@ class CreateWorldCallbacks(
 class CreateWorldDialog(
     private val gContext: GContext,
     private val callbacks: CreateWorldCallbacks
-) {
+): Dialog() {
     private val stage: Stage = gContext.getObject()
     private val buttonSkin: Skin = gContext.getObject<AssetManager>().get(SkinID.BUTTON.skin)
 
     private var overlay: Table? = null
 
-    fun show() {
+     override fun onShow() {
         if (overlay != null) return
 
         val nameField = TextField("", buttonSkin).apply { messageText = "World name" }
@@ -42,11 +43,11 @@ class CreateWorldDialog(
                 return@setOnClickListener
             }
             val seed = parseSeed(seedField.text)
-            hide()
+            dismiss()
             callbacks.onConfirm(name, seed)
         }
         val cancelButton = TextButton("cancel", buttonSkin).setOnClickListener {
-            hide()
+            dismiss()
             callbacks.onCancel()
         }
 
@@ -71,7 +72,7 @@ class CreateWorldDialog(
         stage.keyboardFocus = nameField
     }
 
-    fun hide() {
+    override fun onHide() {
         overlay?.remove()
         overlay = null
         stage.keyboardFocus = null

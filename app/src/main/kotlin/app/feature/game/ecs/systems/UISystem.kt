@@ -53,6 +53,9 @@ class UISystem: BaseSystem() {
     private var androidControls: AndroidControls? = null
 
     override fun initialize() {
+        pauseDialog.attach(dialogManager)
+        inventoryDialog.attach(dialogManager)
+
         stage.addActor(aimUI.getUI())
         stage.addActor(dataUI.getUI())
         stage.addActor(inventoryUI.getUI())
@@ -67,7 +70,7 @@ class UISystem: BaseSystem() {
         playerInputProcessor.clear()
         inputMultiplexer.removeProcessor(playerInputProcessor)
         Gdx.input.isCursorCatched = false
-        if (!pauseDialog.isShowed()) pauseDialog.show(dialogManager)
+        if (!pauseDialog.isShowed()) pauseDialog.show()
     }
 
     @BusEvent
@@ -83,7 +86,7 @@ class UISystem: BaseSystem() {
         playerInputProcessor.clear()
         inputMultiplexer.removeProcessor(playerInputProcessor)
         Gdx.input.isCursorCatched = false
-        if (!inventoryDialog.isShowed()) inventoryDialog.show(dialogManager)
+        if (!inventoryDialog.isShowed()) inventoryDialog.show()
     }
 
     @BusEvent
@@ -103,6 +106,8 @@ class UISystem: BaseSystem() {
     }
 
     override fun dispose() {
+        pauseDialog.unattach()
+        inventoryDialog.unattach()
         androidControls?.dispose()
         stage.clear()
     }

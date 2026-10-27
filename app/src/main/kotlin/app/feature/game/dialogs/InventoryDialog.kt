@@ -300,13 +300,13 @@ class InventoryDialog: LaunchedEffect, Dialog() {
         refreshCraftableRecipes()
     }
 
-    override fun onCreate() {
+    override fun onShow() {
         refreshCraftableRecipes()
         stage.addActor(fullscreenOverlay)
         dragActor?.let { stage.addActor(it) }
     }
 
-    override fun onDestroy() {
+    override fun onHide() {
         dragActor?.remove()
         fullscreenOverlay.remove()
     }

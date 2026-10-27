@@ -68,6 +68,7 @@ class WorldSelectFragment(
                 onCancel = { println("create world cancelled") }
             )
         )
+        createWorldDialog.attach(dialogManager)
 
         worldsTable = Table().apply { top() }
         val scrollPane = ScrollPane(worldsTable).apply {
@@ -144,7 +145,7 @@ class WorldSelectFragment(
     override fun onPause() {}
 
     override fun onDestroy() {
-        createWorldDialog.hide()
+        createWorldDialog.unattach()
         Gdx.input.inputProcessor = null
         stage.clear()
     }
