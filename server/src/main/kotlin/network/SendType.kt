@@ -1,5 +1,5 @@
 package com.gigcreator.network
 
-enum class SendType {
+internal enum class SendType {
     TCP, UDP
 }

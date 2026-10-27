@@ -39,10 +39,10 @@ import java.util.concurrent.atomic.AtomicInteger
 class ChunkWorldUpdater : LaunchedEffect, DisposableEffect, DeltaUpdater(1 / 60F, Dispatchers.Default) {
 
     companion object {
-        const val DRAW_RADIUS_X = 14
-        const val DRAW_RADIUS_Y = 8
-        const val CHUNK_SIZE = 24
-        const val CHUNK_HEIGHT = 24
+        const val DRAW_RADIUS_X = 16
+        const val DRAW_RADIUS_Y = 10
+        const val CHUNK_SIZE = 16
+        const val CHUNK_HEIGHT = 16
         const val DATA_RADIUS_EXTRA = 1
         const val REMOVE_MARGIN = 1
 

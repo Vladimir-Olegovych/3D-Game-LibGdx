@@ -6,7 +6,7 @@ import com.gigcreator.NetworkEvent
 import com.gigcreator.network.SendEvent
 import com.gigcreator.network.SendType
 
-class ClientComponent: Component() {
+internal class ClientComponent: Component() {
     var connection: Connection? = null
 
     private val events = ArrayList<SendEvent>()

@@ -43,7 +43,16 @@
       fontColor: default
     }
   }
-
+  TextFieldStyle: {
+    default: {
+      font: medium,
+      fontColor: default
+    }
+    small: {
+      font: small,
+      fontColor: default
+    }
+  }
   WindowStyle: {
     default: {
       titleFont: medium,

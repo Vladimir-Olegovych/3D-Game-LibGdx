@@ -13,7 +13,7 @@ import com.gigcreator.ecs.states.ServerPlayerRegistry
 import com.gigcreator.event.ServerEvent
 import com.gigcreator.network.SendType
 
-class NetworkRelaySystem: BaseSystem() {
+internal class NetworkRelaySystem: BaseSystem() {
 
     @Wire
     private lateinit var playerRegistry: ServerPlayerRegistry

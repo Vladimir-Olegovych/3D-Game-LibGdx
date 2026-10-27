@@ -1,5 +1,5 @@
 package com.gigcreator.core.congifs
 
-object ConfigTypes {
+internal object ConfigTypes {
     const val SERVER_DATA = "SERVER_DATA"
 }

@@ -3,7 +3,7 @@ package com.gigcreator.ecs.states
 import com.gigcreator.NetQuaternion
 import com.gigcreator.NetVector3
 
-class ServerPlayerRegistry {
+internal class ServerPlayerRegistry {
 
     data class PlayerNetworkState(
         val pos: NetVector3 = NetVector3.ZERO,

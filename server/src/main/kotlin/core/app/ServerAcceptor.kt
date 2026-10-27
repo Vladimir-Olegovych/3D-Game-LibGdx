@@ -5,7 +5,7 @@ import com.esotericsoftware.kryonet.Listener
 import com.gigapi.eventbus.EventBus
 import com.gigcreator.event.ServerEvent
 
-class ServerAcceptor(
+internal class ServerAcceptor(
     private val eventBus: EventBus,
 ): Listener() {
     override fun connected(connection: Connection) {

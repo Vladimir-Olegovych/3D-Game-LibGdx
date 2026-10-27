@@ -23,7 +23,7 @@ import core.viewport.ViewportTypes
 class MainFragment(
     private val navigation: Navigation.Main,
     private val gContext: GContext,
-    private val onGameScreen: () -> Unit
+    private val onWorldSelectScreen: () -> Unit
 ): Fragment() {
 
     private lateinit var spriteBatch: SpriteBatch
@@ -47,7 +47,7 @@ class MainFragment(
         }
 
         val playButton = TextButton("play", skin).setOnClickListener {
-            onGameScreen.invoke()
+            onWorldSelectScreen.invoke()
         }
         val settingsButton = TextButton("settings", skin).setOnClickListener {
             println("settingsButton")

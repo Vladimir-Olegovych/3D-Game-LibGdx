@@ -17,7 +17,7 @@ import kotlinx.coroutines.Dispatchers
 
 class ServerApplication(
     private val serverData: ServerData
-): DeltaUpdater(1 / 60F, Dispatchers.Default) {
+): DeltaUpdater(1 / 20F, Dispatchers.Default) {
 
     private val gContext = GContext()
 

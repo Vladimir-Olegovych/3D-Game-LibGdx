@@ -4,7 +4,7 @@ import com.gigcreator.core.app.ServerApplication
 import com.gigcreator.core.congifs.ServerData
 import kotlin.random.Random
 
-fun main() {
+internal fun main() {
     val serverData = ServerData(
         worldName = "Test world",
         serverName = "Dev server",

@@ -28,9 +28,12 @@ import app.feature.game.ecs.states.ClientNetworkState
 import core.terrain.TerrainGenerator
 import core.viewport.ViewportTypes
 import app.feature.game.ecs.states.TimeState
+import com.gigcreator.core.app.ServerApplication
+import com.gigcreator.core.congifs.ServerData
 import core.assets.MusicID
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlin.random.Random
 import kotlin.time.Duration.Companion.milliseconds
 
 class GameFragment(
@@ -41,6 +44,7 @@ class GameFragment(
 
     private val gameGContext = GContext()
     private var artemisWorld: ArtemisWorld? = null
+    private var serverApplication: ServerApplication? = null
 
     private lateinit var eventBus: EventBus
     private lateinit var viewport: UnfairViewport
@@ -84,6 +88,18 @@ class GameFragment(
         eventBus.registerHandler(this)
         Gdx.input.isCursorCatched = true
         Gdx.input.inputProcessor = inputMultiplexer
+
+        if (navigation.isLocal) {
+            val serverData = ServerData(
+                worldName = navigation.worldName,
+                serverName = navigation.worldName,
+                serverPort = 5551,
+                worldSeed = navigation.seed?: Random.nextInt()
+            )
+            serverApplication = ServerApplication(serverData)
+        }
+
+        serverApplication?.start(true)
 
         gameClient.start(
             address = "127.0.0.1", port = 5551,
@@ -165,5 +181,8 @@ class GameFragment(
         gameGContext.getObject<EventBus>(EventBusTypes.PHYSICS_EVENT_BUS).process()
         gameGContext.removeContext(gContext)
         gameGContext.dispose()
+
+        serverApplication?.stop(true)
+        serverApplication = null
     }
 }

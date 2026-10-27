@@ -1,6 +1,6 @@
 package com.gigcreator.ecs.states
 
-class TimeState {
+internal class TimeState {
     var timeOfDay = 0.2f
         private set
 

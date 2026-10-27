@@ -11,7 +11,7 @@ import com.gigcreator.network.SendType
 import kotlinx.coroutines.*
 
 @All(ClientComponent::class)
-class SendSystem: IteratingSystem() {
+internal class SendSystem: IteratingSystem() {
 
     private lateinit var clientComponentMapper: ComponentMapper<ClientComponent>
     private val scope = CoroutineScope(Dispatchers.IO)

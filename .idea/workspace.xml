@@ -4,29 +4,33 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="21bb169d-cf41-4c8a-bf73-e63da1eaa6c0" name="Changes" comment="updated structures">
-      <change afterPath="$PROJECT_DIR$/app/src/main/kotlin/app/feature/game/ecs/systems/CameraSystem.kt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/controls/PInputProcessor.kt" afterDir="false" />
+    <list default="true" id="21bb169d-cf41-4c8a-bf73-e63da1eaa6c0" name="Changes" comment="updated player input">
+      <change afterPath="$PROJECT_DIR$/app/src/main/kotlin/app/feature/game/dialogs/CreateWorldDialog.kt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/src/main/kotlin/app/feature/worldselect/WorldSelectFragment.kt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/build.gradle.kts" beforeDir="false" afterPath="$PROJECT_DIR$/app/build.gradle.kts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/app/GameApplication.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/app/GameApplication.kt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/app/feature/game/GameFragment.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/app/feature/game/GameFragment.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/app/feature/game/ecs/systems/BlockProcessingSystem.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/app/feature/game/ecs/systems/BlockProcessingSystem.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/app/feature/game/ecs/systems/ChunkSystem.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/app/feature/game/ecs/systems/ChunkSystem.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/app/feature/game/ecs/systems/NetworkSystem.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/app/feature/game/ecs/systems/NetworkSystem.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/app/feature/game/ecs/systems/PlayerSystem.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/app/feature/game/ecs/systems/PlayerSystem.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/app/feature/game/ecs/systems/UISystem.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/app/feature/game/ecs/systems/UISystem.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/app/feature/game/ecs/systems/WorldSystem.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/app/feature/game/ecs/systems/WorldSystem.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/app/feature/game/ui/AimUI.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/app/feature/game/ui/AimUI.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/app/feature/game/ui/AndroidControls.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/app/feature/game/ui/AndroidControls.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/app/feature/game/ui/InventoryUI.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/app/feature/game/ui/InventoryUI.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/core/bullet/raycast/RayCastTypes.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/bullet/raycast/RayCastTypes.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/core/bullet/world/PhysicsWorldUpdater.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/bullet/world/PhysicsWorldUpdater.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/app/feature/main/MainFragment.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/app/feature/main/MainFragment.kt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/core/chunk/ChunkWorldUpdater.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/chunk/ChunkWorldUpdater.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/core/controls/PlayerInputProcessor.kt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/core/defaults/DefaultWorldSetupManager.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/defaults/DefaultWorldSetupManager.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/core/defaults/WorldConstants.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/defaults/PlayerConstants.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/core/terrain/TerrainGenerator.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/terrain/TerrainGenerator.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/core/terrain/biome/BiomePointGrid.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/terrain/biome/BiomePointGrid.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/core/terrain/biome/BiomeSelector.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/terrain/biome/BiomeSelector.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/core/navigation/Navigation.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/navigation/Navigation.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/resources/images/button/button.skin" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/resources/images/button/button.skin" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/src/main/kotlin/ServerMain.kt" beforeDir="false" afterPath="$PROJECT_DIR$/server/src/main/kotlin/ServerMain.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/src/main/kotlin/core/app/ServerAcceptor.kt" beforeDir="false" afterPath="$PROJECT_DIR$/server/src/main/kotlin/core/app/ServerAcceptor.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/src/main/kotlin/core/app/ServerApplication.kt" beforeDir="false" afterPath="$PROJECT_DIR$/server/src/main/kotlin/core/app/ServerApplication.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/src/main/kotlin/core/congifs/ConfigTypes.kt" beforeDir="false" afterPath="$PROJECT_DIR$/server/src/main/kotlin/core/congifs/ConfigTypes.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/src/main/kotlin/core/defaults/ServerDefaults.kt" beforeDir="false" afterPath="$PROJECT_DIR$/server/src/main/kotlin/core/defaults/ServerDefaults.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/src/main/kotlin/ecs/components/ClientComponent.kt" beforeDir="false" afterPath="$PROJECT_DIR$/server/src/main/kotlin/ecs/components/ClientComponent.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/src/main/kotlin/ecs/states/ServerPlayerRegistry.kt" beforeDir="false" afterPath="$PROJECT_DIR$/server/src/main/kotlin/ecs/states/ServerPlayerRegistry.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/src/main/kotlin/ecs/states/TimeState.kt" beforeDir="false" afterPath="$PROJECT_DIR$/server/src/main/kotlin/ecs/states/TimeState.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/src/main/kotlin/ecs/systems/ConnectionSystem.kt" beforeDir="false" afterPath="$PROJECT_DIR$/server/src/main/kotlin/ecs/systems/ConnectionSystem.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/src/main/kotlin/ecs/systems/NetworkRelaySystem.kt" beforeDir="false" afterPath="$PROJECT_DIR$/server/src/main/kotlin/ecs/systems/NetworkRelaySystem.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/src/main/kotlin/ecs/systems/SendSystem.kt" beforeDir="false" afterPath="$PROJECT_DIR$/server/src/main/kotlin/ecs/systems/SendSystem.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/src/main/kotlin/ecs/systems/TimeSystem.kt" beforeDir="false" afterPath="$PROJECT_DIR$/server/src/main/kotlin/ecs/systems/TimeSystem.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/src/main/kotlin/event/ServerEvent.kt" beforeDir="false" afterPath="$PROJECT_DIR$/server/src/main/kotlin/event/ServerEvent.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/src/main/kotlin/network/SendContainer.kt" beforeDir="false" afterPath="$PROJECT_DIR$/server/src/main/kotlin/network/SendContainer.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/src/main/kotlin/network/SendEvent.kt" beforeDir="false" afterPath="$PROJECT_DIR$/server/src/main/kotlin/network/SendEvent.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/src/main/kotlin/network/SendType.kt" beforeDir="false" afterPath="$PROJECT_DIR$/server/src/main/kotlin/network/SendType.kt" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -113,25 +117,26 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;Gradle.Build GDX-3D-TEST.executor&quot;: &quot;Run&quot;,
-    &quot;Gradle.GDX-3D-TEST [:app:assemble].executor&quot;: &quot;Run&quot;,
-    &quot;Gradle.GDX-3D-TEST [:core:assemble].executor&quot;: &quot;Run&quot;,
-    &quot;Gradle.GDX-3D-TEST [:desktop:com.gigcreator.DesktopMainKt.main()].executor&quot;: &quot;Run&quot;,
-    &quot;Gradle.GDX-3D-TEST [:server:assemble].executor&quot;: &quot;Run&quot;,
-    &quot;Gradle.GDX-3D-TEST [:server:com.gigcreator.ServerMainKt.main()].executor&quot;: &quot;Run&quot;,
-    &quot;Kotlin.DesktopMainKt.executor&quot;: &quot;Run&quot;,
-    &quot;Kotlin.ServerMainKt.executor&quot;: &quot;Run&quot;,
-    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
-    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
-    &quot;last_opened_file_path&quot;: &quot;/home/vladimir/Documents/Java/GDX-3D-TEST/configs&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "Gradle.Build GDX-3D-TEST.executor": "Run",
+    "Gradle.GDX-3D-TEST [:app:assemble].executor": "Run",
+    "Gradle.GDX-3D-TEST [:core:assemble].executor": "Run",
+    "Gradle.GDX-3D-TEST [:desktop:com.gigcreator.DesktopMainKt.main()].executor": "Run",
+    "Gradle.GDX-3D-TEST [:server:assemble].executor": "Run",
+    "Gradle.GDX-3D-TEST [:server:com.gigcreator.ServerMainKt.main()].executor": "Run",
+    "Gradle.GDX-3D-TEST [server:assemble].executor": "Run",
+    "Kotlin.DesktopMainKt.executor": "Run",
+    "Kotlin.ServerMainKt.executor": "Run",
+    "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "git-widget-placeholder": "main",
+    "kotlin-language-version-configured": "true",
+    "last_opened_file_path": "/home/vladimir/Documents/Java/GDX-3D-TEST/configs"
   }
-}</component>
+}]]></component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/configs" />
@@ -151,7 +156,7 @@
       <recent name="core.blocks.types" />
     </key>
   </component>
-  <component name="RunManager" selected="Kotlin.ServerMainKt">
+  <component name="RunManager" selected="Kotlin.DesktopMainKt">
     <configuration name="GDX-3D-TEST [:app:assemble]" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
       <ExternalSystemSettings>
         <option name="executionName" />
@@ -202,18 +207,18 @@
       <GradleCoverageDisabled>false</GradleCoverageDisabled>
       <method v="2" />
     </configuration>
-    <configuration name="GDX-3D-TEST [:server:assemble]" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
+    <configuration name="GDX-3D-TEST [server:assemble]" type="GradleRunConfiguration" factoryName="Gradle" nameIsGenerated="true">
       <ExternalSystemSettings>
         <option name="executionName" />
         <option name="externalProjectPath" value="$PROJECT_DIR$" />
         <option name="externalSystemIdString" value="GRADLE" />
-        <option name="scriptParameters" />
+        <option name="scriptParameters" value="" />
         <option name="taskDescriptions">
           <list />
         </option>
         <option name="taskNames">
           <list>
-            <option value=":server:assemble" />
+            <option value="server:assemble" />
           </list>
         </option>
         <option name="vmOptions" />
@@ -230,6 +235,7 @@
     <configuration name="DesktopMainKt" type="JetRunConfigurationType" temporary="true" nameIsGenerated="true">
       <option name="MAIN_CLASS_NAME" value="com.gigcreator.DesktopMainKt" />
       <module name="GDX-3D-TEST.desktop.main" />
+      <shortenClasspath name="NONE" />
       <method v="2">
         <option name="Make" enabled="true" />
       </method>
@@ -241,13 +247,19 @@
         <option name="Make" enabled="true" />
       </method>
     </configuration>
+    <list>
+      <item itemvalue="Gradle.GDX-3D-TEST [server:assemble]" />
+      <item itemvalue="Gradle.GDX-3D-TEST [:app:assemble]" />
+      <item itemvalue="Gradle.GDX-3D-TEST [:core:assemble]" />
+      <item itemvalue="Kotlin.DesktopMainKt" />
+      <item itemvalue="Kotlin.ServerMainKt" />
+    </list>
     <recent_temporary>
       <list>
-        <item itemvalue="Gradle.GDX-3D-TEST [:app:assemble]" />
-        <item itemvalue="Gradle.GDX-3D-TEST [:core:assemble]" />
-        <item itemvalue="Gradle.GDX-3D-TEST [:server:assemble]" />
         <item itemvalue="Kotlin.DesktopMainKt" />
         <item itemvalue="Kotlin.ServerMainKt" />
+        <item itemvalue="Gradle.GDX-3D-TEST [:app:assemble]" />
+        <item itemvalue="Gradle.GDX-3D-TEST [:core:assemble]" />
       </list>
     </recent_temporary>
   </component>
@@ -317,6 +329,7 @@
     <MESSAGE value="updatet torch color" />
     <MESSAGE value="updated meshing" />
     <MESSAGE value="updated structures" />
-    <option name="LAST_COMMIT_MESSAGE" value="updated structures" />
+    <MESSAGE value="updated player input" />
+    <option name="LAST_COMMIT_MESSAGE" value="updated player input" />
   </component>
 </project>

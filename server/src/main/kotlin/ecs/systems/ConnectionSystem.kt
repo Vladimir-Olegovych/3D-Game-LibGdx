@@ -14,7 +14,7 @@ import com.gigcreator.ecs.states.TimeState
 import com.gigcreator.event.ServerEvent
 import com.gigcreator.network.SendType
 
-class ConnectionSystem: BaseSystem() {
+internal class ConnectionSystem: BaseSystem() {
 
     @Wire
     private lateinit var serverData: ServerData

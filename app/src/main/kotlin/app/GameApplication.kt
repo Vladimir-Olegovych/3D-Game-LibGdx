@@ -2,9 +2,12 @@ package app
 
 import app.feature.game.GameFragment
 import app.feature.main.MainFragment
+import app.feature.worldselect.WorldSelectFragment
 import com.badlogic.gdx.Game
 import com.gigapi.general.GContext
 import com.gigapi.navigation.NavHostController
+import com.gigcreator.core.app.ServerApplication
+import com.gigcreator.core.congifs.ServerData
 import core.assets.AssetsSetupManager
 import core.configs.ConfigSetupManager
 import core.defaults.DefaultGameSetupManager
@@ -23,14 +26,25 @@ class GameApplication :  Game() {
         DefaultGameSetupManager.launch(gContext)
         gContext.setObject(navHostController)
         gContext.launch()
-
         navHostController.apply {
             fragment<Navigation.Main> {
                 return@fragment MainFragment(
                     navigation = it,
                     gContext = gContext,
-                    onGameScreen = {
-                        navHostController.navigate(Navigation.Game())
+                    onWorldSelectScreen = {
+                        navHostController.navigate(Navigation.WorldSelect)
+                    }
+                )
+            }
+            fragment<Navigation.WorldSelect> {
+                return@fragment WorldSelectFragment(
+                    navigation = it,
+                    gContext = gContext,
+                    onGameScreen = { navigation ->
+                        navHostController.navigate(navigation)
+                    },
+                    onMenuScreen = {
+                        navHostController.navigate(Navigation.Main)
                     }
                 )
             }

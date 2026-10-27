@@ -8,7 +8,7 @@ import com.gigapi.kryo.GameServer
 import com.gigcreator.ecs.states.ServerPlayerRegistry
 import com.gigcreator.ecs.states.TimeState
 
-object ServerDefaults: LaunchedEffect {
+internal object ServerDefaults: LaunchedEffect {
     override fun launch(gContext: GContext) {
         gContext.setObject(ObjectMapper())
         gContext.setObject(EventBus())
