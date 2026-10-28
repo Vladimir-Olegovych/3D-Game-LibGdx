@@ -1,7 +1,6 @@
 package app.feature.game.dialogs
 
-import app.feature.game.event.EventBusTypes
-import app.feature.game.event.InventoryEvent
+import app.feature.game.ecs.components.InventoryComponent
 import app.feature.game.ui.InventoryUI.Companion.CELL_BACKGROUND_NAME
 import app.feature.game.ui.InventoryUI.Companion.CELL_ITEM_COUNT
 import app.feature.game.ui.InventoryUI.Companion.CELL_ITEM_NAME
@@ -16,67 +15,55 @@ import com.badlogic.gdx.scenes.scene2d.utils.ClickListener
 import com.badlogic.gdx.scenes.scene2d.utils.DragAndDrop
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable
 import com.gigapi.dialogs.Dialog
-import com.gigapi.effects.LaunchedEffect
-import com.gigapi.eventbus.EventBus
-import com.gigapi.eventbus.annotation.BusEvent
-import com.gigapi.general.GContext
 import com.gigapi.storage.json.AppConfig
 import com.gigapi.texture.ColorDrawable
 import core.assets.SkinID
-import core.configs.ConfigTypes
+import core.crafting.CraftManager
 import core.crafting.CraftingRecipeData
 import core.crafting.CraftingRecipeSO
-import core.items.InventoryManager
+import core.items.InventoryItem
 import core.items.Item
 import core.items.ItemManager
 
-class InventoryDialog: LaunchedEffect, Dialog() {
+class InventoryDialog(
+    private val stage: Stage,
+    private val craftManager: CraftManager,
+    private val itemManager: ItemManager,
+    private val assetManager: AssetManager,
+    private val craftConfig: AppConfig<CraftingRecipeSO>,
+    private val inventoryComponent: InventoryComponent
+): InventoryComponent.InventoryListener, Dialog() {
 
-    private lateinit var stage: Stage
-    private lateinit var fullscreenOverlay: Table
-    private lateinit var dragAndDrop: DragAndDrop
-    private lateinit var inventoryManager: InventoryManager
-    private lateinit var itemManager: ItemManager
-    private lateinit var inventoryCells: Array<Stack?>
-    private lateinit var assetManager: AssetManager
-    private lateinit var skin: Skin
-    private lateinit var itemBox: TextureAtlas.AtlasRegion
-    private lateinit var allRecipes: List<CraftingRecipeData>
+    private val fullscreenOverlay: Table = Table().apply {
+        setFillParent(true)
+        background(ColorDrawable(0f, 0f, 0f, 0.6f))
+    }
+    private val dragAndDrop: DragAndDrop = DragAndDrop()
+    private val inventoryCells: Array<Stack?> = Array(inventoryComponent.inventorySize) { null }
+    private val skin: Skin = assetManager.get(SkinID.BUTTON.skin)
+    private var allRecipes: List<CraftingRecipeData> = craftConfig.getConfig().recipes
+    private val itemBox: TextureAtlas.AtlasRegion =
+        assetManager.get<TextureAtlas>(SkinID.BUTTON.atlas).findRegion("ic_item_box_off")
+
     private lateinit var craftingRecipesTable: Table
 
     private var dragActor: Actor? = null
 
-    override fun launch(gContext: GContext) {
-        stage = gContext.getObject()
-        itemManager = gContext.getObject()
-        inventoryManager = gContext.getObject()
-        dragAndDrop = DragAndDrop()
-        assetManager = gContext.getObject()
-        skin = assetManager.get(SkinID.BUTTON.skin)
-        itemBox = assetManager.get<TextureAtlas>(SkinID.BUTTON.atlas).findRegion("ic_item_box_off")
-        val eventBus = gContext.getObject<EventBus>(EventBusTypes.MAIN_EVENT_BUS)
-        eventBus.registerHandler(this)
-
-        allRecipes = gContext.getObject<AppConfig<CraftingRecipeSO>>(ConfigTypes.CRAFTING_RECIPES_SO)
-            .getConfig()
-            .recipes
-
-        inventoryCells = Array(inventoryManager.inventorySize) { null }
-
-        fullscreenOverlay = Table().apply {
-            setFillParent(true)
-            background(ColorDrawable(0f, 0f, 0f, 0.6f))
-        }
+    init {
 
         val inventoryTable = Table().apply {
             defaults().size(56f, 56f).pad(4f)
         }
 
-        for (row in 0 until inventoryManager.rows) {
-            for (col in 0 until inventoryManager.cols) {
+        for (row in 0 until inventoryComponent.rows) {
+            for (col in 0 until inventoryComponent.cols) {
                 val index = row * 8 + col
-                val inventoryItem = inventoryManager.getInventoryItem(index)
-                val itemTexture = inventoryItem?.texture
+                val inventoryItem = inventoryComponent.getInventoryItem(index)
+                val item = inventoryItem?.item
+                val textureRegion = item?.let {
+                    assetManager.get<TextureAtlas>(item.skinID.atlas).findRegion(item.regionName)
+                }
+                val itemTexture = textureRegion
                 val itemCount = inventoryItem?.count ?: 1
 
                 val cellContainer = createItemCell(
@@ -108,6 +95,8 @@ class InventoryDialog: LaunchedEffect, Dialog() {
 
         fullscreenOverlay.add(content).center()
         refreshCraftableRecipes()
+
+        inventoryComponent.addListener(this)
     }
 
     private fun createCraftingList(): ScrollPane {
@@ -129,7 +118,7 @@ class InventoryDialog: LaunchedEffect, Dialog() {
         if (!::craftingRecipesTable.isInitialized) return
         craftingRecipesTable.clearChildren()
         for (recipe in allRecipes) {
-            if (!inventoryManager.canCraft(recipe)) continue
+            if (!craftManager.canCraft(inventoryComponent, recipe)) continue
             craftingRecipesTable.add(createRecipeRow(recipe)).left().row()
         }
     }
@@ -166,7 +155,7 @@ class InventoryDialog: LaunchedEffect, Dialog() {
 
         row.addListener(object : ClickListener() {
             override fun clicked(event: InputEvent?, x: Float, y: Float) {
-                inventoryManager.craftItem(recipe)
+                craftManager.craftItem(inventoryComponent, recipe)
             }
         })
 
@@ -227,8 +216,11 @@ class InventoryDialog: LaunchedEffect, Dialog() {
 
                 val payload = DragAndDrop.Payload()
                 payload.`object` = slotIndex
-                val inventoryItem = inventoryManager.getInventoryItem(slotIndex)
-                val texture = inventoryItem?.texture?: return null
+                val inventoryItem = inventoryComponent.getInventoryItem(slotIndex)
+                val item = inventoryItem?.item
+                val texture = item?.let {
+                    assetManager.get<TextureAtlas>(item.skinID.atlas).findRegion(item.regionName)
+                }
                 val dragActor = Image(texture)
                 dragActor.setSize(48f, 48f)
                 payload.dragActor = dragActor
@@ -244,7 +236,7 @@ class InventoryDialog: LaunchedEffect, Dialog() {
                 payload: DragAndDrop.Payload?,
                 target: DragAndDrop.Target?
             ) {
-                val inventoryItem = inventoryManager.getInventoryItem(slotIndex)
+                val inventoryItem = inventoryComponent.getInventoryItem(slotIndex)
                 val itemCount = inventoryItem?.count ?: 1
 
                 countLabel.isVisible = itemCount > 1
@@ -275,23 +267,26 @@ class InventoryDialog: LaunchedEffect, Dialog() {
                 pointer: Int
             ) {
                 val sourceSlot = dragAndDrop.dragPayload?.`object` as? Int ?: return
-                inventoryManager.swapIndexes(sourceSlot, slotIndex)
+                inventoryComponent.swapIndexes(sourceSlot, slotIndex)
             }
         })
     }
 
-    @BusEvent
-    fun updateItem(event: InventoryEvent.OnUpdate) {
-        val cellContainer = inventoryCells[event.slot]
+    override fun onUpdate(inventoryItem: InventoryItem?, slot: Int) {
+        val cellContainer = inventoryCells[slot]
         if (cellContainer != null) {
             val image = cellContainer.findActor<Image>(CELL_ITEM_NAME)
             val label = cellContainer.findActor<Label>(CELL_ITEM_COUNT)
 
-            val itemCount = event.inventoryItem?.count ?: 1
+            val itemCount = inventoryItem?.count ?: 1
             label.isVisible = itemCount > 1
             label.setText(itemCount)
 
-            event.inventoryItem?.texture?.let { textureRegion ->
+            val item = inventoryItem?.item
+            val textureRegion = item?.let {
+                assetManager.get<TextureAtlas>(item.skinID.atlas).findRegion(item.regionName)
+            }
+            textureRegion?.let {
                 image.drawable = TextureRegionDrawable(textureRegion)
             } ?: run {
                 image.drawable = null

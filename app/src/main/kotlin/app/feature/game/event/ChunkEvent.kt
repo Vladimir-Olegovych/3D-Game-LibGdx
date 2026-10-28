@@ -13,9 +13,9 @@ sealed class ChunkEvent {
     class FinalizeCreation(val worldChunksPreparation: WorldChunksPreparation): ChunkEvent()
 
 
-    class OnSetBlock(val owner: Int?, val isPlaceContext: Boolean, val chunkPosition: IntVector3, val blockType: BlockType, val blockPosition: IntVector3): ChunkEvent()
+    class OnSetBlock(val owner: Int, val isPlaceContext: Boolean, val chunkPosition: IntVector3, val blockType: BlockType, val blockPosition: IntVector3): ChunkEvent()
     class OnSetBlockFeedBack(
-        val owner: Int?,
+        val owner: Int,
         val isPlaceContext: Boolean,
         val chunkPosition: IntVector3,
         val blockPosition: IntVector3,

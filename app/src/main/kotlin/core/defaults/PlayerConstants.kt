@@ -1,7 +1,9 @@
 package core.defaults
 
+import app.feature.game.ecs.components.InventoryComponent
 import com.artemis.World
 import com.badlogic.gdx.math.Vector3
+import core.controls.PInputProcessor
 
 object PlayerConstants {
 
@@ -24,8 +26,9 @@ object PlayerConstants {
 
     private var localPlayerEntityId = -1
 
-    fun initializeLocalPlayer(world: World) {
-        localPlayerEntityId = world.create()
+    fun initialize(world: World) {
+        val entityId = world.create()
+        localPlayerEntityId = entityId
     }
 
     fun getLocalPlayerEntityId(): Int = localPlayerEntityId

@@ -1,23 +1,22 @@
 package app.feature.game.ui
 
-import app.feature.game.event.EventBusTypes
-import app.feature.game.event.InventoryEvent
+import app.feature.game.ecs.components.InventoryComponent
 import com.badlogic.gdx.assets.AssetManager
 import com.badlogic.gdx.graphics.g2d.TextureAtlas
 import com.badlogic.gdx.graphics.g2d.TextureRegion
 import com.badlogic.gdx.scenes.scene2d.Actor
 import com.badlogic.gdx.scenes.scene2d.ui.*
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable
-import com.gigapi.effects.LaunchedEffect
-import com.gigapi.eventbus.EventBus
 import com.gigapi.eventbus.annotation.BusEvent
-import com.gigapi.general.GContext
 import core.assets.SkinID
 import core.controls.PInputProcessor
-import core.items.InventoryManager
+import core.items.InventoryItem
 import core.ui.UIGetter
 
-class InventoryUI: LaunchedEffect, UIGetter {
+class InventoryUI(
+    private val assetManager: AssetManager,
+    private val inventoryComponent: InventoryComponent
+): InventoryComponent.InventoryListener, UIGetter {
 
     private val layout = Table().apply {
         setFillParent(true)
@@ -25,36 +24,34 @@ class InventoryUI: LaunchedEffect, UIGetter {
         padBottom(20f)
     }
 
-    private lateinit var inventoryCells: Array<Stack?>
-    private lateinit var itemBoxOff: TextureRegion
-    private lateinit var itemBoxOn: TextureRegion
+    private val inventoryCells: Array<Stack?>
+    private val itemBoxOff: TextureRegion
+    private val itemBoxOn: TextureRegion
 
     private var prevSelectedSlot = 0
 
-    override fun launch(gContext: GContext) {
-        val assetManager = gContext.getObject<AssetManager>()
+    init {
         val skin = assetManager.get<Skin>(SkinID.BUTTON.skin)
         val btnAtlas = assetManager.get<TextureAtlas>(SkinID.BUTTON.atlas)
         itemBoxOff = btnAtlas.findRegion("ic_item_box_off")
         itemBoxOn = btnAtlas.findRegion("ic_item_box_on")
-        val playerInputProcessor = gContext.getObject<PInputProcessor>()
-        val inventoryManager = gContext.getObject<InventoryManager>()
-        val eventBus = gContext.getObject<EventBus>(EventBusTypes.MAIN_EVENT_BUS)
-        eventBus.registerHandler(this)
 
-        prevSelectedSlot = playerInputProcessor.getSelectedSlot()
+        prevSelectedSlot = inventoryComponent.selectedSlot
 
-        inventoryCells = Array(inventoryManager.inventorySize) { null }
+        inventoryCells = Array(inventoryComponent.inventorySize) { null }
 
         val inventoryTable = Table().apply {
             defaults().size(64f, 64f).pad(2f)
         }
 
-        val startIndex = inventoryManager.inventorySize - TOOL_BAR_SIZE
+        val startIndex = inventoryComponent.inventorySize - TOOL_BAR_SIZE
 
-        for (index in startIndex until inventoryManager.inventorySize) {
-            val inventoryItem = inventoryManager.getInventoryItem(index)
-            val itemTexture = inventoryItem?.texture
+        for (index in startIndex until inventoryComponent.inventorySize) {
+            val inventoryItem = inventoryComponent.getInventoryItem(index)
+            val item = inventoryItem?.item
+            val itemTexture = item?.let {
+                assetManager.get<TextureAtlas>(item.skinID.atlas).findRegion(item.regionName)
+            }
             val itemCount = inventoryItem?.count ?: 1
 
             val cellContainer = Stack().apply {
@@ -90,36 +87,42 @@ class InventoryUI: LaunchedEffect, UIGetter {
         }
 
         layout.add(inventoryTable).center().bottom()
+
+        inventoryComponent.addListener(this)
     }
 
-    @BusEvent
-    fun onSelectInventorySlot(event: InventoryEvent.OnSelectInventorySlot) {
+    override fun onSelectSlot(slot: Int) {
         val prevInventoryCell = inventoryCells[prevSelectedSlot] ?: return
         val prevBackground = prevInventoryCell.findActor<Image>(CELL_BACKGROUND_NAME)
         prevBackground.drawable = TextureRegionDrawable(itemBoxOff)
 
-        val inventoryCell = inventoryCells[event.slot] ?: return
+        val inventoryCell = inventoryCells[slot] ?: return
         val background = inventoryCell.findActor<Image>(CELL_BACKGROUND_NAME)
         background.drawable = TextureRegionDrawable(itemBoxOn)
-        prevSelectedSlot = event.slot
+        prevSelectedSlot = slot
     }
 
-    @BusEvent
-    fun updateItem(event: InventoryEvent.OnUpdate) {
-        val cellContainer = inventoryCells[event.slot] ?: return
+    override fun onUpdate(inventoryItem: InventoryItem?, slot: Int) {
+        val cellContainer = inventoryCells[slot] ?: return
         val image = cellContainer.findActor<Image>(CELL_ITEM_NAME)
         val label = cellContainer.findActor<Label>(CELL_ITEM_COUNT)
 
-        val itemCount = event.inventoryItem?.count?: 1
+        val itemCount = inventoryItem?.count?: 1
         label.isVisible = itemCount > 1
         label.setText(itemCount)
 
-        event.inventoryItem?.texture?.let { textureRegion ->
+        val item = inventoryItem?.item
+        val textureRegion = item?.let {
+            assetManager.get<TextureAtlas>(item.skinID.atlas).findRegion(item.regionName)
+        }
+
+        textureRegion?.let {
             image.drawable = TextureRegionDrawable(textureRegion)
             return
         }
         image.drawable = null
     }
+
 
     override fun getUI(): Actor {
         return layout

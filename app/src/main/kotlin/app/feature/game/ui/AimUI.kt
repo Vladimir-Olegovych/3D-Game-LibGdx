@@ -1,7 +1,6 @@
 package app.feature.game.ui
 
 import app.feature.game.event.EventBusTypes
-import app.feature.game.event.HotKeyEvent
 import com.badlogic.gdx.graphics.Pixmap
 import com.badlogic.gdx.graphics.Texture
 import com.badlogic.gdx.graphics.Texture.TextureFilter
@@ -11,9 +10,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Table
 import com.gigapi.effects.DisposableEffect
 import com.gigapi.effects.LaunchedEffect
 import com.gigapi.eventbus.EventBus
-import com.gigapi.eventbus.annotation.BusEvent
 import com.gigapi.general.GContext
-import core.defaults.PlayerConstants
 import core.ui.UIGetter
 
 class AimUI : DisposableEffect, LaunchedEffect, UIGetter {
@@ -24,11 +21,6 @@ class AimUI : DisposableEffect, LaunchedEffect, UIGetter {
     }
 
     private var texture: Texture? = null
-
-    @BusEvent
-    fun onCameraMode(event: HotKeyEvent.OnCameraMode) {
-        layout.isVisible = event.mode == PlayerConstants.VIEW_FIRST_PERSON
-    }
 
     override fun dispose() {
         texture?.dispose()

@@ -74,4 +74,10 @@ class ItemManager: DisposableEffect, LaunchedEffect {
         return itemMap[id]
     }
 
+    fun getItem(blockType: BlockType): Item? {
+        if (blockType == BlockType.AIR) return null
+        return getItem(blockType.name)
+    }
+
+
 }

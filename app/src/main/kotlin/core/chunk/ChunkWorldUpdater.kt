@@ -352,6 +352,7 @@ class ChunkWorldUpdater : LaunchedEffect, DisposableEffect, DeltaUpdater(1 / 60F
         if (currentBlock == BlockType.AIR) return
         mainEventBus.sendEvent(PhysicsEvent.OnRayCastBlockResult(
             requestId = RayCastTypes.CHUNK_DIG_RAY_CAST,
+            requestOwner = event.requestOwner,
             chunkEntityId = chunkEntityId,
             blockToSet = BlockType.AIR,
             blockToRemove = currentBlock,
@@ -377,8 +378,11 @@ class ChunkWorldUpdater : LaunchedEffect, DisposableEffect, DeltaUpdater(1 / 60F
 
         if (currentBlock != BlockType.AIR) return
 
-        mainEventBus.sendEvent(PhysicsEvent.OnRayCastPlaceBlockResult(
+        mainEventBus.sendEvent(PhysicsEvent.OnRayCastBlockResult(
+            requestId = event.requestId,
+            requestOwner = event.requestOwner,
             chunkEntityId = chunkEntityId,
+            blockToSet = BlockType.NOTHING,
             blockToRemove = currentBlock,
             chunkPosition = chunkPosition,
             blockPosition = blockPosition

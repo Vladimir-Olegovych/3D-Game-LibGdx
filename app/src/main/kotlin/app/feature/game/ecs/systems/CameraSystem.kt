@@ -2,11 +2,15 @@ package app.feature.game.ecs.systems
 
 import app.feature.game.ecs.components.LookDirectionComponent
 import app.feature.game.ecs.components.TransformComponent
+import app.feature.game.event.EventBusTypes
+import app.feature.game.event.PhysicsEvent
 import com.artemis.BaseSystem
 import com.artemis.ComponentMapper
 import com.artemis.annotations.Wire
 import com.badlogic.gdx.graphics.PerspectiveCamera
 import com.badlogic.gdx.math.Vector3
+import com.gigapi.eventbus.EventBus
+import core.bullet.raycast.RayCastTypes
 import core.controls.PInputProcessor
 import core.defaults.CameraTypes
 import core.defaults.PlayerConstants
@@ -21,6 +25,9 @@ class CameraSystem : PInputProcessor.InputListener, BaseSystem() {
 
     @Wire
     private lateinit var playerInputProcessor: PInputProcessor
+
+    @Wire(name = EventBusTypes.PHYSICS_EVENT_BUS)
+    private lateinit var physicsEventBus: EventBus
 
     @Wire(name = CameraTypes.GL_3D)
     private lateinit var camera: PerspectiveCamera
@@ -38,6 +45,18 @@ class CameraSystem : PInputProcessor.InputListener, BaseSystem() {
     private val rightDirection = Vector3()
 
     private var cameraMode = PlayerConstants.VIEW_FIRST_PERSON
+
+    override fun onRightClick() {
+        physicsEventBus.sendEvent(
+            PhysicsEvent.OnRayCastRequest(
+                requestId = RayCastTypes.CHUNK_PLACE_RAY_CAST,
+                requestOwner = PlayerConstants.getLocalPlayerEntityId(),
+                from = camera.position.cpy(),
+                direction = camera.direction.cpy(),
+                maxDistance = 5f
+            )
+        )
+    }
 
     override fun selectCameraMode(mode: Int) {
         cameraMode = mode

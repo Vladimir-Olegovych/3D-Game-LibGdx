@@ -15,7 +15,4 @@ class DiggingComponent: Component() {
     var miningToolLevel: Int? = null
     var digTime = 0f
     var process = 0f
-
-    var animation: Array<MeshData>? = null
-    var state: Int = 0
 }

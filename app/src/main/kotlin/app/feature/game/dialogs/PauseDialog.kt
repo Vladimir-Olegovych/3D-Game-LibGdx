@@ -6,49 +6,50 @@ import com.badlogic.gdx.scenes.scene2d.ui.Skin
 import com.badlogic.gdx.scenes.scene2d.ui.Table
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton
 import com.gigapi.dialogs.Dialog
-import com.gigapi.effects.LaunchedEffect
-import com.gigapi.general.GContext
 import com.gigapi.setOnClickListener
 import com.gigapi.texture.ColorDrawable
 import core.assets.SkinID
-import core.controls.UiInputProcessor
 
-class PauseDialog: LaunchedEffect, Dialog() {
+class PauseDialogCallbacks(
+    val onResume: () -> Unit,
+    val onSettings: () -> Unit,
+    val onQuit: () -> Unit
+)
 
-    enum class State {
-        RESUME,
-        SETTINGS,
-        QUIT
-    }
+class PauseDialog(
+    private val stage: Stage,
+    private val assetManager: AssetManager,
+    private val callbacks: PauseDialogCallbacks
+): Dialog() {
 
-    private lateinit var stage: Stage
-    private lateinit var fullscreenOverlay: Table
+    private val fullscreenOverlay: Table
 
-    override fun launch(gContext: GContext) {
-        stage = gContext.getObject()
-        val uiInputProcessor = gContext.getObject<UiInputProcessor>()
-        val assetManager = gContext.getObject<AssetManager>()
+    init {
         val skin = assetManager.get<Skin>(SkinID.BUTTON.skin)
         fullscreenOverlay = Table().apply {
             setFillParent(true)
             background(ColorDrawable(0f, 0f, 0f, 0.7f))
             add(
                 TextButton("resume", skin).setOnClickListener {
-                    uiInputProcessor.onPauseDialog(State.RESUME)
+                    dismiss()
+                    callbacks.onResume()
                 }
             ).height(40F).width(70F).row()
             add(
                 TextButton("settings", skin).setOnClickListener {
-                    uiInputProcessor.onPauseDialog(State.SETTINGS)
+                    dismiss()
+                    callbacks.onSettings()
                 }
             ).height(40F).width(70F).padTop(8F).row()
             add(
                 TextButton("quit", skin).setOnClickListener {
-                    uiInputProcessor.onPauseDialog(State.QUIT)
+                    dismiss()
+                    callbacks.onQuit()
                 }
             ).height(40F).width(70F).padTop(8F).row()
         }
     }
+
 
     override fun onShow() {
         stage.addActor(fullscreenOverlay)

@@ -28,6 +28,7 @@ sealed class PhysicsEvent {
 
     class OnRayCastRequest(
         val requestId: Long,
+        val requestOwner: Int,
         val from: Vector3,
         val direction: Vector3,
         val maxDistance: Float = 10f
@@ -35,6 +36,7 @@ sealed class PhysicsEvent {
 
     class OnRayCastResult(
         val requestId: Long,
+        val requestOwner: Int,
         val hasHit: Boolean,
         val direction: Vector3,
         val hitPoint: Vector3,
@@ -42,15 +44,9 @@ sealed class PhysicsEvent {
         val hitEntityId: Int? = null
     ) : PhysicsEvent()
 
-    class OnRayCastPlaceBlockResult(
-        val chunkEntityId: Int,
-        val blockToRemove: BlockType,
-        val chunkPosition: IntVector3,
-        val blockPosition: IntVector3
-    ): PhysicsEvent()
-
     class OnRayCastBlockResult(
         val requestId: Long,
+        val requestOwner: Int,
         val chunkEntityId: Int,
         val blockToSet: BlockType,
         val blockToRemove: BlockType,

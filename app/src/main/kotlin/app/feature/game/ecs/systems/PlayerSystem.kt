@@ -2,6 +2,7 @@ package app.feature.game.ecs.systems
 
 import app.feature.game.ecs.components.BlenderModelComponent
 import app.feature.game.ecs.components.ForceMoveComponent
+import app.feature.game.ecs.components.HoldAttackComponent
 import app.feature.game.ecs.components.LinearMoveComponent
 import com.artemis.BaseSystem
 import com.artemis.ComponentMapper
@@ -18,6 +19,8 @@ class PlayerSystem : BaseSystem() {
     private lateinit var blenderMapper: ComponentMapper<BlenderModelComponent>
     private lateinit var linearMoveMapper: ComponentMapper<LinearMoveComponent>
     private lateinit var forceMoveMapper: ComponentMapper<ForceMoveComponent>
+    private lateinit var holdAttackMapper: ComponentMapper<HoldAttackComponent>
+
 
     override fun initialize() {
         linearMoveMapper = world.getMapper(LinearMoveComponent::class.java)
@@ -44,7 +47,16 @@ class PlayerSystem : BaseSystem() {
             return
         }
 
+        updateHoldAttack(playerEntityId)
         updateMovement(playerEntityId)
+    }
+
+    private fun updateHoldAttack(playerEntityId: Int) {
+        if (playerInputProcessor.isMouseLeftHold) {
+            holdAttackMapper[playerEntityId]?: holdAttackMapper.create(playerEntityId)
+        } else {
+            holdAttackMapper[playerEntityId]?.let { holdAttackMapper.remove(playerEntityId) }
+        }
     }
 
     private fun updateMovement(playerEntityId: Int) {

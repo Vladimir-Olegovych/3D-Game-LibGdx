@@ -67,6 +67,7 @@ class PhysicsWorldUpdater: LaunchedEffect, DeltaUpdater(1 / 20F, Dispatchers.Def
         mainEventBus.sendEvent(
             PhysicsEvent.OnRayCastResult(
                 requestId = event.requestId,
+                requestOwner = event.requestOwner,
                 direction = event.direction,
                 hasHit = callback.hasHit(),
                 hitPoint = hitPoint.cpy(),

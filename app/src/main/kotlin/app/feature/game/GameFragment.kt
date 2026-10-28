@@ -3,7 +3,6 @@ package app.feature.game
 import app.feature.game.ecs.systems.*
 import app.feature.game.event.ClientEvent
 import app.feature.game.event.EventBusTypes
-import app.feature.game.event.DialogEvent
 import com.artemis.WorldConfiguration
 import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.InputMultiplexer
@@ -52,10 +51,6 @@ class GameFragment(
     private lateinit var inputMultiplexer: InputMultiplexer
     private lateinit var gameClient: GameClient
 
-    @BusEvent
-    fun onMenuScreen(event: DialogEvent.OnMenuScreen) {
-        onMenuScreen.invoke()
-    }
 
     @BusEvent
     @EventType(NetworkEvent.HelloFromServer::class)
@@ -134,17 +129,18 @@ class GameFragment(
 
         arrayOf(
             WorldSystem(),
+            PlayerSystem(),
             TimeSystem(),
             PhysicSystem(),
             CameraSystem(),
-            PlayerSystem(),
+            BlockRayCastSystem(),
             BlockProcessingSystem(),
             MoveSystem(),
             ChunkSystem(),
             NetworkSystem(),
             ModelAnimationSystem(),
             DrawSystem(),
-            UISystem()
+            UISystem(onQuit = onMenuScreen)
         ).forEach { system ->
             eventBus.registerHandler(system)
             configuration.setSystem(system)

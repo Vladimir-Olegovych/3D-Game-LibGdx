@@ -1,7 +1,5 @@
 package core.defaults
 
-import app.feature.game.dialogs.InventoryDialog
-import app.feature.game.dialogs.PauseDialog
 import app.feature.game.ecs.states.ClientNetworkState
 import app.feature.game.ecs.states.NetworkOutboundState
 import app.feature.game.ecs.states.RemotePlayerRegistry
@@ -9,7 +7,6 @@ import app.feature.game.ecs.states.TimeState
 import app.feature.game.event.EventBusTypes
 import app.feature.game.ui.AimUI
 import app.feature.game.ui.DataUI
-import app.feature.game.ui.InventoryUI
 import com.badlogic.gdx.InputMultiplexer
 import com.badlogic.gdx.scenes.scene2d.Stage
 import com.gigapi.effects.LaunchedEffect
@@ -21,8 +18,8 @@ import core.bullet.world.PhysicsWorldUpdater
 import core.chunk.ChunkWorldUpdater
 import core.client.ClientAcceptor
 import core.controls.PInputProcessor
-import core.controls.UiInputProcessor
-import core.items.InventoryManager
+import core.controls.UInputProcessor
+import core.crafting.CraftManager
 import core.items.ItemManager
 import core.network.NetworkStateUpdater
 import core.renderers.SkyPlanetRenderer
@@ -45,13 +42,13 @@ object DefaultWorldSetupManager: LaunchedEffect {
         val playerInputProcessor = PInputProcessor()
         gContext.setObject(playerInputProcessor)
         //---
-        val uiInputProcessor = UiInputProcessor()
-        gContext.setObject(uiInputProcessor)
+        val uInputProcessor = UInputProcessor()
+        gContext.setObject(uInputProcessor)
         //---
         val inputMultiplexer = gContext.getObject<InputMultiplexer>()
         inputMultiplexer.addProcessor(gContext.getObject<Stage>())
         inputMultiplexer.addProcessor(playerInputProcessor)
-        inputMultiplexer.addProcessor(uiInputProcessor)
+        inputMultiplexer.addProcessor(uInputProcessor)
         //---
         val musicPlayer = MusicPlayer(gContext.getObject())
         gContext.setObject(musicPlayer)
@@ -60,13 +57,9 @@ object DefaultWorldSetupManager: LaunchedEffect {
         gContext.setObject(StarRenderer())
         //---
         gContext.setObject(TimeState())
-        //Dialogs
-        gContext.setObject(PauseDialog())
-        gContext.setObject(InventoryDialog())
         //UI
         gContext.setObject(AimUI())
         gContext.setObject(DataUI())
-        gContext.setObject(InventoryUI())
         //---
         gContext.setObject(PhysicsWorldUpdater())
         //---
@@ -81,7 +74,7 @@ object DefaultWorldSetupManager: LaunchedEffect {
         //---
         gContext.setObject(ItemManager())
         //---
-        gContext.setObject(InventoryManager())
+        gContext.setObject(CraftManager())
     }
 
 }

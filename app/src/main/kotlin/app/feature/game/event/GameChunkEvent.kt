@@ -17,5 +17,4 @@ sealed class GameChunkEvent {
     class OnRemoveChunkMeshData(val chunkEntityId: Int): GameChunkEvent()
 
     class GameWorldStarted(val position: Vector3): ChunkEvent()
-    class GameWorldBiomePoints(val points: Map<IntVector3, BiomeType>): ChunkEvent()
 }
