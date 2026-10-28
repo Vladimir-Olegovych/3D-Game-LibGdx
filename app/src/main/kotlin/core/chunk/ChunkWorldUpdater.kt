@@ -4,6 +4,7 @@ import app.feature.game.event.ChunkEvent
 import app.feature.game.event.EventBusTypes
 import app.feature.game.event.GameChunkEvent
 import app.feature.game.event.PhysicsEvent
+import com.badlogic.gdx.math.Vector3
 import com.gigapi.coruntines.DeltaUpdater
 import com.gigapi.effects.DisposableEffect
 import com.gigapi.effects.LaunchedEffect
@@ -15,7 +16,8 @@ import com.gigapi.math.vector.roundToFloat
 import com.gigapi.mesh.MeshData
 import core.blocks.types.BlockType
 import core.bullet.raycast.RayCastTypes
-import core.chunk.world.ChunkHelper
+import core.bullet.raycast.VoxelHit
+import core.chunk.ChunkData.Companion.isSolid
 import core.chunk.world.WorldChunksPreparation
 import core.chunk.world.WorldDataHelper
 import core.chunk.world.WorldGenerationData
@@ -28,13 +30,15 @@ import core.mesh.generators.MeshGenerator
 import core.scope.DispatcherTypes
 import core.terrain.TerrainGenerator
 import core.terrain.biome.BiomePoints
-import core.terrain.biome.models.BiomeType
 import kotlinx.coroutines.*
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicInteger
+import kotlin.math.abs
+import kotlin.math.floor
+import kotlin.math.sqrt
 
 class ChunkWorldUpdater : LaunchedEffect, DisposableEffect, DeltaUpdater(1 / 60F, Dispatchers.Default) {
 
@@ -46,20 +50,25 @@ class ChunkWorldUpdater : LaunchedEffect, DisposableEffect, DeltaUpdater(1 / 60F
         const val DATA_RADIUS_EXTRA = 1
         const val REMOVE_MARGIN = 1
 
-        const val FIRST_BATCH_CHUNKS = 700
-        const val BATCH_CHUNKS = 96
-        const val BATCH_MESHES = 96
+        const val FIRST_BATCH_CHUNKS = 200
+        const val BATCH_CHUNKS = 64 * 4
+        const val BATCH_MESHES = 64 * 4
         const val BATCH_TIMEOUT_MS = 15_000L
     }
 
     private val isFirstGeneration = AtomicBoolean(true)
 
-    private val workerCount = (Runtime.getRuntime().availableProcessors() / 6 + 1).coerceAtLeast(2)
+    private val workerCount = (Runtime.getRuntime().availableProcessors() + 1).coerceAtLeast(2)
 
     private val parallelismChunks = Semaphore(workerCount)
     private val parallelismMesh = Semaphore(workerCount)
     private val parallelismLight = Semaphore(workerCount)
     private val uploadGate = Semaphore(workerCount)
+    private val editUploadGate = Semaphore(workerCount)
+
+    private val editInFlight = ConcurrentHashMap.newKeySet<IntVector3>()
+    private val editDirty = ConcurrentHashMap.newKeySet<IntVector3>()
+
     private val chunkPoolUpdater = ChunkPoolUpdater()
 
     private val pendingMeshPositions = ConcurrentHashMap.newKeySet<IntVector3>()
@@ -98,7 +107,7 @@ class ChunkWorldUpdater : LaunchedEffect, DisposableEffect, DeltaUpdater(1 / 60F
         )
         chunkEventBus?.registerHandler(this)
         mainEventBus.registerHandler(this)
-
+        physicsEventBus.registerHandler(this)
         lightEngine = LightEngine(
             w = CHUNK_SIZE,
             h = CHUNK_HEIGHT,
@@ -318,74 +327,54 @@ class ChunkWorldUpdater : LaunchedEffect, DisposableEffect, DeltaUpdater(1 / 60F
             feedback(old, false); return
         }
 
-        // 1) блок (airCount в ChunkData обновится сам)
         chunk.setBlockByLocal(event.blockType, lp)
+        feedback(old, true)
 
-        // 2) свет (ПОСЛЕ смены блока) — вернёт правленый чанк и затронутых соседей
         val affected = lightEngine.onBlockChanged(chunk, lp.x, lp.y, lp.z)
 
-        // 3) ремеш: правленый чанк — срочно и с коллизией, остальные — только если у них уже есть меш
-        editRemeshPositions.add(event.chunkPosition)
+        scheduleEditRemesh(event.chunkPosition)
         for (c in affected) {
             val p = c.position
             if (p == event.chunkPosition) continue
             if (createdMeshDataMap.containsKey(p)) lightRemeshPositions.add(p)
         }
-        scheduleRemesh()
-
-        feedback(old, true)
-    }
-    @BusEvent
-    fun onRayCastResult(event: PhysicsEvent.OnRayCastResult) {
-        if (event.requestId != RayCastTypes.CHUNK_DIG_RAY_CAST || !event.hasHit) return
-
-        val offset = event.direction.nor().scl(0.5f)
-        val hitPoint = event.hitPoint.add(offset)
-
-        val chunkPosition = WorldDataHelper.getChunkPositionFromWorldPosition(hitPoint)
-        if (pendingChunkPositions.contains(chunkPosition)) return
-        val chunkData = createdChunkDataMap[chunkPosition] ?: return
-        val chunkEntityId = chunkData.entityId ?: return
-        val blockPosition = ChunkHelper.getBlockPositionFromWorldPosition(hitPoint)
-        val currentBlock = chunkData.getBlockByLocal(blockPosition)
-
-        if (currentBlock == BlockType.AIR) return
-        mainEventBus.sendEvent(PhysicsEvent.OnRayCastBlockResult(
-            requestId = RayCastTypes.CHUNK_DIG_RAY_CAST,
-            requestOwner = event.requestOwner,
-            chunkEntityId = chunkEntityId,
-            blockToSet = BlockType.AIR,
-            blockToRemove = currentBlock,
-            chunkPosition = chunkPosition,
-            blockPosition = blockPosition
-        ))
+        if (lightRemeshPositions.isNotEmpty()) scheduleRemesh()
     }
 
     @BusEvent
-    fun onPlaceCastResult(event: PhysicsEvent.OnRayCastResult) {
-        if (event.requestId != RayCastTypes.CHUNK_PLACE_RAY_CAST || !event.hasHit) return
+    fun onVoxelCastRequest(event: PhysicsEvent.OnRayCastRequest) {
+        val id = event.requestId
+        val isPlace = id == RayCastTypes.CHUNK_PLACE_RAY_CAST
+        val isDig = id == RayCastTypes.CHUNK_DIG_RAY_CAST
+        val isSelect = id == RayCastTypes.BLOCK_SELECT_RAY_CAST
+        if (!isPlace && !isDig && !isSelect) return
 
-        val normal = event.direction.nor()
-        val offset = normal.scl(0.2f)
-        val hitPoint = event.hitPoint.sub(offset)
+        val hit = raycastVoxels(event.from, event.direction, event.maxDistance, isPlace)
 
-        val chunkPosition = WorldDataHelper.getChunkPositionFromWorldPosition(hitPoint)
-        if (pendingChunkPositions.contains(chunkPosition)) return
-        val chunkData = createdChunkDataMap[chunkPosition] ?: return
-        val chunkEntityId = chunkData.entityId ?: return
-        val blockPosition = ChunkHelper.getBlockPositionFromWorldPosition(hitPoint)
-        val currentBlock = chunkData.getBlockByLocal(blockPosition)
-
-        if (currentBlock != BlockType.AIR) return
+        if (hit == null) {
+            // Промах: сразу сообщаем, чтобы рамка пропала и копание сбросилось без таймаута.
+            if (!isPlace) {
+                mainEventBus.sendEvent(PhysicsEvent.OnRayCastBlockResult(
+                    requestId = id,
+                    requestOwner = event.requestOwner,
+                    chunkEntityId = -1,
+                    blockToSet = BlockType.AIR,
+                    blockToRemove = BlockType.AIR,
+                    chunkPosition = IntVector3(),
+                    blockPosition = IntVector3()
+                ))
+            }
+            return
+        }
 
         mainEventBus.sendEvent(PhysicsEvent.OnRayCastBlockResult(
-            requestId = event.requestId,
+            requestId = id,
             requestOwner = event.requestOwner,
-            chunkEntityId = chunkEntityId,
-            blockToSet = BlockType.NOTHING,
-            blockToRemove = currentBlock,
-            chunkPosition = chunkPosition,
-            blockPosition = blockPosition
+            chunkEntityId = hit.chunkEntityId,
+            blockToSet = if (isPlace) BlockType.NOTHING else BlockType.AIR,
+            blockToRemove = hit.block,
+            chunkPosition = hit.chunkPosition,
+            blockPosition = hit.blockPosition
         ))
     }
 
@@ -453,6 +442,21 @@ class ChunkWorldUpdater : LaunchedEffect, DisposableEffect, DeltaUpdater(1 / 60F
         )
     }
 
+    private fun scheduleEditRemesh(p: IntVector3) {
+        if (!editInFlight.add(p)) { editDirty.add(p); return }   // уже мешится — пометим «грязным»
+        lifecycleScope.launch(Dispatchers.Default) {
+            try {
+                do {
+                    editDirty.remove(p)
+                    meshChunk(p, remesh = true, rebuildPhysics = true, urgent = true)
+                } while (editDirty.contains(p))
+            } finally {
+                editInFlight.remove(p)
+                if (editDirty.contains(p)) scheduleEditRemesh(p)
+            }
+        }
+    }
+
     private fun scheduleRemesh() {
         if (!remeshRunning.compareAndSet(false, true)) return
 
@@ -516,7 +520,7 @@ class ChunkWorldUpdater : LaunchedEffect, DisposableEffect, DeltaUpdater(1 / 60F
         return true
     }
 
-    private suspend fun meshChunk(position: IntVector3, remesh: Boolean, rebuildPhysics: Boolean) {
+    private suspend fun meshChunk(position: IntVector3, remesh: Boolean, rebuildPhysics: Boolean, urgent: Boolean = false) {
         val chunkData = createdChunkDataMap[position] ?: return
         val entityId = chunkData.entityId ?: return
 
@@ -539,7 +543,8 @@ class ChunkWorldUpdater : LaunchedEffect, DisposableEffect, DeltaUpdater(1 / 60F
         }
 
         val split = GreedyChunkMesher.splitOf(rawMeshData)
-        val meshData = uploadGate.withPermit {
+        val gate = if (urgent) editUploadGate else uploadGate
+        val meshData = gate.withPermit {
             withContext(mainScope.coroutineContext) {
                 rawMeshData.createMeshData(chunkMeshParams).also { md ->
                     md.mesh?.let { ChunkMeshSplit.register(it, split) }
@@ -574,5 +579,99 @@ class ChunkWorldUpdater : LaunchedEffect, DisposableEffect, DeltaUpdater(1 / 60F
             allChunkDataPositionsAround = dataPositions,
             allMeshDataPositionsAround = meshPositions
         )
+    }
+
+    private fun cellAt(x: Int, y: Int, z: Int): VoxelHit? {
+        val chunkPosition = IntVector3(
+            Math.floorDiv(x, CHUNK_SIZE),
+            Math.floorDiv(y, CHUNK_HEIGHT),
+            Math.floorDiv(z, CHUNK_SIZE)
+        )
+        if (pendingChunkPositions.contains(chunkPosition)) return null
+        val chunk = createdChunkDataMap[chunkPosition] ?: return null
+        val entityId = chunk.entityId ?: return null
+
+        val lx = Math.floorMod(x, CHUNK_SIZE)
+        val ly = Math.floorMod(y, CHUNK_HEIGHT)
+        val lz = Math.floorMod(z, CHUNK_SIZE)
+
+        return VoxelHit(
+            chunkPosition = chunkPosition,
+            chunkEntityId = entityId,
+            blockPosition = IntVector3(lx, ly, lz),
+            block = chunk.getBlockByLocal(lx, ly, lz)
+        )
+    }
+
+    private fun raycastVoxels(
+        origin: Vector3,
+        direction: Vector3,
+        maxDistance: Float,
+        forPlace: Boolean
+    ): VoxelHit? {
+        val len = sqrt(
+            direction.x * direction.x + direction.y * direction.y + direction.z * direction.z
+        )
+        if (len < 1e-6f) return null
+        val dx = direction.x / len
+        val dy = direction.y / len
+        val dz = direction.z / len
+
+        var x = floor(origin.x).toInt()
+        var y = floor(origin.y).toInt()
+        var z = floor(origin.z).toInt()
+
+        val stepX = if (dx > 0f) 1 else -1
+        val stepY = if (dy > 0f) 1 else -1
+        val stepZ = if (dz > 0f) 1 else -1
+
+        val inf = Float.MAX_VALUE
+        val tDeltaX = if (dx != 0f) abs(1f / dx) else inf
+        val tDeltaY = if (dy != 0f) abs(1f / dy) else inf
+        val tDeltaZ = if (dz != 0f) abs(1f / dz) else inf
+
+        var tMaxX = when {
+            dx > 0f -> (x + 1 - origin.x) * tDeltaX
+            dx < 0f -> (origin.x - x) * tDeltaX
+            else -> inf
+        }
+        var tMaxY = when {
+            dy > 0f -> (y + 1 - origin.y) * tDeltaY
+            dy < 0f -> (origin.y - y) * tDeltaY
+            else -> inf
+        }
+        var tMaxZ = when {
+            dz > 0f -> (z + 1 - origin.z) * tDeltaZ
+            dz < 0f -> (origin.z - z) * tDeltaZ
+            else -> inf
+        }
+
+        var px = x
+        var py = y
+        var pz = z
+        var hasPrev = false
+
+        val maxSteps = (maxDistance * 3f).toInt() + 3
+        for (i in 0 until maxSteps) {
+            val cell = cellAt(x, y, z) ?: return null
+            if (isSolid(cell.block)) {
+                if (!forPlace) return cell
+                return if (hasPrev) cellAt(px, py, pz) else null
+            }
+            px = x; py = y; pz = z
+            hasPrev = true
+
+            if (tMaxX < tMaxY && tMaxX < tMaxZ) {
+                if (tMaxX > maxDistance) return null
+                x += stepX; tMaxX += tDeltaX
+            } else if (tMaxY < tMaxZ) {
+                if (tMaxY > maxDistance) return null
+                y += stepY; tMaxY += tDeltaY
+            } else {
+                if (tMaxZ > maxDistance) return null
+                z += stepZ; tMaxZ += tDeltaZ
+            }
+        }
+        return null
     }
 }

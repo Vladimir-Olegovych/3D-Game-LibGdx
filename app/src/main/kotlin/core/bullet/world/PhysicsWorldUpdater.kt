@@ -16,6 +16,7 @@ import core.blocks.BlockDataManager
 import core.bullet.PhysicalData
 import core.bullet.PhysicsUtils
 import core.bullet.raycast.PhysicsGroups
+import core.bullet.raycast.RayCastTypes
 import core.chunk.ChunkData
 import core.defaults.PlayerConstants
 import kotlinx.coroutines.Dispatchers
@@ -44,6 +45,12 @@ class PhysicsWorldUpdater: LaunchedEffect, DeltaUpdater(1 / 20F, Dispatchers.Def
 
     @BusEvent
     fun onRayCastRequest(event: PhysicsEvent.OnRayCastRequest) {
+        val id = event.requestId
+        val isPlace = id == RayCastTypes.CHUNK_PLACE_RAY_CAST
+        val isDig = id == RayCastTypes.CHUNK_DIG_RAY_CAST
+        val isSelect = id == RayCastTypes.BLOCK_SELECT_RAY_CAST
+        if (isPlace || isDig || isSelect) return
+
         val rayFrom = event.from
         val rayTo = Vector3(event.direction).scl(event.maxDistance).add(rayFrom)
         val ignoreEntityId = PlayerConstants.getLocalPlayerEntityId()

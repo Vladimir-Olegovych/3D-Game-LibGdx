@@ -58,10 +58,16 @@ class WorldSystem: BaseSystem() {
         val holdingItemComponent = holdingItemMapper.create(playerEntityId)
 
         pInputProcessor.applyInventoryStatistic(inventoryComponent)
-        val item = itemManager.getItem(BlockType.GRASS)
-        item?.let {
-            inventoryComponent.addItem(item, 128)
-        }
+        itemManager.getItem(BlockType.OAK_WOODEN_PLANKS)?.let { inventoryComponent.addItem(it, 64) }
+        itemManager.getItem(BlockType.OAK_WOOD)?.let { inventoryComponent.addItem(it, 64) }
+        itemManager.getItem(BlockType.SAND)?.let { inventoryComponent.addItem(it, 64) }
+        itemManager.getItem(BlockType.STONE)?.let { inventoryComponent.addItem(it, 64) }
+        itemManager.getItem(BlockType.LEAVES)?.let { inventoryComponent.addItem(it, 64) }
+        itemManager.getItem(BlockType.WHEAT_PLANT_1)?.let { inventoryComponent.addItem(it, 64) }
+        itemManager.getItem(BlockType.GRASS_PLANT_1)?.let { inventoryComponent.addItem(it, 64) }
+        itemManager.getItem(BlockType.GRASS_PLANT_2)?.let { inventoryComponent.addItem(it, 64) }
+        itemManager.getItem(BlockType.DIRT)?.let { inventoryComponent.addItem(it, 64) }
+        itemManager.getItem(BlockType.CACTUS)?.let { inventoryComponent.addItem(it, 64) }
 
         inventoryListener = object : PInputProcessor.InputListener {
             override fun selectSlot(slot: Int) {

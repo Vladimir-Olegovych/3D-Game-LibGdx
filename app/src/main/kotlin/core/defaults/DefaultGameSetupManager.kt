@@ -5,6 +5,7 @@ import com.badlogic.gdx.InputMultiplexer
 import com.badlogic.gdx.graphics.OrthographicCamera
 import com.badlogic.gdx.graphics.PerspectiveCamera
 import com.badlogic.gdx.graphics.g2d.SpriteBatch
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer
 import com.badlogic.gdx.math.Vector3
 import com.badlogic.gdx.scenes.scene2d.Stage
 import com.gigapi.effects.LaunchedEffect
@@ -40,6 +41,9 @@ object DefaultGameSetupManager: Executor, LaunchedEffect {
         //---
         val spriteBatch = SpriteBatch()
         gContext.setObject(spriteBatch)
+        //---
+        val shapeRenderer = ShapeRenderer()
+        gContext.setObject(shapeRenderer)
         //---
         val stage = Stage(unViewport)
         gContext.setObject(stage)

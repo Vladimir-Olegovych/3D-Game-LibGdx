@@ -1,12 +1,11 @@
 package core.defaults
 
-import app.feature.game.ecs.components.InventoryComponent
 import com.artemis.World
 import com.badlogic.gdx.math.Vector3
-import core.controls.PInputProcessor
 
 object PlayerConstants {
 
+    const val REACH_DISTANCE = 6f
     const val PLAYER_SPEED = 10f
     const val PLAYER_RUN_SPEED = 10f
     const val JUMP_FORCE = 10f

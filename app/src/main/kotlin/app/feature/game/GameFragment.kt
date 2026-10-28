@@ -140,6 +140,7 @@ class GameFragment(
             NetworkSystem(),
             ModelAnimationSystem(),
             DrawSystem(),
+            BlockSelectionSystem(),
             UISystem(onQuit = onMenuScreen)
         ).forEach { system ->
             eventBus.registerHandler(system)

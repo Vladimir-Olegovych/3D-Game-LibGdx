@@ -22,6 +22,9 @@ class ChunkData(
             val blocks = ByteArray(chunkWidth * chunkHeight * chunkWidth) { AIR_BYTE }
             return ChunkData(null, position, chunkWidth, chunkHeight, blocks)
         }
+
+        fun isSolid(block: BlockType) = block != BlockType.AIR && block != BlockType.NOTHING
+
     }
     /** Свет: старшие 4 бита — небо, младшие 4 — блоки. null пока чанк не просчитан движком света. */
     @Volatile

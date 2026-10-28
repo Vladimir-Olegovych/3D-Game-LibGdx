@@ -53,7 +53,7 @@ class CameraSystem : PInputProcessor.InputListener, BaseSystem() {
                 requestOwner = PlayerConstants.getLocalPlayerEntityId(),
                 from = camera.position.cpy(),
                 direction = camera.direction.cpy(),
-                maxDistance = 5f
+                maxDistance = PlayerConstants.REACH_DISTANCE
             )
         )
     }

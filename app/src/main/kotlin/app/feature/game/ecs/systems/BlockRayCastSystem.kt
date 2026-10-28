@@ -68,7 +68,7 @@ class BlockRayCastSystem : IteratingSystem() {
                 requestOwner = entityId,
                 from = from,
                 direction = direction,
-                maxDistance = REACH_DISTANCE
+                maxDistance = PlayerConstants.REACH_DISTANCE
             )
         )
     }
@@ -136,9 +136,7 @@ class BlockRayCastSystem : IteratingSystem() {
     }
 
     private companion object {
-        const val REACH_DISTANCE = 6f
         const val HIT_TIMEOUT = 0.25f
-
         const val RAY_CAST_INTERVAL = 0.05f
     }
 }

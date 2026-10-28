@@ -1,6 +1,7 @@
 package app.feature.game.ecs.systems
 
 import app.feature.game.ecs.components.DiggingComponent
+import app.feature.game.ecs.components.HoldingItemComponent
 import app.feature.game.ecs.components.InventoryComponent
 import app.feature.game.event.ChunkEvent
 import app.feature.game.event.EventBusTypes
@@ -25,6 +26,7 @@ class BlockProcessingSystem: IteratingSystem() {
 
     private lateinit var inventoryMapper: ComponentMapper<InventoryComponent>
     private lateinit var diggingMapper: ComponentMapper<DiggingComponent>
+    private lateinit var holdingItemMapper: ComponentMapper<HoldingItemComponent>
 
     override fun process(entityId: Int) {
         val diggingComponent = diggingMapper[entityId]?: return
@@ -67,6 +69,11 @@ class BlockProcessingSystem: IteratingSystem() {
         } else {
             val slot = inventoryComponent.selectedSlot
             inventoryComponent.removeItem(event.setBlockType.name, 1, slot)
+        }
+
+        holdingItemMapper[event.owner]?.let {
+            val selected = inventoryComponent.getSelectedInventoryItem()
+            it.setHoldingItem(selected?.item)
         }
     }
 }
