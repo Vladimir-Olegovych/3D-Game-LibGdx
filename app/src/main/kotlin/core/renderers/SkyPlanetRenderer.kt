@@ -1,5 +1,6 @@
 package core.renderers
 
+import app.feature.game.ecs.states.TimeState
 import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.graphics.*
 import com.badlogic.gdx.graphics.glutils.ShaderProgram
@@ -9,7 +10,6 @@ import com.gigapi.effects.LaunchedEffect
 import com.gigapi.general.GContext
 import core.defaults.CameraTypes
 import core.shaders.ShaderTypes
-import app.feature.game.ecs.states.TimeState
 
 class SkyPlanetRenderer : LaunchedEffect, DisposableEffect {
 

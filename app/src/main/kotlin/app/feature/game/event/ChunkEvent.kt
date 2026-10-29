@@ -1,5 +1,6 @@
 package app.feature.game.event
 
+import com.badlogic.gdx.math.Vector3
 import com.gigapi.math.vector.IntVector3
 import core.blocks.types.BlockType
 import core.chunk.world.WorldChunksPreparation
@@ -23,4 +24,22 @@ sealed class ChunkEvent {
         val setBlockType: BlockType,
         val isSuccess: Boolean
     )
+
+    class OnRayCastRequest(
+        val requestId: Long,
+        val requestOwner: Int,
+        val from: Vector3,
+        val direction: Vector3,
+        val maxDistance: Float = 10f
+    ) : PhysicsEvent()
+
+    class OnRayCastResult(
+        val requestId: Long,
+        val requestOwner: Int,
+        val chunkEntityId: Int,
+        val blockToSet: BlockType,
+        val blockToRemove: BlockType,
+        val chunkPosition: IntVector3,
+        val blockPosition: IntVector3
+    ): PhysicsEvent()
 }

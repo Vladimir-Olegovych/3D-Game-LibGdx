@@ -2,10 +2,8 @@ package app.feature.game.event
 
 import com.badlogic.gdx.math.Matrix4
 import com.badlogic.gdx.math.Vector3
-import com.gigapi.math.vector.IntVector3
 import com.gigapi.mesh.MeshData
 import core.chunk.world.WorldChunksPreparation
-import core.terrain.biome.models.BiomeType
 
 sealed class GameChunkEvent {
     class OnRequireChunkEntityIds(val worldChunksPreparation: WorldChunksPreparation)

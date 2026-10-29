@@ -9,16 +9,14 @@ import core.blocks.BlockDataManager
 import core.blocks.types.BlockShape
 import core.blocks.types.BlockType
 import core.chunk.ChunkData
-import core.mesh.light.LightMesher
-import java.util.Collections
-import java.util.WeakHashMap
-import kotlin.math.abs
-import kotlin.math.max
 import core.mesh.generators.ChunkMesher.Neighborhood
+import core.mesh.light.LightMesher
 import core.mesh.light.ShadowCompilerAO
 import core.mesh.model.BlockModels
 import core.mesh.model.ModelQuad
-import java.util.Arrays
+import java.util.*
+import kotlin.math.abs
+import kotlin.math.max
 
 /**
  * Binary greedy mesher + упакованная вершина (16 байт вместо 68).

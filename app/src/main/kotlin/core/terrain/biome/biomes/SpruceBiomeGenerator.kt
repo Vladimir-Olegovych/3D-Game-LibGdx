@@ -14,7 +14,9 @@ import core.noice.asGenerator
 import core.terrain.TerrainGenerator
 import core.terrain.biome.BiomeGenerator
 import core.terrain.biome.BiomePointGrid
-import core.terrain.layers.*
+import core.terrain.layers.CaveLayerHandler
+import core.terrain.layers.SurfaceLayerHandler
+import core.terrain.layers.UndergroundLayerHandler
 import math.noice.FastNoise
 
 class SpruceBiomeGenerator : LaunchedEffect, BiomeGenerator() {

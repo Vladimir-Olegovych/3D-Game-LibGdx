@@ -7,9 +7,7 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion
 import com.badlogic.gdx.scenes.scene2d.Actor
 import com.badlogic.gdx.scenes.scene2d.ui.*
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable
-import com.gigapi.eventbus.annotation.BusEvent
 import core.assets.SkinID
-import core.controls.PInputProcessor
 import core.items.InventoryItem
 import core.ui.UIGetter
 

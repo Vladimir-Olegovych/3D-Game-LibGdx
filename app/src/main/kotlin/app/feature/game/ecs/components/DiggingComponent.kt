@@ -2,7 +2,6 @@ package app.feature.game.ecs.components
 
 import com.artemis.Component
 import com.gigapi.math.vector.IntVector3
-import com.gigapi.mesh.MeshData
 import core.blocks.types.BlockType
 import core.items.ToolType
 

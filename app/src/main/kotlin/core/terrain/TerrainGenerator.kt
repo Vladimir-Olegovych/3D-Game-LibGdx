@@ -30,7 +30,7 @@ import core.terrain.structures.trees.CactusStructure
 import core.terrain.structures.trees.OakTreeStructure
 import core.terrain.structures.trees.SpruceTreeStructure
 import math.noice.FastNoise
-import java.util.EnumMap
+import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.math.max
 import kotlin.math.roundToInt

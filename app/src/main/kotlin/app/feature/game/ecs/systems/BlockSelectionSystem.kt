@@ -2,8 +2,8 @@ package app.feature.game.ecs.systems
 
 import app.feature.game.ecs.components.LookDirectionComponent
 import app.feature.game.ecs.components.TransformComponent
+import app.feature.game.event.ChunkEvent
 import app.feature.game.event.EventBusTypes
-import app.feature.game.event.PhysicsEvent
 import com.artemis.BaseSystem
 import com.artemis.ComponentMapper
 import com.artemis.annotations.Wire
@@ -16,14 +16,14 @@ import com.badlogic.gdx.math.Vector3
 import com.gigapi.eventbus.EventBus
 import com.gigapi.eventbus.annotation.BusEvent
 import core.blocks.types.BlockType
-import core.bullet.raycast.RayCastTypes
 import core.defaults.CameraTypes
+import core.defaults.CastTypes
 import core.defaults.PlayerConstants
 
 class BlockSelectionSystem : BaseSystem() {
 
-    @Wire(name = EventBusTypes.PHYSICS_EVENT_BUS)
-    private lateinit var physicsEventBus: EventBus
+    @Wire(name = EventBusTypes.CHUNK_EVENT_BUS)
+    private lateinit var chunkEventBus: EventBus
     @Wire(name = CameraTypes.GL_3D)
     private lateinit var camera: Camera
     @Wire
@@ -55,9 +55,9 @@ class BlockSelectionSystem : BaseSystem() {
             .add(PlayerConstants.cameraOffset)
         val direction = Vector3(look.direction).nor()
 
-        physicsEventBus.sendEvent(
-            PhysicsEvent.OnRayCastRequest(
-                requestId = RayCastTypes.BLOCK_SELECT_RAY_CAST,
+        chunkEventBus.sendEvent(
+            ChunkEvent.OnRayCastRequest(
+                requestId = CastTypes.Chunk.BLOCK_SELECT_RAY_CAST,
                 requestOwner = playerId,
                 from = from,
                 direction = direction,
@@ -67,8 +67,8 @@ class BlockSelectionSystem : BaseSystem() {
     }
 
     @BusEvent
-    fun onBlockRayCastResult(event: PhysicsEvent.OnRayCastBlockResult) {
-        if (event.requestId != RayCastTypes.BLOCK_SELECT_RAY_CAST) return
+    fun onBlockRayCastResult(event: ChunkEvent.OnRayCastResult) {
+        if (event.requestId != CastTypes.Chunk.BLOCK_SELECT_RAY_CAST) return
         if (event.requestOwner != PlayerConstants.getLocalPlayerEntityId()) return
 
         if (event.blockToRemove == BlockType.AIR) {

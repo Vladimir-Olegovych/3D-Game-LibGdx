@@ -1,13 +1,7 @@
 package app.feature.game.ecs.systems
 
-import app.feature.game.ecs.components.AnimatorComponent
-import app.feature.game.ecs.components.BoundRadiusComponent
-import app.feature.game.ecs.components.BlenderModelComponent
-import app.feature.game.ecs.components.ChunkComponent
-import app.feature.game.ecs.components.ColorComponent
-import app.feature.game.ecs.components.MeshComponent
-import app.feature.game.ecs.components.StaticComponent
-import app.feature.game.ecs.components.TransformComponent
+import app.feature.game.ecs.components.*
+import app.feature.game.ecs.states.TimeState
 import com.artemis.BaseEntitySystem
 import com.artemis.ComponentMapper
 import com.artemis.annotations.One
@@ -26,10 +20,9 @@ import core.chunk.ChunkWorldUpdater
 import core.defaults.CameraTypes
 import core.mesh.generators.ChunkMeshSplit
 import core.mesh.generators.GreedyChunkMesher
-import core.renderers.StarRenderer
 import core.renderers.SkyPlanetRenderer
+import core.renderers.StarRenderer
 import core.shaders.ShaderTypes
-import app.feature.game.ecs.states.TimeState
 
 @One(MeshComponent::class, BlenderModelComponent::class)
 class DrawSystem : BaseEntitySystem() {

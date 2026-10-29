@@ -5,7 +5,6 @@ import com.esotericsoftware.kryonet.Connection
 import com.esotericsoftware.kryonet.Listener
 import com.gigapi.eventbus.EventBus
 import com.gigcreator.GamePacket
-import com.gigcreator.NetworkEvent
 
 class ClientAcceptor(private val eventBus: EventBus): Listener() {
 

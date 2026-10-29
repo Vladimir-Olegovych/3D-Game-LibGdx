@@ -2,7 +2,6 @@ package app.feature.game.ecs.systems
 
 import app.feature.game.ecs.components.PhysicsInterpolationComponent
 import app.feature.game.ecs.components.TransformComponent
-import app.feature.game.event.GameChunkEvent
 import app.feature.game.event.PhysicsEvent
 import com.artemis.BaseSystem
 import com.artemis.ComponentMapper

@@ -1,8 +1,8 @@
 package app.feature.game.ecs.systems
 
+import app.feature.game.ecs.states.TimeState
 import com.artemis.BaseSystem
 import com.artemis.annotations.Wire
-import app.feature.game.ecs.states.TimeState
 
 class TimeSystem : BaseSystem() {
 

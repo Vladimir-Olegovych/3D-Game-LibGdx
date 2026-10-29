@@ -2,9 +2,7 @@ package app.feature.game.event
 
 import com.badlogic.gdx.math.Matrix4
 import com.badlogic.gdx.math.Vector3
-import com.gigapi.math.vector.IntVector3
 import com.gigapi.mesh.RawMeshData
-import core.blocks.types.BlockType
 import core.chunk.ChunkData
 
 sealed class PhysicsEvent {
@@ -44,13 +42,4 @@ sealed class PhysicsEvent {
         val hitEntityId: Int? = null
     ) : PhysicsEvent()
 
-    class OnRayCastBlockResult(
-        val requestId: Long,
-        val requestOwner: Int,
-        val chunkEntityId: Int,
-        val blockToSet: BlockType,
-        val blockToRemove: BlockType,
-        val chunkPosition: IntVector3,
-        val blockPosition: IntVector3
-    ): PhysicsEvent()
 }

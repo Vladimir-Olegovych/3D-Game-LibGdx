@@ -14,8 +14,8 @@ import com.gigapi.kryo.GameClient
 import com.gigapi.viewport.UnfairViewport
 import core.blocks.BlockDataManager
 import core.chunk.ChunkWorldUpdater
-import core.mesh.generators.GreedyChunkMesher
 import core.mesh.generators.ChunkMesher
+import core.mesh.generators.GreedyChunkMesher
 import core.scope.DispatcherTypes
 import core.terrain.TerrainGenerator
 import core.viewport.ViewportTypes

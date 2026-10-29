@@ -6,7 +6,7 @@ import com.gigapi.general.GContext
 import com.gigapi.math.vector.IntVector3
 import core.chunk.ChunkWorldUpdater
 import core.terrain.biome.models.BiomeType
-import java.util.EnumMap
+import java.util.*
 import kotlin.math.sqrt
 
 /** Неизменяемое окно биомов вокруг ячейки: плоский массив вместо Map<IntVector3, BiomeType>. */

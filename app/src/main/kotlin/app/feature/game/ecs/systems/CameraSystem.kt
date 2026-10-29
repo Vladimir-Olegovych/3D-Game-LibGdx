@@ -2,17 +2,17 @@ package app.feature.game.ecs.systems
 
 import app.feature.game.ecs.components.LookDirectionComponent
 import app.feature.game.ecs.components.TransformComponent
+import app.feature.game.event.ChunkEvent
 import app.feature.game.event.EventBusTypes
-import app.feature.game.event.PhysicsEvent
 import com.artemis.BaseSystem
 import com.artemis.ComponentMapper
 import com.artemis.annotations.Wire
 import com.badlogic.gdx.graphics.PerspectiveCamera
 import com.badlogic.gdx.math.Vector3
 import com.gigapi.eventbus.EventBus
-import core.bullet.raycast.RayCastTypes
 import core.controls.PInputProcessor
 import core.defaults.CameraTypes
+import core.defaults.CastTypes
 import core.defaults.PlayerConstants
 import kotlin.math.cos
 import kotlin.math.sin
@@ -22,12 +22,10 @@ class CameraSystem : PInputProcessor.InputListener, BaseSystem() {
     companion object {
         private const val FREE_CAMERA_SPEED = 90f
     }
-
+    @Wire(name = EventBusTypes.CHUNK_EVENT_BUS)
+    private lateinit var chunkEventBus: EventBus
     @Wire
     private lateinit var playerInputProcessor: PInputProcessor
-
-    @Wire(name = EventBusTypes.PHYSICS_EVENT_BUS)
-    private lateinit var physicsEventBus: EventBus
 
     @Wire(name = CameraTypes.GL_3D)
     private lateinit var camera: PerspectiveCamera
@@ -47,9 +45,9 @@ class CameraSystem : PInputProcessor.InputListener, BaseSystem() {
     private var cameraMode = PlayerConstants.VIEW_FIRST_PERSON
 
     override fun onRightClick() {
-        physicsEventBus.sendEvent(
-            PhysicsEvent.OnRayCastRequest(
-                requestId = RayCastTypes.CHUNK_PLACE_RAY_CAST,
+        chunkEventBus.sendEvent(
+            ChunkEvent.OnRayCastRequest(
+                requestId = CastTypes.Chunk.CHUNK_PLACE_RAY_CAST,
                 requestOwner = PlayerConstants.getLocalPlayerEntityId(),
                 from = camera.position.cpy(),
                 direction = camera.direction.cpy(),

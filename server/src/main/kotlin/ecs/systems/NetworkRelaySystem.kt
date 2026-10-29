@@ -6,7 +6,6 @@ import com.artemis.annotations.Wire
 import com.gigapi.eventbus.annotation.BusEvent
 import com.gigapi.eventbus.annotation.EventType
 import com.gigcreator.NetEntityType
-import com.gigcreator.NetVector3
 import com.gigcreator.NetworkEvent
 import com.gigcreator.ecs.components.ClientComponent
 import com.gigcreator.ecs.states.ServerPlayerRegistry

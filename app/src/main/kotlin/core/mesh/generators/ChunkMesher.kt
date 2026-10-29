@@ -5,8 +5,8 @@ import com.gigapi.general.GContext
 import com.gigapi.math.vector.IntVector3
 import com.gigapi.mesh.RawMeshData
 import core.blocks.BlockDataManager
-import core.blocks.types.BlockType
 import core.blocks.TextureData
+import core.blocks.types.BlockType
 import core.chunk.ChunkData
 import core.light.LightProps
 import core.mesh.Direction

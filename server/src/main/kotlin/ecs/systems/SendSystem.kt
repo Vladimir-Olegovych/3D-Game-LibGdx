@@ -3,7 +3,6 @@ package com.gigcreator.ecs.systems
 import com.artemis.ComponentMapper
 import com.artemis.annotations.All
 import com.artemis.systems.IteratingSystem
-import com.esotericsoftware.kryonet.Connection
 import com.gigcreator.GamePacket
 import com.gigcreator.ecs.components.ClientComponent
 import com.gigcreator.network.SendContainer

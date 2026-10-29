@@ -5,7 +5,6 @@ import app.feature.game.ecs.components.HoldingItemComponent
 import app.feature.game.ecs.components.InventoryComponent
 import app.feature.game.event.ChunkEvent
 import app.feature.game.event.EventBusTypes
-import app.feature.game.event.PhysicsEvent
 import com.artemis.ComponentMapper
 import com.artemis.annotations.All
 import com.artemis.annotations.Wire
@@ -13,7 +12,7 @@ import com.artemis.systems.IteratingSystem
 import com.gigapi.eventbus.EventBus
 import com.gigapi.eventbus.annotation.BusEvent
 import core.blocks.types.BlockType
-import core.bullet.raycast.RayCastTypes
+import core.defaults.CastTypes
 import core.items.ItemManager
 
 @All(DiggingComponent::class)
@@ -43,8 +42,8 @@ class BlockProcessingSystem: IteratingSystem() {
     }
 
     @BusEvent
-    fun onBlockRayCastResultPlace(event: PhysicsEvent.OnRayCastBlockResult) {
-        if (event.requestId != RayCastTypes.CHUNK_PLACE_RAY_CAST) return
+    fun onBlockRayCastResultPlace(event: ChunkEvent.OnRayCastResult) {
+        if (event.requestId != CastTypes.Chunk.CHUNK_PLACE_RAY_CAST) return
         val inventoryComponent = inventoryMapper[event.requestOwner]?: return
         val itemToSet = inventoryComponent.getSelectedInventoryItem()?: return
 

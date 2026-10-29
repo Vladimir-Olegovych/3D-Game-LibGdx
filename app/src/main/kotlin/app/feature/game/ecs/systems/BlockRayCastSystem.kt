@@ -1,8 +1,8 @@
 package app.feature.game.ecs.systems
 
 import app.feature.game.ecs.components.*
+import app.feature.game.event.ChunkEvent
 import app.feature.game.event.EventBusTypes
-import app.feature.game.event.PhysicsEvent
 import com.artemis.ComponentMapper
 import com.artemis.annotations.All
 import com.artemis.annotations.Wire
@@ -13,14 +13,14 @@ import com.gigapi.eventbus.EventBus
 import com.gigapi.eventbus.annotation.BusEvent
 import core.blocks.BlockDataManager
 import core.blocks.types.BlockType
-import core.bullet.raycast.RayCastTypes
+import core.defaults.CastTypes
 import core.defaults.PlayerConstants
 
 @All(LookDirectionComponent::class, InventoryComponent::class)
 class BlockRayCastSystem : IteratingSystem() {
 
-    @Wire(name = EventBusTypes.PHYSICS_EVENT_BUS)
-    private lateinit var physicsEventBus: EventBus
+    @Wire(name = EventBusTypes.CHUNK_EVENT_BUS)
+    private lateinit var chunkEventBus: EventBus
     @Wire
     private lateinit var blockDataManager: BlockDataManager
 
@@ -62,9 +62,9 @@ class BlockRayCastSystem : IteratingSystem() {
             .add(PlayerConstants.cameraOffset)
         val direction = Vector3(look.direction).nor()
 
-        physicsEventBus.sendEvent(
-            PhysicsEvent.OnRayCastRequest(
-                requestId = RayCastTypes.CHUNK_DIG_RAY_CAST,
+        chunkEventBus.sendEvent(
+            ChunkEvent.OnRayCastRequest(
+                requestId = CastTypes.Chunk.CHUNK_DIG_RAY_CAST,
                 requestOwner = entityId,
                 from = from,
                 direction = direction,
@@ -74,8 +74,8 @@ class BlockRayCastSystem : IteratingSystem() {
     }
 
     @BusEvent
-    fun onBlockRayCastResultDig(event: PhysicsEvent.OnRayCastBlockResult) {
-        if (event.requestId != RayCastTypes.CHUNK_DIG_RAY_CAST) return
+    fun onBlockRayCastResultDig(event: ChunkEvent.OnRayCastResult) {
+        if (event.requestId != CastTypes.Chunk.CHUNK_DIG_RAY_CAST) return
 
         val owner = event.requestOwner
         if (!holdAttackMapper.has(owner)) return
