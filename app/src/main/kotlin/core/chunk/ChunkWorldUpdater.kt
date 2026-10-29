@@ -17,6 +17,7 @@ import core.blocks.types.BlockType
 import core.chunk.world.WorldChunksPreparation
 import core.chunk.world.WorldDataHelper
 import core.chunk.world.WorldGenerationData
+import core.defaults.WorldConstants
 import core.light.LightEngine
 import core.math.createMatrixForChunk
 import core.mesh.chunkMeshParams
@@ -33,7 +34,7 @@ import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicInteger
 
-class ChunkWorldUpdater : LaunchedEffect, DisposableEffect, DeltaUpdater(1 / 60F, Dispatchers.Default) {
+class ChunkWorldUpdater : LaunchedEffect, DisposableEffect, DeltaUpdater(WorldConstants.CHUNK_DELTA, Dispatchers.Default) {
 
     companion object {
         const val DRAW_RADIUS_X = 16

@@ -8,7 +8,6 @@ import com.gigapi.eventbus.annotation.BusEvent
 import com.gigapi.general.GContext
 import com.gigapi.math.vector.IntVector3
 import core.blocks.types.BlockType
-import core.bullet.raycast.VoxelHit
 import core.chunk.ChunkData.Companion.isSolid
 import core.chunk.ChunkWorldUpdater.Companion.CHUNK_HEIGHT
 import core.chunk.ChunkWorldUpdater.Companion.CHUNK_SIZE
@@ -154,4 +153,11 @@ class VoxelCastHelper(
             blockPosition = hit.blockPosition
         ))
     }
+
+    private data class VoxelHit(
+        val chunkPosition: IntVector3,
+        val chunkEntityId: Int,
+        val blockPosition: IntVector3,
+        val block: BlockType
+    )
 }

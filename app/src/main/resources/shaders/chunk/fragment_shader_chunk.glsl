@@ -22,22 +22,21 @@ float curve(float l) { return pow(l, 1.7); }
 void main() {
     float fog = v_Misc.y;
 
-#ifndef CUTOUT
-    // полностью в тумане: ни текстуры, ни освещения
-    if (fog >= 1.0) {
-        gl_FragColor = vec4(fogColor, 1.0);
-        return;
-    }
-#endif
+    #ifndef CUTOUT
+        if (fog >= 1.0) {
+            gl_FragColor = vec4(fogColor, 1.0);
+            return;
+        }
+    #endif
 
     // повтор тайла в атласе; clamp защищает края квада от перескока в соседний тайл
     vec2 local = clamp(v_TileA.xy, vec2(0.0), v_TileA.zw - vec2(0.0005));
     vec2 uv = v_TileB.xy + fract(local) * u_tileSize;
     vec4 texSample = texture2D(u_texture, uv);
 
-#ifdef CUTOUT
-    if (texSample.a <= 0.9) discard;
-#endif
+    #ifdef CUTOUT
+        if (texSample.a <= 0.9) discard;
+    #endif
 
     vec3 albedo = texSample.rgb;
     float blueAmount = (1.0 - u_dayPhase) * u_nightBlueFilter;
@@ -46,7 +45,7 @@ void main() {
     float nightFactor = mix(u_maxShadowThreshold, 1.0, u_dayPhase);
     float skyB   = curve(v_TileB.z * nightFactor);
     float blockB = curve(v_TileB.w) * 1.6;
-    vec3 lightRGB = max(vec3(skyB), blockB * vec3(1.0, 0.82, 0.45)) * 1.2;
+    vec3 lightRGB = max(vec3(skyB), blockB * vec3(1.0, 0.82, 0.45));
 
     vec3 lit = 0.05 + 0.95 * lightRGB * v_Misc.x;
     vec3 litColor = albedo * clamp(lit, 0.0, 1.5);

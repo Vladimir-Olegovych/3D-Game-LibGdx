@@ -7,6 +7,7 @@ import com.gigapi.eventbus.EventBus
 import com.gigapi.general.GContext
 import com.gigapi.kryo.GameServer
 import com.gigcreator.core.congifs.ServerData
+import com.gigcreator.core.defaults.ServerConstants
 import com.gigcreator.core.defaults.ServerDefaults
 import com.gigcreator.ecs.systems.ConnectionSystem
 import com.gigcreator.ecs.systems.NetworkRelaySystem
@@ -17,7 +18,7 @@ import kotlinx.coroutines.Dispatchers
 
 class ServerApplication(
     private val serverData: ServerData
-): DeltaUpdater(1 / 20F, Dispatchers.Default) {
+): DeltaUpdater(ServerConstants.SERVER_DELTA, Dispatchers.Default) {
 
     private val gContext = GContext()
 

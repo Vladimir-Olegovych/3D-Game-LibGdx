@@ -1,7 +1,7 @@
 package app.feature.worldselect
 
-import app.feature.game.dialogs.CreateWorldCallbacks
-import app.feature.game.dialogs.CreateWorldDialog
+import app.feature.main.dialogs.CreateWorldCallbacks
+import app.feature.main.dialogs.CreateWorldDialog
 import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.assets.AssetManager
 import com.badlogic.gdx.graphics.GL20
@@ -61,7 +61,9 @@ class WorldSelectFragment(
                         seed = seed
                     ))
                 },
-                onCancel = { println("create world cancelled") }
+                onCancel = {
+
+                }
             )
         )
         createWorldDialog.attach(dialogManager)

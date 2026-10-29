@@ -18,9 +18,10 @@ import core.bullet.PhysicsUtils
 import core.bullet.raycast.PhysicsGroups
 import core.chunk.ChunkData
 import core.defaults.PlayerConstants
+import core.defaults.WorldConstants
 import kotlinx.coroutines.Dispatchers
 
-class PhysicsWorldUpdater: LaunchedEffect, DeltaUpdater(1 / 20F, Dispatchers.Default) {
+class PhysicsWorldUpdater: LaunchedEffect, DeltaUpdater(WorldConstants.PHYSICS_DELTA, Dispatchers.Default) {
 
     private lateinit var blockData: BlockDataManager
     private lateinit var physicalEventBus: EventBus
@@ -146,14 +147,16 @@ class PhysicsWorldUpdater: LaunchedEffect, DeltaUpdater(1 / 20F, Dispatchers.Def
         applyMovementIntents(deltaTime)
         physicsWorld.update(deltaTime)
 
+        val tickTimeNanos = System.nanoTime()
         for ((entityId, data) in physicBodies) {
             if (data.isStatic) continue
             val body = data.getBody()
             if (!body.isActive) continue
-            mainEventBus.sendEvent(PhysicsEvent.OnRigidBodyTransformUpdate(entityId, body.worldTransform.cpy()))
+            mainEventBus.sendEvent(
+                PhysicsEvent.OnRigidBodyTransformUpdate(entityId, body.worldTransform.cpy(), tickTimeNanos)
+            )
         }
     }
-
     override fun dispose() {
         for ((_, data) in physicBodies) {
             data.rigidBodies.forEach { if (!it.isDisposed)

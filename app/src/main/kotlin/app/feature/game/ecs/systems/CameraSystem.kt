@@ -124,7 +124,7 @@ class CameraSystem : PInputProcessor.InputListener, BaseSystem() {
                 cameraTarget.set(orbitPivot)
                     .mulAdd(lookDirection, -PlayerConstants.THIRD_PERSON_DISTANCE)
 
-                camera.position.lerp(cameraTarget, PlayerConstants.CAMERA_LERP)
+                camera.position.set(cameraTarget)
                 camera.direction.set(lookDirection)
             }
 
@@ -132,12 +132,12 @@ class CameraSystem : PInputProcessor.InputListener, BaseSystem() {
                 cameraTarget.set(orbitPivot)
                     .mulAdd(lookDirection, PlayerConstants.THIRD_PERSON_DISTANCE)
 
-                camera.position.lerp(cameraTarget, PlayerConstants.CAMERA_LERP)
+                camera.position.set(cameraTarget)
                 camera.direction.set(lookDirection).scl(-1f)
             }
 
             else -> {
-                camera.position.lerp(orbitPivot, PlayerConstants.CAMERA_LERP)
+                camera.position.set(orbitPivot)
                 camera.direction.set(lookDirection)
             }
         }

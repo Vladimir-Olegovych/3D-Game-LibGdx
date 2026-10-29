@@ -25,7 +25,7 @@ import java.util.concurrent.Executor
 
 object DefaultGameSetupManager: Executor, LaunchedEffect {
     override fun launch(gContext: GContext) {
-        val perspectiveCamera = PerspectiveCamera(67f, Gdx.graphics.width.toFloat(), Gdx.graphics.height.toFloat())
+        val perspectiveCamera = PerspectiveCamera(90f, Gdx.graphics.width.toFloat(), Gdx.graphics.height.toFloat())
         perspectiveCamera.position.set(Vector3(0f, TerrainGenerator.WORLD_SURFACE.toFloat(), 0f))
         perspectiveCamera.lookAt(-10f, TerrainGenerator.WORLD_SURFACE.toFloat(), -10f)
         perspectiveCamera.near = 0.2f

@@ -12,7 +12,7 @@ fun main() {
 
 private fun startScreen(game: Game){
     val config = Lwjgl3ApplicationConfiguration()
-    config.useVsync(true)
+    config.useVsync(false)
     //config.setWindowSizeLimits(1000, 700, 1000, 700)
     config.setForegroundFPS((Lwjgl3ApplicationConfiguration.getDisplayMode().refreshRate * 3))
     config.setIdleFPS(30)

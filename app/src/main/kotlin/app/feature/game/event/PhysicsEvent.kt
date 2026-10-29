@@ -9,8 +9,7 @@ sealed class PhysicsEvent {
     class OnUpdateChunkData(val chunkEntityId: Int, val chunkData: ChunkData): PhysicsEvent()
     class OnCreateChunkRigidBody(val chunkEntityId: Int, val chunkData: ChunkData): PhysicsEvent()
     class OnRemoveRigidBody(val entityId: Int): PhysicsEvent()
-    class OnRigidBodyTransformUpdate(val entityId: Int, val transform: Matrix4): PhysicsEvent()
-    class OnApplyLinearForce(val entityId: Int, val ignoreYLinear: Boolean, val force: Vector3): PhysicsEvent()
+    class OnRigidBodyTransformUpdate(val entityId: Int, val transform: Matrix4, val timeNanos: Long): PhysicsEvent()    class OnApplyLinearForce(val entityId: Int, val ignoreYLinear: Boolean, val force: Vector3): PhysicsEvent()
     class OnApplyForce(val entityId: Int, val force: Vector3): PhysicsEvent()
 
     class OnCreateMeshRigidBody(
