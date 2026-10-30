@@ -6,22 +6,8 @@
   <component name="ChangeListManager">
     <list default="true" id="21bb169d-cf41-4c8a-bf73-e63da1eaa6c0" name="Changes" comment="update network">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/app/feature/game/ecs/states/NetworkOutboundState.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/app/feature/game/ecs/states/OutboundNetworkState.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/app/feature/game/ecs/systems/NetworkSystem.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/app/feature/game/ecs/systems/NetworkSystem.kt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/app/feature/game/ecs/systems/WorldSystem.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/app/feature/game/ecs/systems/WorldSystem.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/core/artemis/Utils.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/artemis/Utils.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/core/debug/Tests.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/debug/Tests.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/core/defaults/DefaultGameSetupManager.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/defaults/DefaultGameSetupManager.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/core/defaults/DefaultWorldSetupManager.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/defaults/DefaultWorldSetupManager.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/core/mesh/MeshUtils.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/mesh/MeshUtils.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/core/network/NetworkStateUpdater.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/network/NetworkStateUpdater.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/core/src/main/kotlin/GamePacket.kt" beforeDir="false" afterPath="$PROJECT_DIR$/core/src/main/kotlin/GamePacket.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/core/src/main/kotlin/KryoSettings.kt" beforeDir="false" afterPath="$PROJECT_DIR$/core/src/main/kotlin/KryoSettings.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/server/src/main/kotlin/core/defaults/ServerDefaults.kt" beforeDir="false" afterPath="$PROJECT_DIR$/server/src/main/kotlin/core/defaults/ServerDefaults.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/server/src/main/kotlin/ecs/systems/EntityStateSystem.kt" beforeDir="false" afterPath="$PROJECT_DIR$/server/src/main/kotlin/ecs/systems/EntityStateSystem.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/server/src/main/kotlin/ecs/systems/StateReplicationSystem.kt" beforeDir="false" afterPath="$PROJECT_DIR$/server/src/main/kotlin/ecs/systems/StateReplicationSystem.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/server/src/main/kotlin/network/SendContainer.kt" beforeDir="false" afterPath="$PROJECT_DIR$/server/src/main/kotlin/network/SendContainer.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/server/src/main/kotlin/network/SendType.kt" beforeDir="false" afterPath="$PROJECT_DIR$/server/src/main/kotlin/network/SendType.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/src/main/kotlin/ecs/systems/ConnectionSystem.kt" beforeDir="false" afterPath="$PROJECT_DIR$/server/src/main/kotlin/ecs/systems/ConnectionSystem.kt" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />

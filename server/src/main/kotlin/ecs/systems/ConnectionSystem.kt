@@ -1,5 +1,6 @@
 package com.gigcreator.ecs.systems
 
+import com.artemis.Aspect
 import com.artemis.BaseSystem
 import com.artemis.ComponentMapper
 import com.artemis.annotations.Wire
@@ -7,6 +8,7 @@ import com.gigapi.eventbus.annotation.BusEvent
 import com.gigcreator.NetworkEvent
 import com.gigcreator.core.congifs.ServerData
 import com.gigcreator.ecs.components.ClientComponent
+import com.gigcreator.ecs.components.OwnerComponent
 import com.gigcreator.ecs.states.ServerPlayerRegistry
 import com.gigcreator.ecs.states.ServerTimeState
 import com.gigcreator.event.ServerEvent
@@ -22,6 +24,7 @@ internal class ConnectionSystem: BaseSystem() {
     private lateinit var serverTimeState: ServerTimeState
 
     private lateinit var clientMapper: ComponentMapper<ClientComponent>
+    private lateinit var ownerMapper: ComponentMapper<OwnerComponent>
 
     @BusEvent
     fun onConnected(event: ServerEvent.OnConnected) {
@@ -49,9 +52,18 @@ internal class ConnectionSystem: BaseSystem() {
     @BusEvent
     fun onDisconnected(event: ServerEvent.OnDisconnected) {
         val connection = event.connection
-        val entityId = playerRegistry.getEntityId(connection)?: return
+        val entityId = playerRegistry.getEntityId(connection) ?: return
+
+
+        val bag = world.aspectSubscriptionManager
+            .get(Aspect.all(OwnerComponent::class.java))
+            .entities
+        val snapshot = IntArray(bag.size()) { i -> bag[i] }
+        for (e in snapshot) {
+            if (ownerMapper[e]?.owner == entityId) ownerMapper.remove(e)
+        }
+
         playerRegistry.removePlayer(connection)
-        // ServerChunkSystem.removed() сам уберёт сущность из чанков и разошлёт Hide.
         world.delete(entityId)
     }
 
