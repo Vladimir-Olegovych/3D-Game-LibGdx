@@ -11,7 +11,6 @@ import com.gigcreator.core.defaults.ServerConstants
 import com.gigcreator.core.defaults.ServerDefaults
 import com.gigcreator.ecs.states.ServerTimeState
 import com.gigcreator.ecs.systems.ConnectionSystem
-import com.gigcreator.ecs.systems.NetworkRelaySystem
 import com.gigcreator.ecs.systems.SendSystem
 import com.gigcreator.ecs.systems.TimeSystem
 import com.gigcreator.registerAllEvents
@@ -49,7 +48,6 @@ class ServerApplication(
         arrayOf(
             TimeSystem(),
             ConnectionSystem(),
-            NetworkRelaySystem(),
             SendSystem(),
         ).forEach { system ->
             eventBus.registerHandler(system)

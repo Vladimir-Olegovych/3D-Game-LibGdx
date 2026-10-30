@@ -1,47 +1,28 @@
 package com.gigcreator.ecs.states
 
-import com.gigcreator.NetQuaternion
-import com.gigcreator.NetVector3
+import com.esotericsoftware.kryonet.Connection
 
 internal class ServerPlayerRegistry {
 
-    data class PlayerNetworkState(
-        val pos: NetVector3 = NetVector3.ZERO,
-        val rot: NetQuaternion = NetQuaternion.identity(),
-        val modelId: Int = 0,
-    )
+    private val connectionToEntity = HashMap<Connection, Int>()
+    private val entityToConnection = HashMap<Int, Connection>()
 
-    val connectionToEntity = HashMap<Int, Int>()
-    private val entityToPlayerId = HashMap<Int, Int>()
-    private val playerIdToEntity = HashMap<Int, Int>()
-    val playerStates = HashMap<Int, PlayerNetworkState>()
-    private var nextPlayerId = 1
-
-    fun assignPlayer(connectionId: Int, entityId: Int): Int {
-        val playerId = nextPlayerId++
-        connectionToEntity[connectionId] = entityId
-        entityToPlayerId[entityId] = playerId
-        playerIdToEntity[playerId] = entityId
-        playerStates[playerId] = PlayerNetworkState()
-        return playerId
+    fun addPlayer(connection: Connection, entityId: Int) {
+        connectionToEntity[connection] = entityId
+        entityToConnection[entityId] = connection
     }
 
-    fun removeByConnection(connectionId: Int): Pair<Int, Int>? {
-        val entityId = connectionToEntity.remove(connectionId) ?: return null
-        val playerId = entityToPlayerId.remove(entityId)
-        if (playerId != null) {
-            playerIdToEntity.remove(playerId)
-            playerStates.remove(playerId)
-        }
-        return if (playerId != null) playerId to entityId else null
+    fun removePlayer(connection: Connection) {
+        val entityId = connectionToEntity.remove(connection)
+        entityId?.let { entityToConnection.remove(entityId) }
     }
 
-    fun getPlayerIdByConnection(connectionId: Int): Int? {
-        val entityId = connectionToEntity[connectionId] ?: return null
-        return entityToPlayerId[entityId]
+    fun getEntityId(connection: Connection): Int? {
+        return connectionToEntity[connection]
     }
 
-    fun updateState(playerId: Int, pos: NetVector3, rot: NetQuaternion, modelId: Int) {
-        playerStates[playerId] = PlayerNetworkState(pos, rot, modelId)
+    fun getConnection(entityId: Int): Connection? {
+        return entityToConnection[entityId]
     }
+
 }

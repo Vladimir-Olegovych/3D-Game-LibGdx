@@ -13,5 +13,4 @@ fun Kryo.registerAllEvents() {
     register(NetworkEvent.EntityJoined::class.java)
     register(NetworkEvent.EntityLeft::class.java)
     register(NetworkEvent.EntityStateUpdate::class.java)
-    register(NetworkEvent.EntityStateSnapshot::class.java)
 }
