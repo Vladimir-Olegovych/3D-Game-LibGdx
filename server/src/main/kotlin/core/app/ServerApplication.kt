@@ -9,6 +9,7 @@ import com.gigapi.kryo.GameServer
 import com.gigcreator.core.congifs.ServerData
 import com.gigcreator.core.defaults.ServerConstants
 import com.gigcreator.core.defaults.ServerDefaults
+import com.gigcreator.ecs.states.ServerTimeState
 import com.gigcreator.ecs.systems.ConnectionSystem
 import com.gigcreator.ecs.systems.NetworkRelaySystem
 import com.gigcreator.ecs.systems.SendSystem
@@ -25,10 +26,13 @@ class ServerApplication(
     private lateinit var artemisWorld: ArtemisWorld
     private lateinit var eventBus: EventBus
 
+    var serverTimeState: ServerTimeState? = null
+
     override fun create() {
         ServerDefaults.launch(gContext)
         gContext.setObject(serverData)
         gContext.launch()
+        serverTimeState = gContext.getObject()
         eventBus = gContext.getObject()
 
         val configuration = WorldConfiguration()

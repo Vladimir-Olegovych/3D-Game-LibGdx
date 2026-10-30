@@ -2,6 +2,7 @@ package app
 
 import app.feature.game.GameFragment
 import app.feature.main.MainFragment
+import app.feature.multiplayer.MultiplayerFragment
 import app.feature.worldselect.WorldSelectFragment
 import com.badlogic.gdx.Game
 import com.gigapi.general.GContext
@@ -31,11 +32,26 @@ class GameApplication :  Game() {
                     gContext = gContext,
                     onWorldSelectScreen = {
                         navHostController.navigate(Navigation.WorldSelect)
+                    },
+                    onMultiplayerScreen = {
+                        navHostController.navigate(Navigation.Multiplayer)
                     }
                 )
             }
             fragment<Navigation.WorldSelect> {
                 return@fragment WorldSelectFragment(
+                    navigation = it,
+                    gContext = gContext,
+                    onGameScreen = { navigation ->
+                        navHostController.navigate(navigation)
+                    },
+                    onMenuScreen = {
+                        navHostController.navigate(Navigation.Main)
+                    }
+                )
+            }
+            fragment<Navigation.Multiplayer> {
+                return@fragment MultiplayerFragment(
                     navigation = it,
                     gContext = gContext,
                     onGameScreen = { navigation ->

@@ -25,6 +25,7 @@ import com.gigcreator.core.congifs.ServerData
 import com.gigcreator.registerAllEvents
 import core.artemis.disposeALL
 import core.assets.MusicID
+import core.client.GameServerAddress
 import core.defaults.CameraTypes
 import core.defaults.DefaultWorldSetupManager
 import core.navigation.Navigation
@@ -61,11 +62,13 @@ class GameFragment(
             setTimeOfDay(event.timeOfDay)
             this@apply.cycleDuration = event.cycleDuration
         }
-        startWorld(event)
+        if (navigation.isLocal) return
+        startWorld(event.worldSeed)
     }
 
     override fun onCreate() {
         gameGContext.addContext(gContext)
+        gameGContext.setObject(navigation)
         gameGContext.setObject(dialogManager)
         DefaultWorldSetupManager.launch(gameGContext)
 
@@ -85,19 +88,10 @@ class GameFragment(
         Gdx.input.inputProcessor = inputMultiplexer
 
         if (navigation.isLocal) {
-            val serverData = ServerData(
-                worldName = navigation.worldName,
-                serverName = navigation.worldName,
-                serverPort = 5551,
-                worldSeed = navigation.seed?: Random.nextInt()
-            )
-            serverApplication = ServerApplication(serverData)
-        }
-
-        serverApplication?.start(true)
-
-        gameClient.start(
-            address = "127.0.0.1", port = 5551,
+            startWorld(navigation.seed?: Random.nextInt())
+        } else gameClient.start(
+            address = navigation.joinParams.address,
+            port = navigation.joinParams.port,
             custom = { it.registerAllEvents() },
             onConnectionFailed = {
                 lifecycleScope.launch {
@@ -108,11 +102,40 @@ class GameFragment(
         )
     }
 
-    private fun startWorld(event: NetworkEvent.HelloFromServer) {
+    private fun startServer(joinParams: GameServerAddress) {
+        if (!navigation.isLocal) return
+        val artemisWorld = artemisWorld?: return
+        val timeState = artemisWorld.getRegistered(TimeState::class.java)
+        val generator = gameGContext.getObject<TerrainGenerator>()
+
+        val serverData = ServerData(
+            worldName = navigation.worldName,
+            serverName = navigation.worldName,
+            serverPort = joinParams.port,
+            worldSeed = generator.worldSeedFromServer!!
+        )
+        serverApplication = ServerApplication(serverData)
+        serverApplication?.start(blockingInitialize = true)
+        serverApplication?.serverTimeState?.timeOfDay = timeState.timeOfDay
+
+        gameClient.start(
+            address = joinParams.address,
+            port = joinParams.port,
+            custom = { it.registerAllEvents() },
+            onConnectionFailed = {
+                lifecycleScope.launch {
+                    delay(2000L.milliseconds)
+                    onMenuScreen.invoke()
+                }
+            }
+        )
+    }
+
+    private fun startWorld(worldSeed: Int) {
         if (artemisWorld != null) return
 
         val generator = gameGContext.getRawObject<TerrainGenerator>()
-        generator.worldSeedFromServer = event.worldSeed
+        generator.worldSeedFromServer = worldSeed
 
         val configuration = WorldConfiguration()
         for ((key, value) in gameGContext.objectMap) {
@@ -141,7 +164,10 @@ class GameFragment(
             ModelAnimationSystem(),
             DrawSystem(),
             BlockSelectionSystem(),
-            UISystem(onQuit = onMenuScreen)
+            UISystem(
+                onQuit = onMenuScreen,
+                openLanWorld = { startServer(it) }
+            )
         ).forEach { system ->
             eventBus.registerHandler(system)
             configuration.setSystem(system)
@@ -150,6 +176,7 @@ class GameFragment(
         configuration.isAlwaysDelayComponentRemoval = false
         artemisWorld = ArtemisWorld(configuration)
     }
+
 
     override fun onRender(deltaTime: Float) {
         eventBus.process()

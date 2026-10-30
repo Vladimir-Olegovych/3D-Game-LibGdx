@@ -10,7 +10,7 @@ import com.gigcreator.NetworkEvent
 import com.gigcreator.core.congifs.ServerData
 import com.gigcreator.ecs.components.ClientComponent
 import com.gigcreator.ecs.states.ServerPlayerRegistry
-import com.gigcreator.ecs.states.TimeState
+import com.gigcreator.ecs.states.ServerTimeState
 import com.gigcreator.event.ServerEvent
 import com.gigcreator.network.SendType
 
@@ -21,7 +21,7 @@ internal class ConnectionSystem: BaseSystem() {
     @Wire
     private lateinit var playerRegistry: ServerPlayerRegistry
     @Wire
-    private lateinit var timeState: TimeState
+    private lateinit var serverTimeState: ServerTimeState
 
     private lateinit var clientMapper: ComponentMapper<ClientComponent>
 
@@ -40,8 +40,8 @@ internal class ConnectionSystem: BaseSystem() {
             NetworkEvent.HelloFromServer(
                 worldSeed = serverData.worldSeed,
                 playerId = playerId,
-                timeOfDay = timeState.timeOfDay,
-                cycleDuration = timeState.cycleDuration,
+                timeOfDay = serverTimeState.timeOfDay,
+                cycleDuration = serverTimeState.cycleDuration,
             ),
             sendType = SendType.TCP
         )

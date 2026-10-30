@@ -1,8 +1,7 @@
 package com.gigcreator.ecs.states
 
-internal class TimeState {
+class ServerTimeState {
     var timeOfDay = 0.2f
-        private set
 
     var cycleDuration = 600f
 

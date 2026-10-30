@@ -4,27 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="21bb169d-cf41-4c8a-bf73-e63da1eaa6c0" name="Changes" comment="updated chunk events">
-      <change afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/defaults/WorldConstants.kt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/server/src/main/kotlin/core/defaults/ServerConstants.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/app/feature/game/dialogs/CreateWorldDialog.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/app/feature/main/dialogs/CreateWorldDialog.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/app/feature/game/ecs/components/NetworkInterpolationComponent.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/app/feature/game/ecs/components/NetworkInterpolationComponent.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/app/feature/game/ecs/components/PhysicsInterpolationComponent.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/app/feature/game/ecs/components/PhysicsInterpolationComponent.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/app/feature/game/ecs/systems/CameraSystem.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/app/feature/game/ecs/systems/CameraSystem.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/app/feature/game/ecs/systems/PhysicSystem.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/app/feature/game/ecs/systems/PhysicSystem.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/app/feature/game/event/PhysicsEvent.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/app/feature/game/event/PhysicsEvent.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/app/feature/worldselect/WorldSelectFragment.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/app/feature/worldselect/WorldSelectFragment.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/core/bullet/raycast/VoxelHit.kt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/core/bullet/world/PhysicsWorldUpdater.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/bullet/world/PhysicsWorldUpdater.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/core/chunk/ChunkWorldUpdater.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/chunk/ChunkWorldUpdater.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/core/chunk/VoxelCastHelper.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/chunk/VoxelCastHelper.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/core/defaults/DefaultGameSetupManager.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/defaults/DefaultGameSetupManager.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/core/defaults/PlayerConstants.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/defaults/PlayerConstants.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/resources/shaders/chunk/fragment_shader_chunk.glsl" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/resources/shaders/chunk/fragment_shader_chunk.glsl" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/desktop/src/main/kotlin/DesktopMain.kt" beforeDir="false" afterPath="$PROJECT_DIR$/desktop/src/main/kotlin/DesktopMain.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/server/src/main/kotlin/core/app/ServerApplication.kt" beforeDir="false" afterPath="$PROJECT_DIR$/server/src/main/kotlin/core/app/ServerApplication.kt" afterDir="false" />
-    </list>
+    <list default="true" id="21bb169d-cf41-4c8a-bf73-e63da1eaa6c0" name="Changes" comment="updated physics interpolation" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -140,6 +120,7 @@
       <recent name="$PROJECT_DIR$/app/src/main/kotlin/core/chunk" />
     </key>
     <key name="CopyKotlinDeclarationDialog.RECENTS_KEY">
+      <recent name="app.feature.multiplayer" />
       <recent name="app.feature.game.ecs.systems" />
       <recent name="core.terrain.structures" />
     </key>
@@ -151,7 +132,7 @@
       <recent name="core.terrain.structures.nature" />
     </key>
   </component>
-  <component name="RunManager" selected="Gradle.GDX-3D-TEST [desktop:shadowJar]">
+  <component name="RunManager" selected="Kotlin.DesktopMainKt">
     <configuration name="GDX-3D-TEST [:app:assemble]" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
       <ExternalSystemSettings>
         <option name="executionName" />
@@ -268,10 +249,10 @@
       </method>
     </configuration>
     <list>
-      <item itemvalue="Gradle.GDX-3D-TEST [:app:assemble]" />
-      <item itemvalue="Gradle.GDX-3D-TEST [:core:assemble]" />
       <item itemvalue="Gradle.GDX-3D-TEST [desktop:shadowJar]" />
       <item itemvalue="Gradle.GDX-3D-TEST [server:assemble]" />
+      <item itemvalue="Gradle.GDX-3D-TEST [:app:assemble]" />
+      <item itemvalue="Gradle.GDX-3D-TEST [:core:assemble]" />
       <item itemvalue="Kotlin.DesktopMainKt" />
       <item itemvalue="Kotlin.ServerMainKt" />
     </list>
@@ -354,6 +335,7 @@
     <MESSAGE value="updated WorldSelectFragment" />
     <MESSAGE value="updated input system" />
     <MESSAGE value="updated chunk events" />
-    <option name="LAST_COMMIT_MESSAGE" value="updated chunk events" />
+    <MESSAGE value="updated physics interpolation" />
+    <option name="LAST_COMMIT_MESSAGE" value="updated physics interpolation" />
   </component>
 </project>

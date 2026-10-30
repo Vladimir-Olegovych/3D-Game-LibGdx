@@ -23,7 +23,8 @@ import core.viewport.ViewportTypes
 class MainFragment(
     private val navigation: Navigation.Main,
     private val gContext: GContext,
-    private val onWorldSelectScreen: () -> Unit
+    private val onWorldSelectScreen: () -> Unit,
+    private val onMultiplayerScreen: () -> Unit
 ): Fragment() {
 
     private lateinit var spriteBatch: SpriteBatch
@@ -46,17 +47,21 @@ class MainFragment(
             top()
         }
 
-        val playButton = TextButton("play", skin).setOnClickListener {
+        val playButton = TextButton("Play", skin).setOnClickListener {
             onWorldSelectScreen.invoke()
         }
-        val settingsButton = TextButton("settings", skin).setOnClickListener {
+        val multiplayerButton = TextButton("Multiplayer", skin).setOnClickListener {
+            onMultiplayerScreen.invoke()
+        }
+        val settingsButton = TextButton("Settings", skin).setOnClickListener {
             println("settingsButton")
         }
-        val quitButton = TextButton("quit", skin).setOnClickListener {
+        val quitButton = TextButton("Quit", skin).setOnClickListener {
             Gdx.app.exit()
         }
 
         menuTable.add(playButton).height(40F).width(200F).padTop(8F).row()
+        menuTable.add(multiplayerButton).height(40F).width(200F).padTop(8F).row()
         menuTable.add(settingsButton).height(40F).width(200F).padTop(8F).row()
         menuTable.add(quitButton).height(40F).width(200F).padTop(8F).row()
 

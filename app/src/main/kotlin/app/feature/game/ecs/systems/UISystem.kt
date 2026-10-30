@@ -17,6 +17,7 @@ import com.badlogic.gdx.scenes.scene2d.Stage
 import com.gigapi.dialogs.DialogManager
 import com.gigapi.storage.json.AppConfig
 import com.gigapi.viewport.UnfairViewport
+import core.client.GameServerAddress
 import core.configs.ConfigTypes
 import core.controls.PInputProcessor
 import core.controls.UInputProcessor
@@ -24,10 +25,12 @@ import core.crafting.CraftManager
 import core.crafting.CraftingRecipeSO
 import core.defaults.PlayerConstants
 import core.items.ItemManager
+import core.navigation.Navigation
 import core.viewport.ViewportTypes
 
 class UISystem(
-    private val onQuit: () -> Unit
+    private val onQuit: () -> Unit,
+    private val openLanWorld: (GameServerAddress) -> Unit
 ): UInputProcessor.InputListener, BaseSystem() {
     //Custom
     @Wire(name = ViewportTypes.UNFAIR)
@@ -44,6 +47,8 @@ class UISystem(
     private lateinit var assetManager: AssetManager
     @Wire
     private lateinit var dialogManager: DialogManager
+    @Wire
+    private lateinit var navigation: Navigation.Game
     @Wire
     private lateinit var inputMultiplexer: InputMultiplexer
     @Wire
@@ -67,17 +72,20 @@ class UISystem(
         val playerInventoryComponent = inventoryMapper[playerEntityId]
 
         val pauseDialogCallbacks = PauseDialogCallbacks(
-            onResume = {
+            onDismiss = {
                 inputMultiplexer.addProcessor(pInputProcessor)
                 Gdx.input.isCursorCatched = true
             },
+            onResume = {},
             onSettings = {},
+            openLanWorld = openLanWorld,
             onQuit = {
                 onQuit.invoke()
             },
         )
         pauseDialog = PauseDialog(
             stage = stage,
+            navigation = navigation,
             assetManager = assetManager,
             callbacks = pauseDialogCallbacks
         ).apply { attach(dialogManager) }
