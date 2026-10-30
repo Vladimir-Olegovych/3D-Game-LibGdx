@@ -102,9 +102,9 @@ class GameFragment(
         )
     }
 
-    private fun startServer(joinParams: GameServerAddress) {
-        if (!navigation.isLocal) return
-        val artemisWorld = artemisWorld?: return
+    private fun startServer(joinParams: GameServerAddress): Boolean {
+        if (!navigation.isLocal) return false
+        val artemisWorld = artemisWorld?: return false
         val timeState = artemisWorld.getRegistered(TimeState::class.java)
         val generator = gameGContext.getObject<TerrainGenerator>()
 
@@ -114,21 +114,27 @@ class GameFragment(
             serverPort = joinParams.port,
             worldSeed = generator.worldSeedFromServer!!
         )
-        serverApplication = ServerApplication(serverData)
-        serverApplication?.start(blockingInitialize = true)
-        serverApplication?.serverTimeState?.timeOfDay = timeState.timeOfDay
+        try {
+            serverApplication = ServerApplication(serverData)
+            serverApplication?.start(blockingInitialize = true)
+            serverApplication?.serverTimeState?.timeOfDay = timeState.timeOfDay
 
-        gameClient.start(
-            address = joinParams.address,
-            port = joinParams.port,
-            custom = { it.registerAllEvents() },
-            onConnectionFailed = {
-                lifecycleScope.launch {
-                    delay(2000L.milliseconds)
-                    onMenuScreen.invoke()
+            gameClient.start(
+                address = joinParams.address,
+                port = joinParams.port,
+                custom = { it.registerAllEvents() },
+                onConnectionFailed = {
+                    lifecycleScope.launch {
+                        delay(2000L.milliseconds)
+                        onMenuScreen.invoke()
+                    }
                 }
-            }
-        )
+            )
+            return true
+        } catch (e: Throwable) {
+            e.printStackTrace()
+            return false
+        }
     }
 
     private fun startWorld(worldSeed: Int) {

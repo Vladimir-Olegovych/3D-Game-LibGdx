@@ -18,7 +18,7 @@ class PauseDialogCallbacks(
     val onResume: () -> Unit,
     val onSettings: () -> Unit,
     val onQuit: () -> Unit,
-    val openLanWorld: (GameServerAddress) -> Unit
+    val openLanWorld: (GameServerAddress) -> Boolean
 )
 
 class PauseDialog(
@@ -49,9 +49,11 @@ class PauseDialog(
 
             dismiss()
             callbacks.onDismiss()
-            portField.remove()
-            openLanButton.remove()
-            callbacks.openLanWorld.invoke(GameServerAddress(address = "127.0.0.1", port = port))
+            val isOpened = callbacks.openLanWorld.invoke(GameServerAddress(address = "127.0.0.1", port = port))
+            if (isOpened) {
+                portField.remove()
+                openLanButton.remove()
+            }
         }
 
         fullscreenOverlay = Table().apply {

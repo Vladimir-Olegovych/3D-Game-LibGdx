@@ -30,7 +30,7 @@ import core.viewport.ViewportTypes
 
 class UISystem(
     private val onQuit: () -> Unit,
-    private val openLanWorld: (GameServerAddress) -> Unit
+    private val openLanWorld: (GameServerAddress) -> Boolean
 ): UInputProcessor.InputListener, BaseSystem() {
     //Custom
     @Wire(name = ViewportTypes.UNFAIR)
