@@ -352,7 +352,7 @@ class NetworkSystem: BaseSystem() {
         val blenderModel = modelAssetManager.getRenderModel(model)
         if (model == ModelID.M_PLAYER_MODEL) {
             blenderModel.subMeshes.forEach {
-                it.mesh.transform(Matrix4().translate(0F, 0F, 0F))
+                it.mesh.transform(Matrix4().translate(0F, -PlayerConstants.cameraOffset.y, 0F))
                 it.mesh.scale(0.35f, 0.35f, 0.35f)
             }
             animatorMapper.create(entityId).animator = ModelAnimator(blenderModel)

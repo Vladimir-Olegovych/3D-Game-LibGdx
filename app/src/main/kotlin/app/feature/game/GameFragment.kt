@@ -53,6 +53,10 @@ class GameFragment(
     private lateinit var inputMultiplexer: InputMultiplexer
     private lateinit var gameClient: GameClient
 
+    @BusEvent
+    fun networkEventDisconnected(event: ClientEvent.OnDisconnected) {
+        onMenuScreen.invoke()
+    }
 
     @BusEvent
     @EventType(NetworkEvent.HelloFromServer::class)
