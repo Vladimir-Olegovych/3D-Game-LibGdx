@@ -17,9 +17,11 @@ import core.animator.ModelAnimator
 import core.assets.ModelID
 import core.blocks.types.BlockType
 import core.controls.PInputProcessor
+import core.debug.startTest100Box
 import core.defaults.PlayerConstants
 import core.items.ItemManager
 import core.mesh.defaultPlayerHitBox
+import core.navigation.Navigation
 
 class WorldSystem: BaseSystem() {
 
@@ -31,6 +33,8 @@ class WorldSystem: BaseSystem() {
     private lateinit var pInputProcessor: PInputProcessor
     @Wire
     private lateinit var modelAssetManager: ModelAssetManager
+    @Wire
+    private lateinit var navigation: Navigation.Game
 
     private lateinit var transformMapper: ComponentMapper<TransformComponent>
     private lateinit var meshMapper: ComponentMapper<MeshComponent>

@@ -1,7 +1,7 @@
 package core.defaults
 
 import app.feature.game.ecs.states.ClientNetworkState
-import app.feature.game.ecs.states.NetworkOutboundState
+import app.feature.game.ecs.states.OutboundNetworkState
 import app.feature.game.ecs.states.RemotePlayerRegistry
 import app.feature.game.ecs.states.TimeState
 import app.feature.game.event.EventBusTypes
@@ -66,7 +66,7 @@ object DefaultWorldSetupManager: LaunchedEffect {
         gContext.setObject(ChunkWorldUpdater())
         //---
         gContext.setObject(ClientNetworkState())
-        gContext.setObject(NetworkOutboundState())
+        gContext.setObject(OutboundNetworkState())
         gContext.setObject(NetworkStateUpdater())
         gContext.setObject(RemotePlayerRegistry())
         //---

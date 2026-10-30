@@ -2,8 +2,7 @@ package app.feature.game.ecs.systems
 
 import app.feature.game.ecs.components.*
 import app.feature.game.ecs.states.ClientNetworkState
-import app.feature.game.ecs.states.NetworkOutboundState
-import app.feature.game.ecs.states.OutboundEntityState
+import app.feature.game.ecs.states.OutboundNetworkState
 import app.feature.game.ecs.states.RemotePlayerRegistry
 import app.feature.game.event.ClientEvent
 import com.artemis.Aspect
@@ -17,13 +16,16 @@ import com.badlogic.gdx.math.Vector3
 import com.gigapi.eventbus.annotation.BusEvent
 import com.gigapi.eventbus.annotation.EventType
 import com.gigapi.mesh.ModelAssetManager
+import com.gigapi.texture.DefaultsTextures
 import com.gigcreator.NetQuaternion
 import com.gigcreator.NetVector3
 import com.gigcreator.NetworkEvent
+import com.gigcreator.network.SendContainer
+import com.gigcreator.network.SendType
 import core.animator.ModelAnimator
 import core.assets.ModelID
 import core.defaults.PlayerConstants
-import core.mesh.defaultPlayerHitBox
+import core.mesh.defaultBox
 import core.mesh.rawMeshParams
 import core.network.*
 import kotlin.math.cos
@@ -50,9 +52,9 @@ class NetworkSystem: BaseSystem() {
     @Wire
     private lateinit var networkStateUpdater: NetworkStateUpdater
     @Wire
-    private lateinit var networkState: ClientNetworkState
+    private lateinit var clientNetworkState: ClientNetworkState
     @Wire
-    private lateinit var outboundState: NetworkOutboundState
+    private lateinit var outboundNetworkState: OutboundNetworkState
     @Wire
     private lateinit var remotePlayerRegistry: RemotePlayerRegistry
     @Wire
@@ -71,6 +73,7 @@ class NetworkSystem: BaseSystem() {
 
     private val tmpPos = Vector3()
     private val tmpRot = Quaternion()
+    private val pendingSpawns = HashSet<Int>()
 
     override fun initialize() {
         networkEntities = world.aspectSubscriptionManager.get(
@@ -83,14 +86,14 @@ class NetworkSystem: BaseSystem() {
 
     @BusEvent
     fun onConnected(event: ClientEvent.OnConnected) {
-        networkState.connection = event.connection
+        clientNetworkState.connection = event.connection
     }
 
     @BusEvent
     fun onDisconnected(event: ClientEvent.OnDisconnected) {
-        networkState.connection = null
-        networkState.localPlayerId = -1
-        outboundState.clear()
+        clientNetworkState.connection = null
+        clientNetworkState.localPlayerId = -1
+        outboundNetworkState.clear()
         despawnAllRemoteEntities()
     }
 
@@ -98,7 +101,7 @@ class NetworkSystem: BaseSystem() {
     @EventType(NetworkEvent.HelloFromServer::class)
     fun onHelloFromServer(received: ClientEvent.OnReceived) {
         val hello = received.event as NetworkEvent.HelloFromServer
-        networkState.localPlayerId = hello.playerId
+        clientNetworkState.localPlayerId = hello.playerId
 
         val localEntityId = PlayerConstants.getLocalPlayerEntityId()
         networkEntityMapper[localEntityId]?.networkId = hello.playerId
@@ -127,6 +130,14 @@ class NetworkSystem: BaseSystem() {
         updateRemoteEntity(event.entityId, event.pos, event.rot, event.modelId)
     }
 
+    @BusEvent
+    @EventType(NetworkEvent.EntityAssigned::class)
+    fun onEntityAssigned(received: ClientEvent.OnReceived) {
+        val event = received.event as NetworkEvent.EntityAssigned
+        println("onEntityAssigned ${event.entityId}")
+        pendingSpawns.remove(event.requestId)
+        networkEntityMapper[event.requestId]?.networkId = event.entityId
+    }
     // ------------------------------------------------------------------ loop
 
     override fun processSystem() {
@@ -136,48 +147,56 @@ class NetworkSystem: BaseSystem() {
 
     override fun dispose() {
         networkStateUpdater.stop()
-        outboundState.clear()
+        outboundNetworkState.clear()
     }
 
     // ------------------------------------------------------------------ send
 
     private fun sendLocalStates() {
-        if (networkState.localPlayerId < 0) return
+        if (clientNetworkState.localPlayerId < 0) return
 
         // Локальный игрок мог появиться раньше, чем пришёл Hello.
         val localEntityId = PlayerConstants.getLocalPlayerEntityId()
         networkEntityMapper[localEntityId]?.let {
-            if (it.networkId != networkState.localPlayerId) it.networkId = networkState.localPlayerId
+            if (it.networkId != clientNetworkState.localPlayerId) it.networkId = clientNetworkState.localPlayerId
         }
 
         val entities = networkEntities.entities
-        val states = ArrayList<OutboundEntityState>(entities.size())
 
         for (i in 0 until entities.size()) {
             val entityId = entities[i]
             val networkEntity = networkEntityMapper[entityId] ?: continue
-            if (!networkEntity.isLocal || networkEntity.networkId < 0) continue
+            if (!networkEntity.isLocal) continue
 
             val transform = transformMapper[entityId]?.transform ?: continue
             transform.getTranslation(tmpPos)
             val rot = localRotation(entityId, transform)
 
-            states.add(
-                OutboundEntityState(
+            if (networkEntity.networkId < 0) {
+                if (entityId != localEntityId && pendingSpawns.add(entityId)) {
+                    transform.getTranslation(tmpPos)
+                    val rot = localRotation(entityId, transform)
+                    outboundNetworkState.addTCP(
+                        NetworkEvent.SpawnRequest(
+                            requestId = entityId,
+                            pos = NetVector3(tmpPos.x, tmpPos.y, tmpPos.z),
+                            rot = rot,
+                            modelId = networkEntity.modelId,
+                        )
+                    )
+                }
+                continue
+            }
+
+            outboundNetworkState.addUDP(
+                NetworkEvent.EntityStateUpdate(
                     entityId = networkEntity.networkId,
+                    pos = NetVector3(tmpPos.x, tmpPos.y, tmpPos.z),
+                    rot = NetQuaternion(rot.x, rot.y, rot.z, rot.w),
                     modelId = networkEntity.modelId,
-                    x = tmpPos.x,
-                    y = tmpPos.y,
-                    z = tmpPos.z,
-                    qx = rot.x,
-                    qy = rot.y,
-                    qz = rot.z,
-                    qw = rot.w,
                 )
             )
         }
-
-        outboundState.replace(states)
     }
 
     /** Игрок — по взгляду камеры, остальные (мобы и т.п.) — по матрице трансформа. */
@@ -212,7 +231,8 @@ class NetworkSystem: BaseSystem() {
     }
 
     private fun spawnRemoteEntity(networkId: Int, pos: NetVector3, rot: NetQuaternion, modelId: Int) {
-        if (networkId == networkState.localPlayerId) return
+        if (networkId == clientNetworkState.localPlayerId) return
+        println("spawnRemote id=$networkId model=$modelId")
 
         // Повторный Joined (например, снова вошла в зону) — просто обновляем.
         if (remotePlayerRegistry.networkIdToEntityId.containsKey(networkId)) {
@@ -243,7 +263,7 @@ class NetworkSystem: BaseSystem() {
      * Неизвестные id игнорируем: создаёт сущность только Joined, иначе после Left появлялись бы призраки.
      */
     private fun updateRemoteEntity(networkId: Int, pos: NetVector3, rot: NetQuaternion, modelId: Int) {
-        if (networkId == networkState.localPlayerId) return
+        if (networkId == clientNetworkState.localPlayerId) return
 
         val entityId = remotePlayerRegistry.networkIdToEntityId[networkId] ?: return
 
@@ -344,7 +364,10 @@ class NetworkSystem: BaseSystem() {
 
         val model = resolveModelId(modelId)
         if (model == ModelID.NULL) {
-            meshMapper.create(entityId).meshData = defaultPlayerHitBox.createMeshData(rawMeshParams)
+            meshMapper.create(entityId).apply {
+                meshData = defaultBox.createMeshData(rawMeshParams)
+                meshTextureData = DefaultsTextures.WHITE
+            }
             boundMapper.create(entityId).boundingRadius = 1.8f
             return
         }

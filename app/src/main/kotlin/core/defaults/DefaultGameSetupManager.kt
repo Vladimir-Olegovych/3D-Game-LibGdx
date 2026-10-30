@@ -12,6 +12,7 @@ import com.gigapi.effects.LaunchedEffect
 import com.gigapi.general.GContext
 import com.gigapi.kryo.GameClient
 import com.gigapi.viewport.UnfairViewport
+import com.gigcreator.KRYO_CLIENT_BUFFER_SIZE
 import core.blocks.BlockDataManager
 import core.chunk.ChunkWorldUpdater
 import core.mesh.generators.ChunkMesher
@@ -58,7 +59,7 @@ object DefaultGameSetupManager: Executor, LaunchedEffect {
         //---
         gContext.setObject<CoroutineDispatcher>(DispatcherTypes.MAIN, asCoroutineDispatcher())
         //---
-        gContext.setObject(GameClient(1024))
+        gContext.setObject(GameClient(KRYO_CLIENT_BUFFER_SIZE))
     }
 
     override fun execute(runnable: Runnable) {

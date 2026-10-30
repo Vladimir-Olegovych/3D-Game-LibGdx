@@ -18,7 +18,6 @@ sealed class NetworkEvent {
         val cycleDuration: Float = 600f,
     ) : NetworkEvent()
 
-    /** TCP, сервер -> клиент: сущность вошла в зону видимости (создать её на клиенте). */
     class EntityJoined(
         val entityId: Int = 0,
         val name: String = "",
@@ -27,21 +26,26 @@ sealed class NetworkEvent {
         val modelId: Int = 0,
     ) : NetworkEvent()
 
-    /** TCP, сервер -> клиент: сущность ушла из зоны видимости или удалена (удалить на клиенте). */
     class EntityLeft(
         val entityId: Int = 0,
     ) : NetworkEvent()
 
-    /**
-     * UDP, в обе стороны.
-     * Клиент -> сервер: состояние своих сущностей (себя, своих мобов).
-     * Сервер -> клиент: состояние чужих сущностей из видимых чанков.
-     */
     class EntityStateUpdate(
         val entityId: Int = 0,
         val pos: NetVector3 = NetVector3.ZERO,
         val rot: NetQuaternion = NetQuaternion.ZERO,
         val modelId: Int = 0,
-        val tick: Long = 0L,
+    ) : NetworkEvent()
+
+    class SpawnRequest(
+        val requestId: Int = 0,
+        val pos: NetVector3 = NetVector3.ZERO,
+        val rot: NetQuaternion = NetQuaternion.ZERO,
+        val modelId: Int = 0,
+    ) : NetworkEvent()
+
+    class EntityAssigned(
+        val requestId: Int = 0,
+        val entityId: Int = 0,
     ) : NetworkEvent()
 }

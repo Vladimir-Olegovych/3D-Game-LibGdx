@@ -5,6 +5,7 @@ import com.gigapi.effects.LaunchedEffect
 import com.gigapi.eventbus.EventBus
 import com.gigapi.general.GContext
 import com.gigapi.kryo.GameServer
+import com.gigcreator.KRYO_SERVER_BUFFER_SIZE
 import com.gigcreator.core.chunk.ServerChunkManager
 import com.gigcreator.ecs.states.ServerPlayerRegistry
 import com.gigcreator.ecs.states.ServerTimeState
@@ -15,6 +16,6 @@ internal object ServerDefaults: LaunchedEffect {
         gContext.setObject(EventBus())
         gContext.setObject(ServerPlayerRegistry())
         gContext.setObject(ServerTimeState())
-        gContext.setObject(GameServer(1024))
+        gContext.setObject(GameServer(KRYO_SERVER_BUFFER_SIZE))
     }
 }

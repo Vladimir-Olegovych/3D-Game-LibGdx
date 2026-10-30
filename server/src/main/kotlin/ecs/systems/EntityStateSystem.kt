@@ -10,6 +10,7 @@ import com.gigcreator.core.congifs.ServerData
 import com.gigcreator.ecs.components.*
 import com.gigcreator.ecs.states.ServerPlayerRegistry
 import com.gigcreator.event.ServerEvent
+import com.gigcreator.network.SendType
 
 internal class EntityStateSystem : BaseSystem() {
 
@@ -18,11 +19,34 @@ internal class EntityStateSystem : BaseSystem() {
     @Wire
     private lateinit var serverData: ServerData
 
+    private lateinit var clientMapper: ComponentMapper<ClientComponent>
     private lateinit var transformMapper: ComponentMapper<TransformComponent>
     private lateinit var modelMapper: ComponentMapper<ModelComponent>
     private lateinit var observerMapper: ComponentMapper<ObserverComponent>
     private lateinit var ownerMapper: ComponentMapper<OwnerComponent>
     private lateinit var changedMapper: ComponentMapper<StateChangedComponent>
+
+    @BusEvent
+    @EventType(NetworkEvent.SpawnRequest::class)
+    fun onSpawnRequest(received: ServerEvent.OnReceived) {
+        val sender = playerRegistry.getEntityId(received.connection) ?: return
+        val request = received.event as NetworkEvent.SpawnRequest
+
+        val entityId = world.create()
+        transformMapper.create(entityId).apply {
+            pos = request.pos
+            rot = request.rot
+        }
+
+        modelMapper.create(entityId).modelId = request.modelId
+        ownerMapper.create(entityId).owner = sender
+        changedMapper.create(entityId)
+
+        clientMapper[sender]?.addEvent(
+            NetworkEvent.EntityAssigned(request.requestId, entityId),
+            sendType = SendType.TCP
+        )
+    }
 
     @BusEvent
     @EventType(NetworkEvent.EntityStateUpdate::class)

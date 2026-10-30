@@ -32,12 +32,6 @@ internal class StateReplicationSystem : IteratingSystem() {
     private lateinit var clientMapper: ComponentMapper<ClientComponent>
     private lateinit var changedMapper: ComponentMapper<StateChangedComponent>
 
-    private var tick = 0L
-
-    override fun begin() {
-        tick++
-    }
-
     override fun process(entityId: Int) {
         changedMapper.remove(entityId)
 
@@ -47,7 +41,6 @@ internal class StateReplicationSystem : IteratingSystem() {
             pos = transform.pos?: return,
             rot = transform.rot?: return,
             modelId = modelMapper[entityId]?.modelId ?: 0,
-            tick = tick,
         )
 
         forEachRecipient(entityId) { observer ->

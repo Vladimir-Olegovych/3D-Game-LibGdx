@@ -38,6 +38,7 @@ val chunkMeshParams = MeshParams(
 )
 
 val defaultPlayerHitBox = createHitboxModel(1F, 1.8F)
+val defaultBox = createHitboxModel(0.5F, 0.5F)
 
 data class Direction(
     val dx: Int, val dy: Int, val dz: Int,
