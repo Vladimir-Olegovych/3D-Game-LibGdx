@@ -8,6 +8,7 @@ import com.artemis.utils.IntBag
 import com.gigapi.eventbus.EventBus
 import com.gigcreator.core.chunk.ServerChunk
 import com.gigcreator.core.chunk.ServerChunkManager
+import com.gigcreator.core.ecs.canSee
 import com.gigcreator.ecs.components.ObserverComponent
 import com.gigcreator.ecs.components.OwnerComponent
 import com.gigcreator.ecs.components.TransformComponent
@@ -67,7 +68,7 @@ internal class ServerChunkSystem : ServerChunkManager.Listener, IteratingSystem(
     override fun onEntityShow(entity: Int, observers: IntBag, chunk: ServerChunk) {
         for (i in 0 until observers.size()) {
             val observer = observers[i]
-            if (canSee(observer, entity)) {
+            if (ownerMapper.canSee(observer, entity)) {
                 eventBus.sendEventNow(ServerChunkEvent.Show(observer, intArrayOf(entity)))
             }
         }
@@ -76,25 +77,12 @@ internal class ServerChunkSystem : ServerChunkManager.Listener, IteratingSystem(
     override fun onEntityHide(entity: Int, observers: IntBag, chunk: ServerChunk) {
         for (i in 0 until observers.size()) {
             val observer = observers[i]
-            if (canSee(observer, entity)) {
+            if (ownerMapper.canSee(observer, entity)) {
                 eventBus.sendEventNow(ServerChunkEvent.Hide(observer, intArrayOf(entity)))
             }
         }
     }
 
-    fun forEachRecipient(entity: Int, action: (observer: Int) -> Unit) {
-        val observers = chunkManager.getObservers(entity) ?: return
-        for (i in 0 until observers.size()) {
-            val observer = observers[i]
-            if (canSee(observer, entity)) action(observer)
-        }
-    }
-
-    fun canSee(observer: Int, entity: Int): Boolean {
-        if (observer == entity) return false
-        val owner = ownerMapper[entity]?.owner ?: return true
-        return owner != observer
-    }
 
     private fun visibleTo(observer: Int, entities: IntBag): IntArray? {
         val size = entities.size()
@@ -103,7 +91,7 @@ internal class ServerChunkSystem : ServerChunkManager.Listener, IteratingSystem(
         var n = 0
         for (i in 0 until size) {
             val e = entities[i]
-            if (canSee(observer, e)) out[n++] = e
+            if (ownerMapper.canSee(observer, e)) out[n++] = e
         }
         return if (n == 0) null else out.copyOf(n)
     }

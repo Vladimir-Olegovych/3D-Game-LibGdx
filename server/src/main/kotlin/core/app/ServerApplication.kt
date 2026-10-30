@@ -6,12 +6,17 @@ import com.gigapi.coruntines.DeltaUpdater
 import com.gigapi.eventbus.EventBus
 import com.gigapi.general.GContext
 import com.gigapi.kryo.GameServer
+import com.gigcreator.core.chunk.ServerChunkManager
 import com.gigcreator.core.congifs.ServerData
 import com.gigcreator.core.defaults.ServerConstants
 import com.gigcreator.core.defaults.ServerDefaults
 import com.gigcreator.ecs.states.ServerTimeState
+import com.gigcreator.ecs.systems.ChunkReplicationSystem
 import com.gigcreator.ecs.systems.ConnectionSystem
+import com.gigcreator.ecs.systems.EntityStateSystem
 import com.gigcreator.ecs.systems.SendSystem
+import com.gigcreator.ecs.systems.ServerChunkSystem
+import com.gigcreator.ecs.systems.StateReplicationSystem
 import com.gigcreator.ecs.systems.TimeSystem
 import com.gigcreator.registerAllEvents
 import kotlinx.coroutines.Dispatchers
@@ -29,6 +34,10 @@ class ServerApplication(
 
     override fun create() {
         ServerDefaults.launch(gContext)
+        gContext.setObject(ServerChunkManager(
+            chunkSize = serverData.chunkSize,
+            chunkHeight = serverData.chunkHeight,
+        ))
         gContext.setObject(serverData)
         gContext.launch()
         serverTimeState = gContext.getObject()
@@ -48,6 +57,10 @@ class ServerApplication(
         arrayOf(
             TimeSystem(),
             ConnectionSystem(),
+            EntityStateSystem(),
+            ServerChunkSystem(),
+            ChunkReplicationSystem(),
+            StateReplicationSystem(),
             SendSystem(),
         ).forEach { system ->
             eventBus.registerHandler(system)

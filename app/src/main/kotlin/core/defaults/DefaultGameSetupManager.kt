@@ -29,7 +29,7 @@ object DefaultGameSetupManager: Executor, LaunchedEffect {
         perspectiveCamera.position.set(Vector3(0f, TerrainGenerator.WORLD_SURFACE.toFloat(), 0f))
         perspectiveCamera.lookAt(-10f, TerrainGenerator.WORLD_SURFACE.toFloat(), -10f)
         perspectiveCamera.near = 0.2f
-        perspectiveCamera.far = (ChunkWorldUpdater.CHUNK_SIZE * ChunkWorldUpdater.DRAW_RADIUS_X) - ChunkWorldUpdater.CHUNK_SIZE * 1.5F
+        perspectiveCamera.far = (ChunkWorldUpdater.CHUNK_SIZE * ChunkWorldUpdater.DRAW_RADIUS_XZ) - ChunkWorldUpdater.CHUNK_SIZE * 1.5F
         perspectiveCamera.update()
         gContext.setObject(CameraTypes.GL_3D, perspectiveCamera)
         //---

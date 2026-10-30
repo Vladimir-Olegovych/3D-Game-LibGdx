@@ -13,7 +13,6 @@ import com.badlogic.gdx.physics.bullet.collision.CollisionConstants.DISABLE_DEAC
 import com.gigapi.eventbus.EventBus
 import com.gigapi.eventbus.annotation.BusEvent
 import com.gigapi.mesh.ModelAssetManager
-import com.gigcreator.NetEntityType
 import core.animator.ModelAnimator
 import core.assets.ModelID
 import core.blocks.types.BlockType
@@ -121,7 +120,6 @@ class WorldSystem: BaseSystem() {
 
         networkEntityMapper.create(playerEntityId).apply {
             isLocal = true
-            entityType = NetEntityType.PLAYER
             modelId = ModelID.M_PLAYER_MODEL.ordinal
         }
 

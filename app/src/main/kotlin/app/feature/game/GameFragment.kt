@@ -25,6 +25,7 @@ import com.gigcreator.core.congifs.ServerData
 import com.gigcreator.registerAllEvents
 import core.artemis.disposeALL
 import core.assets.MusicID
+import core.chunk.ChunkWorldUpdater
 import core.client.GameServerAddress
 import core.defaults.CameraTypes
 import core.defaults.DefaultWorldSetupManager
@@ -112,8 +113,13 @@ class GameFragment(
             worldName = navigation.worldName,
             serverName = navigation.worldName,
             serverPort = joinParams.port,
+            chunkSize = ChunkWorldUpdater.CHUNK_SIZE,
+            chunkHeight = ChunkWorldUpdater.CHUNK_HEIGHT,
+            radiusXZ = ChunkWorldUpdater.DRAW_RADIUS_XZ,
+            radiusY = ChunkWorldUpdater.DRAW_RADIUS_Y,
             worldSeed = generator.worldSeedFromServer!!
         )
+
         try {
             serverApplication = ServerApplication(serverData)
             serverApplication?.start(blockingInitialize = true)

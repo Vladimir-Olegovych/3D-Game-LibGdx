@@ -39,7 +39,7 @@ class DataUI : LaunchedEffect, UIGetter {
         fpsLabel = Label("FPS: Not updated", skin).apply { setAlignment(Align.right) }
         timeLabel = Label("Time: ", skin).apply { setAlignment(Align.right) }
         positionLabel = Label("XYZ: ", skin).apply { setAlignment(Align.right) }
-        drawRadiusLabel = Label("Radius XY: ${ChunkWorldUpdater.DRAW_RADIUS_X}|${ChunkWorldUpdater.DRAW_RADIUS_Y}", skin).apply { setAlignment(Align.right) }
+        drawRadiusLabel = Label("Radius XY: ${ChunkWorldUpdater.DRAW_RADIUS_XZ}|${ChunkWorldUpdater.DRAW_RADIUS_Y}", skin).apply { setAlignment(Align.right) }
         layout.add(fpsLabel).right().row()
         layout.add(timeLabel).right().row()
         layout.add(positionLabel).right().row()

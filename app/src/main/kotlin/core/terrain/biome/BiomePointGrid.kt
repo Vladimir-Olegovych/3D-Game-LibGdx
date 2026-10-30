@@ -48,7 +48,7 @@ class BiomePointGrid : LaunchedEffect, DisposableEffect {
 
     companion object {
         const val STEP_ADD = 32
-        const val POINT_RADIUS = ChunkWorldUpdater.DRAW_RADIUS_X / 2
+        const val POINT_RADIUS = ChunkWorldUpdater.DRAW_RADIUS_XZ / 2
         const val POINT_WORLD_STEP = ChunkWorldUpdater.CHUNK_SIZE * STEP_ADD
         const val BLEND_DISTANCE = POINT_WORLD_STEP * 0.4
 

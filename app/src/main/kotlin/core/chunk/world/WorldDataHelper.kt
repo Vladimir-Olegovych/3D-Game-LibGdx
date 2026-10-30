@@ -52,7 +52,7 @@ object WorldDataHelper {
     fun getChunkPositionsAroundPlayer(
         playerPosition: IntVector3
     ): List<IntVector3> {
-        val chunkDrawingRangeX = ChunkWorldUpdater.DRAW_RADIUS_X
+        val chunkDrawingRangeX = ChunkWorldUpdater.DRAW_RADIUS_XZ
         val chunkDrawingRangeY = ChunkWorldUpdater.DRAW_RADIUS_Y
 
         val centerChunk = chunkPositionFromBlockCoords(playerPosition)
@@ -89,7 +89,7 @@ object WorldDataHelper {
     fun getDataPositionsAroundPlayer(
         playerPosition: IntVector3
     ): List<IntVector3> {
-        val chunkDrawingRangeX = ChunkWorldUpdater.DRAW_RADIUS_X
+        val chunkDrawingRangeX = ChunkWorldUpdater.DRAW_RADIUS_XZ
         val chunkDrawingRangeY = ChunkWorldUpdater.DRAW_RADIUS_Y
 
         val centerChunk = chunkPositionFromBlockCoords(playerPosition)

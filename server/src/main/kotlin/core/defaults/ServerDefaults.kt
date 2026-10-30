@@ -13,7 +13,6 @@ internal object ServerDefaults: LaunchedEffect {
     override fun launch(gContext: GContext) {
         gContext.setObject(ObjectMapper())
         gContext.setObject(EventBus())
-        gContext.setObject(ServerChunkManager())
         gContext.setObject(ServerPlayerRegistry())
         gContext.setObject(ServerTimeState())
         gContext.setObject(GameServer(1024))

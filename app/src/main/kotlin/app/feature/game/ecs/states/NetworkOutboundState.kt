@@ -1,10 +1,7 @@
 package app.feature.game.ecs.states
 
-import java.util.concurrent.ConcurrentHashMap
-
 data class OutboundEntityState(
     val entityId: Int,
-    val entityType: Byte,
     val modelId: Int,
     val x: Float,
     val y: Float,
@@ -16,19 +13,17 @@ data class OutboundEntityState(
 )
 
 class NetworkOutboundState {
-    private val entities = ConcurrentHashMap<Int, OutboundEntityState>()
 
-    fun put(state: OutboundEntityState) {
-        entities[state.entityId] = state
+    @Volatile
+    private var states: List<OutboundEntityState> = emptyList()
+
+    fun replace(newStates: List<OutboundEntityState>) {
+        states = newStates
     }
 
-    fun remove(entityId: Int) {
-        entities.remove(entityId)
-    }
+    fun snapshot(): List<OutboundEntityState> = states
 
     fun clear() {
-        entities.clear()
+        states = emptyList()
     }
-
-    fun snapshot(): List<OutboundEntityState> = entities.values.toList()
 }

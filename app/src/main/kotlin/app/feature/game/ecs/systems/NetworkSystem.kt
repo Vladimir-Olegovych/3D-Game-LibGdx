@@ -6,15 +6,17 @@ import app.feature.game.ecs.states.NetworkOutboundState
 import app.feature.game.ecs.states.OutboundEntityState
 import app.feature.game.ecs.states.RemotePlayerRegistry
 import app.feature.game.event.ClientEvent
+import com.artemis.Aspect
 import com.artemis.BaseSystem
 import com.artemis.ComponentMapper
+import com.artemis.EntitySubscription
 import com.artemis.annotations.Wire
 import com.badlogic.gdx.math.Matrix4
+import com.badlogic.gdx.math.Quaternion
 import com.badlogic.gdx.math.Vector3
 import com.gigapi.eventbus.annotation.BusEvent
 import com.gigapi.eventbus.annotation.EventType
 import com.gigapi.mesh.ModelAssetManager
-import com.gigcreator.NetEntityType
 import com.gigcreator.NetQuaternion
 import com.gigcreator.NetVector3
 import com.gigcreator.NetworkEvent
@@ -27,6 +29,18 @@ import core.network.*
 import kotlin.math.cos
 import kotlin.math.sin
 
+/**
+ * Клиентская сторона сети.
+ *
+ * Отправка: каждый кадр собирает все свои сущности (NetworkEntityComponent.isLocal, networkId >= 0)
+ * в NetworkOutboundState; NetworkStateUpdater шлёт их на сервер 20 раз в секунду.
+ *
+ * Приём (сущности приходят только из видимых серверу чанков):
+ *   EntityJoined      -> создать удалённую сущность
+ *   EntityStateUpdate -> обновить цель интерполяции
+ *   EntityLeft        -> удалить
+ * Типов сущностей нет: внешний вид по modelId, остальное — набор компонентов.
+ */
 class NetworkSystem: BaseSystem() {
 
     companion object {
@@ -53,9 +67,19 @@ class NetworkSystem: BaseSystem() {
     private lateinit var networkEntityMapper: ComponentMapper<NetworkEntityComponent>
     private lateinit var interpolationMapper: ComponentMapper<NetworkInterpolationComponent>
 
+    private lateinit var networkEntities: EntitySubscription
+
+    private val tmpPos = Vector3()
+    private val tmpRot = Quaternion()
+
     override fun initialize() {
+        networkEntities = world.aspectSubscriptionManager.get(
+            Aspect.all(NetworkEntityComponent::class.java, TransformComponent::class.java)
+        )
         networkStateUpdater.start()
     }
+
+    // ------------------------------------------------------------------ connection
 
     @BusEvent
     fun onConnected(event: ClientEvent.OnConnected) {
@@ -65,7 +89,9 @@ class NetworkSystem: BaseSystem() {
     @BusEvent
     fun onDisconnected(event: ClientEvent.OnDisconnected) {
         networkState.connection = null
+        networkState.localPlayerId = -1
         outboundState.clear()
+        despawnAllRemoteEntities()
     }
 
     @BusEvent
@@ -78,45 +104,34 @@ class NetworkSystem: BaseSystem() {
         networkEntityMapper[localEntityId]?.networkId = hello.playerId
     }
 
+    // ------------------------------------------------------------------ receive
+
     @BusEvent
     @EventType(NetworkEvent.EntityJoined::class)
     fun onEntityJoined(received: ClientEvent.OnReceived) {
         val event = received.event as NetworkEvent.EntityJoined
-        if (event.entityType != NetEntityType.PLAYER) return
-        spawnRemotePlayer(event.entityId, event.pos, NetQuaternion.identity(), event.modelId)
+        spawnRemoteEntity(event.entityId, event.pos, event.rot, event.modelId)
     }
 
     @BusEvent
     @EventType(NetworkEvent.EntityLeft::class)
     fun onEntityLeft(received: ClientEvent.OnReceived) {
         val event = received.event as NetworkEvent.EntityLeft
-        if (event.entityType != NetEntityType.PLAYER) return
-        despawnRemotePlayer(event.entityId)
+        despawnRemoteEntity(event.entityId)
     }
 
     @BusEvent
     @EventType(NetworkEvent.EntityStateUpdate::class)
     fun onEntityStateUpdate(received: ClientEvent.OnReceived) {
         val event = received.event as NetworkEvent.EntityStateUpdate
-        if (event.entityType != NetEntityType.PLAYER) return
-        updateRemotePlayer(event.entityId, event.pos, event.rot, event.modelId)
+        updateRemoteEntity(event.entityId, event.pos, event.rot, event.modelId)
     }
 
-    @BusEvent
-    @EventType(NetworkEvent.EntityStateSnapshot::class)
-    fun onEntityStateSnapshot(received: ClientEvent.OnReceived) {
-        val event = received.event as NetworkEvent.EntityStateSnapshot
-        if (event.entityType != NetEntityType.PLAYER) return
-        if (remotePlayerRegistry.networkIdToEntityId.containsKey(event.entityId)) {
-            updateRemotePlayer(event.entityId, event.pos, event.rot, event.modelId)
-        } else {
-            spawnRemotePlayer(event.entityId, event.pos, event.rot, event.modelId)
-        }
-    }
+    // ------------------------------------------------------------------ loop
 
     override fun processSystem() {
         interpolateRemotes(world.delta)
-        sendLocalState()
+        sendLocalStates()
     }
 
     override fun dispose() {
@@ -124,36 +139,57 @@ class NetworkSystem: BaseSystem() {
         outboundState.clear()
     }
 
-    private fun sendLocalState() {
+    // ------------------------------------------------------------------ send
+
+    private fun sendLocalStates() {
         if (networkState.localPlayerId < 0) return
 
+        // Локальный игрок мог появиться раньше, чем пришёл Hello.
         val localEntityId = PlayerConstants.getLocalPlayerEntityId()
-        val networkEntity = networkEntityMapper[localEntityId] ?: return
-        if (networkEntity.networkId != networkState.localPlayerId) {
-            networkEntity.networkId = networkState.localPlayerId
+        networkEntityMapper[localEntityId]?.let {
+            if (it.networkId != networkState.localPlayerId) it.networkId = networkState.localPlayerId
         }
 
-        val transform = transformMapper[localEntityId]?.transform ?: return
-        val look = lookDirectionMapper[localEntityId] ?: return
-        val position = Vector3()
-        transform.getTranslation(position)
-        val rot = lookToNetQuaternion(look.yaw, look.pitch)
+        val entities = networkEntities.entities
+        val states = ArrayList<OutboundEntityState>(entities.size())
 
-        outboundState.put(
-            OutboundEntityState(
-                entityId = networkState.localPlayerId,
-                entityType = NetEntityType.PLAYER,
-                modelId = networkEntity.modelId,
-                x = position.x,
-                y = position.y,
-                z = position.z,
-                qx = rot.x,
-                qy = rot.y,
-                qz = rot.z,
-                qw = rot.w,
+        for (i in 0 until entities.size()) {
+            val entityId = entities[i]
+            val networkEntity = networkEntityMapper[entityId] ?: continue
+            if (!networkEntity.isLocal || networkEntity.networkId < 0) continue
+
+            val transform = transformMapper[entityId]?.transform ?: continue
+            transform.getTranslation(tmpPos)
+            val rot = localRotation(entityId, transform)
+
+            states.add(
+                OutboundEntityState(
+                    entityId = networkEntity.networkId,
+                    modelId = networkEntity.modelId,
+                    x = tmpPos.x,
+                    y = tmpPos.y,
+                    z = tmpPos.z,
+                    qx = rot.x,
+                    qy = rot.y,
+                    qz = rot.z,
+                    qw = rot.w,
+                )
             )
-        )
+        }
+
+        outboundState.replace(states)
     }
+
+    /** Игрок — по взгляду камеры, остальные (мобы и т.п.) — по матрице трансформа. */
+    private fun localRotation(entityId: Int, transform: Matrix4): NetQuaternion {
+        val look = lookDirectionMapper[entityId]
+        if (look != null) return lookToNetQuaternion(look.yaw, look.pitch)
+
+        transform.getRotation(tmpRot, true)
+        return NetQuaternion(tmpRot.x, tmpRot.y, tmpRot.z, tmpRot.w)
+    }
+
+    // ------------------------------------------------------------------ remote entities
 
     private fun interpolateRemotes(delta: Float) {
         for (entityId in remotePlayerRegistry.networkIdToEntityId.values) {
@@ -175,16 +211,20 @@ class NetworkSystem: BaseSystem() {
         }
     }
 
-    private fun spawnRemotePlayer(networkId: Int, pos: NetVector3, rot: NetQuaternion, modelId: Int) {
+    private fun spawnRemoteEntity(networkId: Int, pos: NetVector3, rot: NetQuaternion, modelId: Int) {
         if (networkId == networkState.localPlayerId) return
-        if (remotePlayerRegistry.networkIdToEntityId.containsKey(networkId)) return
+
+        // Повторный Joined (например, снова вошла в зону) — просто обновляем.
+        if (remotePlayerRegistry.networkIdToEntityId.containsKey(networkId)) {
+            updateRemoteEntity(networkId, pos, rot, modelId)
+            return
+        }
 
         val entityId = world.create()
         remotePlayerRegistry.networkIdToEntityId[networkId] = entityId
 
         networkEntityMapper.create(entityId).apply {
             this.networkId = networkId
-            this.entityType = NetEntityType.PLAYER
             this.isLocal = false
             this.modelId = modelId
         }
@@ -198,14 +238,14 @@ class NetworkSystem: BaseSystem() {
         updateRemoteAnimation(entityId, moving = false)
     }
 
-    private fun updateRemotePlayer(networkId: Int, pos: NetVector3, rot: NetQuaternion, modelId: Int) {
+    /**
+     * Обновление по UDP может прийти раньше TCP-Joined или после TCP-Left.
+     * Неизвестные id игнорируем: создаёт сущность только Joined, иначе после Left появлялись бы призраки.
+     */
+    private fun updateRemoteEntity(networkId: Int, pos: NetVector3, rot: NetQuaternion, modelId: Int) {
         if (networkId == networkState.localPlayerId) return
 
-        val entityId = remotePlayerRegistry.networkIdToEntityId[networkId]
-            ?: run {
-                spawnRemotePlayer(networkId, pos, rot, modelId)
-                return
-            }
+        val entityId = remotePlayerRegistry.networkIdToEntityId[networkId] ?: return
 
         val interp = interpolationMapper[entityId] ?: interpolationMapper.create(entityId)
         pushInterpolationTarget(interp, pos, rot)
@@ -217,6 +257,20 @@ class NetworkSystem: BaseSystem() {
         }
         updateRemoteAnimation(entityId, isMoving(interp))
     }
+
+    private fun despawnRemoteEntity(networkId: Int) {
+        val entityId = remotePlayerRegistry.networkIdToEntityId.remove(networkId) ?: return
+        clearVisual(entityId)
+        world.delete(entityId)
+    }
+
+    private fun despawnAllRemoteEntities() {
+        for (networkId in remotePlayerRegistry.networkIdToEntityId.keys.toList()) {
+            despawnRemoteEntity(networkId)
+        }
+    }
+
+    // ------------------------------------------------------------------ interpolation
 
     private fun resetInterpolation(interp: NetworkInterpolationComponent, pos: NetVector3, rot: NetQuaternion) {
         interp.fromPos.set(pos.x, pos.y, pos.z)
@@ -283,6 +337,8 @@ class NetworkSystem: BaseSystem() {
         return interp.fromPos.dst2(interp.toPos) > MOVE_EPS2
     }
 
+    // ------------------------------------------------------------------ visuals
+
     private fun applyVisual(entityId: Int, modelId: Int) {
         clearVisual(entityId)
 
@@ -316,11 +372,5 @@ class NetworkSystem: BaseSystem() {
 
     private fun resolveModelId(modelId: Int): ModelID {
         return ModelID.entries.getOrNull(modelId) ?: ModelID.NULL
-    }
-
-    private fun despawnRemotePlayer(networkId: Int) {
-        val entityId = remotePlayerRegistry.networkIdToEntityId.remove(networkId) ?: return
-        clearVisual(entityId)
-        world.delete(entityId)
     }
 }

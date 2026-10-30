@@ -37,7 +37,7 @@ import java.util.concurrent.atomic.AtomicInteger
 class ChunkWorldUpdater : LaunchedEffect, DisposableEffect, DeltaUpdater(WorldConstants.CHUNK_DELTA, Dispatchers.Default) {
 
     companion object {
-        const val DRAW_RADIUS_X = 16
+        const val DRAW_RADIUS_XZ = 16
         const val DRAW_RADIUS_Y = 10
         const val CHUNK_SIZE = 16
         const val CHUNK_HEIGHT = 16
@@ -359,10 +359,10 @@ class ChunkWorldUpdater : LaunchedEffect, DisposableEffect, DeltaUpdater(WorldCo
     private fun removeOutsideChunks(playerPosition: IntVector3) {
         val playerChunk = WorldDataHelper.chunkPositionFromBlockCoords(playerPosition)
 
-        val meshRemoveRadiusX = DRAW_RADIUS_X + REMOVE_MARGIN
+        val meshRemoveRadiusX = DRAW_RADIUS_XZ + REMOVE_MARGIN
         val meshRemoveRadiusY = DRAW_RADIUS_Y + REMOVE_MARGIN
 
-        val dataRemoveRadiusX = DRAW_RADIUS_X + DATA_RADIUS_EXTRA + REMOVE_MARGIN
+        val dataRemoveRadiusX = DRAW_RADIUS_XZ + DATA_RADIUS_EXTRA + REMOVE_MARGIN
         val dataRemoveRadiusY = DRAW_RADIUS_Y + DATA_RADIUS_EXTRA + REMOVE_MARGIN
 
         fun outsideMesh(position: IntVector3) = WorldDataHelper.isOutsideRadius(

@@ -4,7 +4,6 @@ import com.artemis.BaseSystem
 import com.artemis.ComponentMapper
 import com.artemis.annotations.Wire
 import com.gigapi.eventbus.annotation.BusEvent
-import com.gigcreator.NetVector3
 import com.gigcreator.NetworkEvent
 import com.gigcreator.core.congifs.ServerData
 import com.gigcreator.ecs.components.ClientComponent
@@ -35,8 +34,10 @@ internal class ConnectionSystem: BaseSystem() {
 
         playerRegistry.addPlayer(connection, entityId)
 
+        // Transform/Observer/Owner добавит EntityStateSystem по первому состоянию клиента.
         newClient.addEvent(
             NetworkEvent.HelloFromServer(
+                playerId = entityId,
                 worldSeed = serverData.worldSeed,
                 timeOfDay = serverTimeState.timeOfDay,
                 cycleDuration = serverTimeState.cycleDuration,
@@ -50,6 +51,7 @@ internal class ConnectionSystem: BaseSystem() {
         val connection = event.connection
         val entityId = playerRegistry.getEntityId(connection)?: return
         playerRegistry.removePlayer(connection)
+        // ServerChunkSystem.removed() сам уберёт сущность из чанков и разошлёт Hide.
         world.delete(entityId)
     }
 

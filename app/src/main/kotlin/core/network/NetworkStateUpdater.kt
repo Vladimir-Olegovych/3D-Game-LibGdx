@@ -12,6 +12,7 @@ import com.gigcreator.NetVector3
 import com.gigcreator.NetworkEvent
 import kotlinx.coroutines.Dispatchers
 
+/** 20 Гц отправляет на сервер состояния всех «своих» сущностей одним UDP-пакетом. */
 class NetworkStateUpdater : LaunchedEffect, DisposableEffect, DeltaUpdater(1 / 20F, Dispatchers.IO) {
 
     private lateinit var gameClient: GameClient
@@ -35,15 +36,18 @@ class NetworkStateUpdater : LaunchedEffect, DisposableEffect, DeltaUpdater(1 / 2
             val state = states[index]
             NetworkEvent.EntityStateUpdate(
                 entityId = state.entityId,
-                entityType = state.entityType,
                 pos = NetVector3(state.x, state.y, state.z),
                 rot = NetQuaternion(state.qx, state.qy, state.qz, state.qw),
-                tick = currentTick,
                 modelId = state.modelId,
+                tick = currentTick,
             )
         }
 
-        gameClient.sendUDP(GamePacket(events = events))
+        try {
+            gameClient.sendUDP(GamePacket(events = events))
+        } catch (e: Throwable) {
+            e.printStackTrace()
+        }
     }
 
     override fun dispose() {

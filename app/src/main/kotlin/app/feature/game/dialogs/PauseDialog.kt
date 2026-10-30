@@ -33,7 +33,7 @@ class PauseDialog(
     init {
         val buttonSkin = assetManager.get<Skin>(SkinID.BUTTON.skin)
 
-        val portField = TextField("", buttonSkin).apply {
+        val portField = TextField("5551", buttonSkin).apply {
             messageText = "Server port"
         }
 
