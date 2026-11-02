@@ -1,5 +1,9 @@
 #ifdef GL_ES
+#ifdef GL_FRAGMENT_PRECISION_HIGH
+precision highp float;
+#else
 precision mediump float;
+#endif
 #endif
 
 uniform vec2  u_sunScreenPos;   // позиция солнца в NDC [-1,1]

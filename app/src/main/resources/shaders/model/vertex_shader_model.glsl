@@ -12,7 +12,7 @@ varying vec3 v_WorldPos;
 void main() {
     vec4 worldPosition = transform * vec4(a_Position, 1.0);
     v_WorldPos = worldPosition.xyz;
-    v_Normal   = normalize(mat3(transform) * a_Normal);
+    v_Normal   = normalize(mat3(transform[0].xyz, transform[1].xyz, transform[2].xyz) * a_Normal);
     v_TexCoord = a_TexCoord;
 
     gl_Position = modelViewProjection * worldPosition;

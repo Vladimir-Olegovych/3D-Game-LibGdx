@@ -57,8 +57,14 @@ internal class EntityStateSystem : BaseSystem() {
 
         if (target == sender) {
             if (!transformMapper.has(sender)) enterWorld(sender)
-        } else if (ownerMapper[target]?.owner != sender) {
-            return
+        } else {
+            val owner = ownerMapper[target]?.owner
+            when {
+                owner == null -> claim(target, sender)           // ничья — забираем себе
+                owner == sender -> {}                            // уже ваша — обычный апдейт
+                clientMapper.has(owner) -> return                // живой чужой владелец — нельзя
+                else -> claim(target, sender)                    // владелец мёртв — перенимаем
+            }
         }
 
         val transform = transformMapper[target] ?: return
@@ -69,6 +75,10 @@ internal class EntityStateSystem : BaseSystem() {
         model.modelId = update.modelId
 
         if (!changedMapper.has(target)) changedMapper.create(target)
+    }
+
+    private fun claim(entityId: Int, newOwner: Int) {
+        ownerMapper.create(entityId).owner = newOwner
     }
 
     /** Первое состояние клиента: сущность получает позицию, становится наблюдателем и своим владельцем. */

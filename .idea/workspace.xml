@@ -6,8 +6,12 @@
   <component name="ChangeListManager">
     <list default="true" id="21bb169d-cf41-4c8a-bf73-e63da1eaa6c0" name="Changes" comment="update network">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/app/feature/game/ecs/systems/WorldSystem.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/app/feature/game/ecs/systems/WorldSystem.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/server/src/main/kotlin/ecs/systems/ConnectionSystem.kt" beforeDir="false" afterPath="$PROJECT_DIR$/server/src/main/kotlin/ecs/systems/ConnectionSystem.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/app/feature/game/GameFragment.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/app/feature/game/GameFragment.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/resources/shaders/model/fragment_shader_model.glsl" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/resources/shaders/model/fragment_shader_model.glsl" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/resources/shaders/model/vertex_shader_model.glsl" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/resources/shaders/model/vertex_shader_model.glsl" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/resources/shaders/sky_planet/fragment_shader_sky_planet.glsl" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/resources/shaders/sky_planet/fragment_shader_sky_planet.glsl" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/resources/shaders/stars/fragment_shader_stars.glsl" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/resources/shaders/stars/fragment_shader_stars.glsl" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/src/main/kotlin/ecs/systems/EntityStateSystem.kt" beforeDir="false" afterPath="$PROJECT_DIR$/server/src/main/kotlin/ecs/systems/EntityStateSystem.kt" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -253,10 +257,10 @@
       </method>
     </configuration>
     <list>
-      <item itemvalue="Gradle.GDX-3D-TEST [desktop:shadowJar]" />
-      <item itemvalue="Gradle.GDX-3D-TEST [server:assemble]" />
       <item itemvalue="Gradle.GDX-3D-TEST [:app:assemble]" />
       <item itemvalue="Gradle.GDX-3D-TEST [:core:assemble]" />
+      <item itemvalue="Gradle.GDX-3D-TEST [desktop:shadowJar]" />
+      <item itemvalue="Gradle.GDX-3D-TEST [server:assemble]" />
       <item itemvalue="Kotlin.DesktopMainKt" />
       <item itemvalue="Kotlin.ServerMainKt" />
     </list>

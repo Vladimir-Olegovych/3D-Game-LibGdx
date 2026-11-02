@@ -86,7 +86,7 @@ class GameFragment(
 
         val musicPlayer = gameGContext.getObject<MusicPlayer>()
         musicPlayer.setVolume(0.5F)
-        musicPlayer.play(MusicID.MUSIC_2, true)
+        musicPlayer.play(MusicID.MUSIC_1, true)
 
         eventBus.registerHandler(this)
         Gdx.input.isCursorCatched = true
