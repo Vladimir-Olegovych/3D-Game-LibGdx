@@ -50,10 +50,10 @@ object WorldDataHelper {
     }
 
     fun getChunkPositionsAroundPlayer(
+        drawRadiusXZ: Int,
+        drawRadiusY: Int,
         playerPosition: IntVector3
     ): List<IntVector3> {
-        val chunkDrawingRangeX = ChunkWorldUpdater.DRAW_RADIUS_XZ
-        val chunkDrawingRangeY = ChunkWorldUpdater.DRAW_RADIUS_Y
 
         val centerChunk = chunkPositionFromBlockCoords(playerPosition)
         val chunkPositionsToCreate = mutableListOf<IntVector3>()
@@ -62,15 +62,12 @@ object WorldDataHelper {
         val centerY = centerChunk.y
         val centerZ = centerChunk.z
 
-        val radiusXZ = chunkDrawingRangeX
-        val radiusY = chunkDrawingRangeY
-
-        for (dx in -radiusXZ..radiusXZ) {
-            for (dz in -radiusXZ..radiusXZ) {
+        for (dx in -drawRadiusXZ..drawRadiusXZ) {
+            for (dz in -drawRadiusXZ..drawRadiusXZ) {
                 val horizontalDistSquared = dx * dx + dz * dz
-                if (horizontalDistSquared <= radiusXZ * radiusXZ) {
-                    for (dy in -radiusY..radiusY) {
-                        if (dy * dy <= radiusY * radiusY) {
+                if (horizontalDistSquared <= drawRadiusXZ * drawRadiusXZ) {
+                    for (dy in -drawRadiusY..drawRadiusY) {
+                        if (dy * dy <= drawRadiusY * drawRadiusY) {
                             val chunkPos = IntVector3(
                                 centerX + dx,
                                 centerY + dy,
@@ -87,16 +84,16 @@ object WorldDataHelper {
     }
 
     fun getDataPositionsAroundPlayer(
+        drawRadiusXZ: Int,
+        drawRadiusY: Int,
         playerPosition: IntVector3
     ): List<IntVector3> {
-        val chunkDrawingRangeX = ChunkWorldUpdater.DRAW_RADIUS_XZ
-        val chunkDrawingRangeY = ChunkWorldUpdater.DRAW_RADIUS_Y
 
         val centerChunk = chunkPositionFromBlockCoords(playerPosition)
         val chunkPositionsToCreate = mutableListOf<IntVector3>()
 
-        val radiusXZ = chunkDrawingRangeX + 1
-        val radiusY = chunkDrawingRangeY + 1
+        val radiusXZ = drawRadiusXZ + 1
+        val radiusY = drawRadiusY + 1
 
         val centerX = centerChunk.x
         val centerY = centerChunk.y

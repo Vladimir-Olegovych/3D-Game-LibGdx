@@ -4,18 +4,19 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="21bb169d-cf41-4c8a-bf73-e63da1eaa6c0" name="Changes" comment="update lod generation">
-      <change afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/terrain/biome/BiomeWarp.kt" afterDir="false" />
+    <list default="true" id="21bb169d-cf41-4c8a-bf73-e63da1eaa6c0" name="Changes" comment="update generation">
+      <change afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/settings/SettingsSO.kt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/src/main/resources/configs/SETTINGS_SO.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/app/feature/game/ecs/systems/CameraSystem.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/app/feature/game/ecs/systems/CameraSystem.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/app/feature/game/GameFragment.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/app/feature/game/GameFragment.kt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/app/feature/game/ecs/systems/DrawSystem.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/app/feature/game/ecs/systems/DrawSystem.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/app/feature/game/ui/DataUI.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/app/feature/game/ui/DataUI.kt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/core/chunk/ChunkWorldUpdater.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/chunk/ChunkWorldUpdater.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/core/defaults/PlayerConstants.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/defaults/PlayerConstants.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/core/chunk/world/WorldDataHelper.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/chunk/world/WorldDataHelper.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/core/configs/ConfigSetupManager.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/configs/ConfigSetupManager.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/core/configs/ConfigTypes.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/configs/ConfigTypes.kt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/core/lod/LodTerrainRenderer.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/lod/LodTerrainRenderer.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/core/terrain/TerrainGenerator.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/terrain/TerrainGenerator.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/core/terrain/biome/BiomePointGrid.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/terrain/biome/BiomePointGrid.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/core/terrain/biome/biomes/MountainBiomeGenerator.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/terrain/biome/biomes/MountainBiomeGenerator.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/desktop/src/main/kotlin/DesktopMain.kt" beforeDir="false" afterPath="$PROJECT_DIR$/desktop/src/main/kotlin/DesktopMain.kt" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -120,18 +121,19 @@
     &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
     &quot;git-widget-placeholder&quot;: &quot;main&quot;,
     &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
-    &quot;last_opened_file_path&quot;: &quot;/home/vladimir/Documents/Java/GDX-3D-TEST/app/src/main/resources/shaders/lod&quot;
+    &quot;last_opened_file_path&quot;: &quot;/home/vladimir/Documents/Java/GDX-3D-TEST/app/src/main/kotlin/core/terrain/level&quot;
   }
 }</component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
-      <recent name="$PROJECT_DIR$/app/src/main/resources/shaders/lod" />
-      <recent name="$PROJECT_DIR$/server/src/main/kotlin/core/chunk" />
-      <recent name="$PROJECT_DIR$/configs" />
-      <recent name="$PROJECT_DIR$/app/src/main/kotlin/app/feature/game/ui" />
-      <recent name="$PROJECT_DIR$/app/src/main/kotlin/core/mesh" />
+      <recent name="$PROJECT_DIR$/app/src/main/kotlin/core/terrain/level" />
+      <recent name="$PROJECT_DIR$/app/src/main/kotlin/core/terrain" />
+      <recent name="$PROJECT_DIR$/app/src/main/kotlin/core/terrain/structures/builder" />
+      <recent name="$PROJECT_DIR$/app/src/main/kotlin/core/terrain/structures/trees" />
+      <recent name="$PROJECT_DIR$/app/src/main/kotlin/core/lod" />
     </key>
     <key name="CopyKotlinDeclarationDialog.RECENTS_KEY">
+      <recent name="core.terrain.biome.biomes" />
       <recent name="" />
       <recent name="app.feature.multiplayer" />
       <recent name="app.feature.game.ecs.systems" />
@@ -145,7 +147,7 @@
       <recent name="core.terrain.structures.nature" />
     </key>
   </component>
-  <component name="RunManager" selected="Gradle.GDX-3D-TEST [desktop:shadowJar]">
+  <component name="RunManager" selected="Kotlin.DesktopMainKt">
     <configuration name="GDX-3D-TEST [:app:assemble]" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
       <ExternalSystemSettings>
         <option name="executionName" />
@@ -354,6 +356,7 @@
     <MESSAGE value="update network" />
     <MESSAGE value="update world storage" />
     <MESSAGE value="update lod generation" />
-    <option name="LAST_COMMIT_MESSAGE" value="update lod generation" />
+    <MESSAGE value="update generation" />
+    <option name="LAST_COMMIT_MESSAGE" value="update generation" />
   </component>
 </project>

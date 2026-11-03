@@ -18,6 +18,7 @@ import com.gigapi.fragment.Fragment
 import com.gigapi.general.GContext
 import com.gigapi.kryo.GameClient
 import com.gigapi.sounds.MusicPlayer
+import com.gigapi.storage.json.AppConfig
 import com.gigapi.viewport.UnfairViewport
 import com.gigcreator.NetworkEvent
 import com.gigcreator.core.app.ServerApplication
@@ -27,9 +28,11 @@ import core.artemis.disposeALL
 import core.assets.MusicID
 import core.chunk.ChunkWorldUpdater
 import core.client.GameServerAddress
+import core.configs.ConfigTypes
 import core.defaults.CameraTypes
 import core.defaults.DefaultWorldSetupManager
 import core.navigation.Navigation
+import core.settings.SettingsSO
 import core.terrain.TerrainGenerator
 import core.viewport.ViewportTypes
 import kotlinx.coroutines.delay
@@ -116,7 +119,7 @@ class GameFragment(
         val worldData = navigation.worldData?: return false
         val timeState = artemisWorld.getRegistered(TimeState::class.java)
         val generator = gameGContext.getObject<TerrainGenerator>()
-
+        val settingsSO = gContext.getObject<AppConfig<SettingsSO>>(ConfigTypes.SETTINGS_SO).getConfig()
 
         val serverData = ServerData(
             worldName = worldData.meta.name,
@@ -124,8 +127,8 @@ class GameFragment(
             serverPort = joinParams.port,
             chunkSize = ChunkWorldUpdater.CHUNK_SIZE,
             chunkHeight = ChunkWorldUpdater.CHUNK_HEIGHT,
-            radiusXZ = ChunkWorldUpdater.DRAW_RADIUS_XZ,
-            radiusY = ChunkWorldUpdater.DRAW_RADIUS_Y,
+            radiusXZ = settingsSO.drawRadiusXZ,
+            radiusY = settingsSO.drawRadiusY,
             worldSeed = generator.worldSeedFromServer!!
         )
 

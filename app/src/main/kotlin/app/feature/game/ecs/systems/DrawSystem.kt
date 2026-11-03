@@ -14,16 +14,18 @@ import com.badlogic.gdx.graphics.PerspectiveCamera
 import com.badlogic.gdx.graphics.glutils.ShaderProgram
 import com.badlogic.gdx.math.Matrix4
 import com.badlogic.gdx.math.Vector3
+import com.gigapi.storage.json.AppConfig
 import com.gigapi.texture.DefaultsTextures
 import core.animator.ModelAnimator
 import core.chunk.ChunkWorldUpdater
+import core.configs.ConfigTypes
 import core.defaults.CameraTypes
-import core.lod.LodConfig
 import core.lod.LodTerrainRenderer
 import core.mesh.generators.ChunkMeshSplit
 import core.mesh.generators.GreedyChunkMesher
 import core.renderers.SkyPlanetRenderer
 import core.renderers.StarRenderer
+import core.settings.SettingsSO
 import core.shaders.ShaderTypes
 
 @One(MeshComponent::class, BlenderModelComponent::class)
@@ -46,7 +48,8 @@ class DrawSystem : BaseEntitySystem() {
 
     @Wire(name = ShaderTypes.MODEL_SHADER)
     private lateinit var modelShader: ShaderProgram
-
+    @Wire(name = ConfigTypes.SETTINGS_SO)
+    private lateinit var settingsConfig: AppConfig<SettingsSO>
     @Wire
     private lateinit var timeState: TimeState
 
@@ -58,6 +61,9 @@ class DrawSystem : BaseEntitySystem() {
     @Wire
     private lateinit var lodRenderer: LodTerrainRenderer
 
+
+    private lateinit var settingsSO: SettingsSO
+
     private val drawTasks = arrayOf(
         DrawTaskChunks(),
         DrawTaskModels()
@@ -67,6 +73,10 @@ class DrawSystem : BaseEntitySystem() {
     private val tmpDimensions = Vector3()
     private val tmpToObject = Vector3()
 
+
+    override fun initialize() {
+        settingsSO = settingsConfig.getConfig()
+    }
 
     override fun begin() {
         val fog = timeState.fogColor()
@@ -80,6 +90,7 @@ class DrawSystem : BaseEntitySystem() {
 
         Gdx.gl.glEnable(GL20.GL_CULL_FACE)
         Gdx.gl.glEnable(GL20.GL_DEPTH_TEST)
+
     }
 
     override fun processSystem() {
@@ -92,15 +103,17 @@ class DrawSystem : BaseEntitySystem() {
         gl.glStencilOp(GL20.GL_KEEP, GL20.GL_KEEP, GL20.GL_REPLACE)
         drawTasks[0].draw(subscription.entities)
 
-        gl.glStencilFunc(GL20.GL_NOTEQUAL, 1, 0xFF)
-        gl.glStencilOp(GL20.GL_KEEP, GL20.GL_KEEP, GL20.GL_KEEP)
-        lodRenderer.render(
-            camera,
-            timeState.fogColor(),
-            timeState.dayPhase,
-            timeState.maxShadowThreshold,
-            timeState.nightBlueFilter
-        )
+        if (settingsSO.isLodEnabled) {
+            gl.glStencilFunc(GL20.GL_NOTEQUAL, 1, 0xFF)
+            gl.glStencilOp(GL20.GL_KEEP, GL20.GL_KEEP, GL20.GL_KEEP)
+            lodRenderer.render(
+                camera,
+                timeState.fogColor(),
+                timeState.dayPhase,
+                timeState.maxShadowThreshold,
+                timeState.nightBlueFilter
+            )
+        }
 
         gl.glDisable(GL20.GL_STENCIL_TEST)
         drawTasks[1].draw(subscription.entities)
@@ -335,9 +348,12 @@ class DrawSystem : BaseEntitySystem() {
         }
 
         private fun bindCommon(shader: ShaderProgram) {
+            val chunkFadeEnd = (ChunkWorldUpdater.CHUNK_SIZE * settingsSO.drawRadiusXZ - 24).toFloat()
+            val chunkFadeStart = chunkFadeEnd - 42f
+
             shader.bind()
-            shader.setUniformf("u_lodFadeStart", LodConfig.CHUNK_FADE_START)
-            shader.setUniformf("u_lodFadeEnd", LodConfig.CHUNK_FADE_END)
+            shader.setUniformf("u_lodFadeStart", chunkFadeStart)
+            shader.setUniformf("u_lodFadeEnd", chunkFadeEnd)
             shader.setUniformi("u_texture", 0)
             shader.setUniformMatrix("modelViewProjection", camera.combined)
             shader.setUniformf("viewPosition", camera.position)

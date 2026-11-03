@@ -13,10 +13,12 @@ import com.gigapi.general.GContext
 import com.gigapi.math.vector.IntVector3
 import com.gigapi.math.vector.roundToFloat
 import com.gigapi.mesh.MeshData
+import com.gigapi.storage.json.AppConfig
 import core.blocks.types.BlockType
 import core.chunk.world.WorldChunksPreparation
 import core.chunk.world.WorldDataHelper
 import core.chunk.world.WorldGenerationData
+import core.configs.ConfigTypes
 import core.defaults.WorldConstants
 import core.light.LightEngine
 import core.math.createMatrixForChunk
@@ -25,6 +27,7 @@ import core.mesh.generators.ChunkMeshSplit
 import core.mesh.generators.GreedyChunkMesher
 import core.mesh.generators.MeshGenerator
 import core.scope.DispatcherTypes
+import core.settings.SettingsSO
 import core.terrain.TerrainGenerator
 import core.terrain.biome.BiomePoints
 import kotlinx.coroutines.*
@@ -38,8 +41,6 @@ import java.util.concurrent.atomic.AtomicInteger
 class ChunkWorldUpdater : LaunchedEffect, DisposableEffect, DeltaUpdater(WorldConstants.CHUNK_DELTA, Dispatchers.Default) {
 
     companion object {
-        const val DRAW_RADIUS_XZ = 16
-        const val DRAW_RADIUS_Y = 6
         const val CHUNK_SIZE = 16
         const val CHUNK_HEIGHT = 16
         const val DATA_RADIUS_EXTRA = 1
@@ -94,6 +95,8 @@ class ChunkWorldUpdater : LaunchedEffect, DisposableEffect, DeltaUpdater(WorldCo
     private lateinit var meshGenerator: MeshGenerator
     private lateinit var terrainGenerator: TerrainGenerator
     private lateinit var mainScope: CoroutineScope
+    private lateinit var settingsSO: SettingsSO
+
 
     interface ChunkWorldListener {
         suspend fun getChunkChanges(position: IntVector3): HashMap<Int, Byte>?
@@ -110,6 +113,8 @@ class ChunkWorldUpdater : LaunchedEffect, DisposableEffect, DeltaUpdater(WorldCo
     }
 
     override fun launch(gContext: GContext) {
+        settingsSO = gContext.getObject<AppConfig<SettingsSO>>(ConfigTypes.SETTINGS_SO).getConfig()
+
         chunkEventBus = gContext.getObject(EventBusTypes.CHUNK_EVENT_BUS)
         physicsEventBus = gContext.getObject(EventBusTypes.PHYSICS_EVENT_BUS)
         meshGenerator = gContext.getObject<GreedyChunkMesher>()
@@ -399,11 +404,11 @@ class ChunkWorldUpdater : LaunchedEffect, DisposableEffect, DeltaUpdater(WorldCo
     private fun removeOutsideChunks(playerPosition: IntVector3) {
         val playerChunk = WorldDataHelper.chunkPositionFromBlockCoords(playerPosition)
 
-        val meshRemoveRadiusX = DRAW_RADIUS_XZ + REMOVE_MARGIN
-        val meshRemoveRadiusY = DRAW_RADIUS_Y + REMOVE_MARGIN
+        val meshRemoveRadiusX = settingsSO.drawRadiusXZ + REMOVE_MARGIN
+        val meshRemoveRadiusY = settingsSO.drawRadiusY + REMOVE_MARGIN
 
-        val dataRemoveRadiusX = DRAW_RADIUS_XZ + DATA_RADIUS_EXTRA + REMOVE_MARGIN
-        val dataRemoveRadiusY = DRAW_RADIUS_Y + DATA_RADIUS_EXTRA + REMOVE_MARGIN
+        val dataRemoveRadiusX = settingsSO.drawRadiusXZ + DATA_RADIUS_EXTRA + REMOVE_MARGIN
+        val dataRemoveRadiusY = settingsSO.drawRadiusY + DATA_RADIUS_EXTRA + REMOVE_MARGIN
 
         fun outsideMesh(position: IntVector3) = WorldDataHelper.isOutsideRadius(
             position = position, center = playerChunk,
@@ -581,8 +586,16 @@ class ChunkWorldUpdater : LaunchedEffect, DisposableEffect, DeltaUpdater(WorldCo
     }
 
     private fun getWorldGenerationData(playerPosition: IntVector3): WorldGenerationData {
-        val meshPositions = WorldDataHelper.getChunkPositionsAroundPlayer(playerPosition)
-        val dataPositions = WorldDataHelper.getDataPositionsAroundPlayer(playerPosition)
+        val meshPositions = WorldDataHelper.getChunkPositionsAroundPlayer(
+            drawRadiusXZ = settingsSO.drawRadiusXZ,
+            drawRadiusY = settingsSO.drawRadiusY,
+            playerPosition = playerPosition
+        )
+        val dataPositions = WorldDataHelper.getDataPositionsAroundPlayer(
+            drawRadiusXZ = settingsSO.drawRadiusXZ,
+            drawRadiusY = settingsSO.drawRadiusY,
+            playerPosition = playerPosition
+        )
 
         return WorldGenerationData(
             playerPosition = playerPosition,

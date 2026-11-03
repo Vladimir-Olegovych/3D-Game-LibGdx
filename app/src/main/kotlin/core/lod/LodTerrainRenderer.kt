@@ -10,7 +10,6 @@ import com.badlogic.gdx.graphics.glutils.ShaderProgram
 import com.gigapi.effects.DisposableEffect
 import com.gigapi.effects.LaunchedEffect
 import com.gigapi.general.GContext
-import core.chunk.ChunkWorldUpdater
 import core.shaders.ShaderTypes
 import core.terrain.TerrainGenerator
 import core.terrain.biome.models.BiomeType
@@ -24,20 +23,13 @@ import java.util.concurrent.ConcurrentLinkedQueue
 import kotlin.math.abs
 import kotlin.math.floor
 import kotlin.math.max
-import kotlin.math.sqrt
 
-/**
- * Настройки LOD.
- *
- * Уровень L: клетка = BASE_CELL * 2^L блоков, тайл = TILE_CELLS клеток.
- * Каждый уровень покрывает квадрат (2 * RING + 1)^2 тайлов вокруг игрока.
- */
 object LodConfig {
     const val TILE_CELLS = 48
-    const val BASE_CELL = 2
+    const val BASE_CELL = 4
     const val RING = 3
 
-    const val FOG_DISTANCE = 50_000f
+    const val FOG_DISTANCE = 10_000f
 
     const val MAX_PENDING = 3
     const val MAX_UPLOADS_PER_FRAME = 3
@@ -60,11 +52,6 @@ object LodConfig {
 
     fun fadeStart(level: Int): Float =
         if (level >= LEVELS - 1) 1e9f else fadeEnd(level) * 0.78f
-
-    val CHUNK_FADE_END: Float =
-        (ChunkWorldUpdater.CHUNK_SIZE * ChunkWorldUpdater.DRAW_RADIUS_XZ - 24).toFloat()
-
-    val CHUNK_FADE_START: Float = CHUNK_FADE_END - 64f
 
     fun skirtDepth(level: Int) = 2f + cellBlocks(level) * 1.25f
 }
@@ -361,12 +348,13 @@ class LodTerrainRenderer : LaunchedEffect, DisposableEffect {
         val baseX = tx * n * cellI
         val baseZ = tz * n * cellI
 
-        val stride = n + 3
+        // Высоты и биомы для клеток 0..n-1 плюс соседние клетки по всем сторонам.
+        val stride = n + 2
         val heights = FloatArray(stride * stride)
         val biomes = arrayOfNulls<BiomeType>(stride * stride)
 
-        for (j in -1..n + 1) {
-            for (i in -1..n + 1) {
+        for (j in -1 until n + 1) {
+            for (i in -1 until n + 1) {
                 val s = terrain.sampleSurface(baseX + i * cellI, baseZ + j * cellI)
                 val idx = (j + 1) * stride + (i + 1)
 
@@ -375,115 +363,166 @@ class LodTerrainRenderer : LaunchedEffect, DisposableEffect {
             }
         }
 
-        val side = n + 1
-        val skirtDepth = LodConfig.skirtDepth(level)
+        fun height(i: Int, j: Int): Float = heights[(j + 1) * stride + (i + 1)]
+        fun biome(i: Int, j: Int): BiomeType = biomes[(j + 1) * stride + (i + 1)]!!
 
-        val vertexCount = side * side + 4 * side
-        val v = FloatArray(vertexCount * FLOATS)
+        // Верхняя грань + до 4 боковых граней на каждый столбец.
+        val maxFaces = n * n * 5
+        val v = FloatArray(maxFaces * 4 * FLOATS)
+        val indices = ShortArray(maxFaces * 6)
 
+        var p = 0
+        var q = 0
         var minY = Float.MAX_VALUE
         var maxY = -Float.MAX_VALUE
-        var p = 0
 
-        for (j in 0..n) {
-            for (i in 0..n) {
-                val idx = (j + 1) * stride + (i + 1)
-                val h = heights[idx]
+        val yOff = LodConfig.HEIGHT_OFFSET
 
-                val left = heights[idx - 1]
-                val right = heights[idx + 1]
-                val up = heights[idx - stride]
-                val down = heights[idx + stride]
+        fun vertex(
+            x: Float, y: Float, z: Float,
+            nx: Float, ny: Float, nz: Float,
+            color: Float
+        ) {
+            v[p++] = x
+            v[p++] = y
+            v[p++] = z
 
-                val nx = left - right
-                val ny = 2f * cell
-                val nz = up - down
+            v[p++] = nx
+            v[p++] = ny
+            v[p++] = nz
 
-                val inv = 1f / sqrt(nx * nx + ny * ny + nz * nz)
-                val y = h + LodConfig.HEIGHT_OFFSET
+            v[p++] = color
 
-                v[p++] = i * cell
-                v[p++] = y
-                v[p++] = j * cell
-
-                v[p++] = nx * inv
-                v[p++] = ny * inv
-                v[p++] = nz * inv
-
-                v[p++] = colorOf(
-                    biome = biomes[idx]!!,
-                    h = h,
-                    slope = sqrt(nx * nx + nz * nz) / (2f * cell),
-                    worldX = baseX + i * cellI,
-                    worldZ = baseZ + j * cellI
-                )
-
-                if (y < minY) minY = y
-                if (y > maxY) maxY = y
-            }
+            if (y < minY) minY = y
+            if (y > maxY) maxY = y
         }
 
-        val edges = arrayOf(
-            IntArray(side) { it },
-            IntArray(side) { n * side + it },
-            IntArray(side) { it * side },
-            IntArray(side) { it * side + n }
-        )
+        fun quad(
+            x0: Float, y0: Float, z0: Float,
+            x1: Float, y1: Float, z1: Float,
+            x2: Float, y2: Float, z2: Float,
+            x3: Float, y3: Float, z3: Float,
+            nx: Float, ny: Float, nz: Float,
+            color: Float
+        ) {
+            val first = p / FLOATS
 
-        val indices = ShortArray(n * n * 6 + 4 * n * 6)
-        var q = 0
+            vertex(x0, y0, z0, nx, ny, nz, color)
+            vertex(x1, y1, z1, nx, ny, nz, color)
+            vertex(x2, y2, z2, nx, ny, nz, color)
+            vertex(x3, y3, z3, nx, ny, nz, color)
+
+            indices[q++] = first.toShort()
+            indices[q++] = (first + 1).toShort()
+            indices[q++] = (first + 2).toShort()
+
+            indices[q++] = first.toShort()
+            indices[q++] = (first + 2).toShort()
+            indices[q++] = (first + 3).toShort()
+        }
 
         for (j in 0 until n) {
             for (i in 0 until n) {
-                val a = j * side + i
-                val b = a + 1
-                val c = a + side
-                val d = c + 1
+                val h = height(i, j)
+                val topY = h + yOff
 
-                indices[q++] = a.toShort()
-                indices[q++] = c.toShort()
-                indices[q++] = b.toShort()
+                val hx = max(abs(h - height(i - 1, j)), abs(h - height(i + 1, j)))
+                val hz = max(abs(h - height(i, j - 1)), abs(h - height(i, j + 1)))
+                val slope = max(hx, hz) / cell
 
-                indices[q++] = b.toShort()
-                indices[q++] = c.toShort()
-                indices[q++] = d.toShort()
+                val worldX = baseX + i * cellI
+                val worldZ = baseZ + j * cellI
+                val color = colorOf(
+                    biome = biome(i, j),
+                    h = h,
+                    slope = slope,
+                    worldX = worldX,
+                    worldZ = worldZ
+                )
+
+                val x0 = i * cell
+                val x1 = (i + 1) * cell
+                val z0 = j * cell
+                val z1 = (j + 1) * cell
+
+                // Верхняя грань блока.
+                quad(
+                    x0, topY, z0,
+                    x1, topY, z0,
+                    x1, topY, z1,
+                    x0, topY, z1,
+                    0f, 1f, 0f,
+                    color
+                )
+
+                // Стенка к более низкому соседу слева.
+                val hl = height(i - 1, j)
+                if (hl < h) {
+                    val bottom = hl + yOff
+
+                    quad(
+                        x0, topY, z0,
+                        x0, topY, z1,
+                        x0, bottom, z1,
+                        x0, bottom, z0,
+                        -1f, 0f, 0f,
+                        color
+                    )
+                }
+
+                // Стенка справа.
+                val hr = height(i + 1, j)
+                if (hr < h) {
+                    val bottom = hr + yOff
+
+                    quad(
+                        x1, topY, z0,
+                        x1, bottom, z0,
+                        x1, bottom, z1,
+                        x1, topY, z1,
+                        1f, 0f, 0f,
+                        color
+                    )
+                }
+
+                // Стенка сзади.
+                val hb = height(i, j - 1)
+                if (hb < h) {
+                    val bottom = hb + yOff
+
+                    quad(
+                        x0, topY, z0,
+                        x0, bottom, z0,
+                        x1, bottom, z0,
+                        x1, topY, z0,
+                        0f, 0f, -1f,
+                        color
+                    )
+                }
+
+                // Стенка спереди.
+                val hf = height(i, j + 1)
+                if (hf < h) {
+                    val bottom = hf + yOff
+
+                    quad(
+                        x0, topY, z1,
+                        x1, topY, z1,
+                        x1, bottom, z1,
+                        x0, bottom, z1,
+                        0f, 0f, 1f,
+                        color
+                    )
+                }
             }
-        }
-
-        var skirtStart = side * side
-
-        for (edge in edges) {
-            for (k in 0..n) {
-                val dst = (skirtStart + k) * FLOATS
-
-                System.arraycopy(v, edge[k] * FLOATS, v, dst, FLOATS)
-                v[dst + 1] -= skirtDepth
-            }
-
-            for (k in 0 until n) {
-                val a = edge[k]
-                val b = edge[k + 1]
-                val c = skirtStart + k
-                val d = skirtStart + k + 1
-
-                indices[q++] = a.toShort()
-                indices[q++] = c.toShort()
-                indices[q++] = b.toShort()
-
-                indices[q++] = b.toShort()
-                indices[q++] = c.toShort()
-                indices[q++] = d.toShort()
-            }
-
-            skirtStart += side
         }
 
         return TileData(
             key,
             level,
-            v,
-            indices,
-            minY - skirtDepth,
+            v.copyOf(p),
+            indices.copyOf(q),
+            minY,
             maxY
         )
     }
@@ -505,30 +544,36 @@ class LodTerrainRenderer : LaunchedEffect, DisposableEffect {
 
         when (biome) {
             BiomeType.FOREST -> {
-                r = 0.28f
-                g = 0.54f
-                b = 0.21f
+                r = 46f / 255f
+                g = 204f / 255f
+                b = 113f / 255f
             }
 
             BiomeType.SPRUCE_FOREST -> {
-                r = 0.17f
-                g = 0.37f
-                b = 0.25f
+                r = 46f / 255f * 0.9f
+                g = 204f / 255f * 0.9f
+                b = 113f / 255f * 0.9f
             }
 
             BiomeType.DESERT -> {
-                r = 0.86f
-                g = 0.77f
-                b = 0.51f
+                r = 237f / 255f
+                g = 220f / 255f
+                b = 184f / 255f
+            }
+
+            BiomeType.CANYON -> {
+                r = 155f / 255f
+                g = 187f / 255f
+                b = 189f / 255f
             }
 
             BiomeType.MOUNTAINS -> {
                 val snow = ((h - SNOW_LINE) / 25f).coerceIn(0f, 1f)
-                val base = 0.44f + 0.50f * snow
+                val base = (155f / 255f) + (187f / 255f) * snow
 
                 r = base
                 g = base
-                b = base + 0.02f * snow
+                b = base + 0.01f * snow
             }
 
             else -> {

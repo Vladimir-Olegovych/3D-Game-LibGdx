@@ -8,6 +8,7 @@ import com.gigapi.storage.json.AppConfig
 import core.blocks.BlockDataSO
 import core.crafting.CraftingRecipeSO
 import core.items.ItemDataSO
+import core.settings.SettingsSO
 
 object ConfigSetupManager: LaunchedEffect {
     override fun launch(gContext: GContext) {
@@ -33,6 +34,18 @@ object ConfigSetupManager: LaunchedEffect {
             AppConfig(
                 configName = "configs/${ConfigTypes.ITEM_DATA_SO}",
                 default = itemsDefault
+            )
+        )
+        //---
+        val settingsDefault = om.readValue(
+            Gdx.files.internal("configs/${ConfigTypes.SETTINGS_SO}.json").read(),
+            SettingsSO::class.java
+        )
+        gContext.setObject(
+            customKey = ConfigTypes.SETTINGS_SO,
+            AppConfig(
+                configName = "configs/${ConfigTypes.SETTINGS_SO}",
+                default = settingsDefault
             )
         )
         // ---

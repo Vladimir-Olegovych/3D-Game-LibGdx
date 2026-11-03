@@ -1,0 +1,6 @@
+{
+  "isLodEnabled": false,
+  "lodDrawRadius": 10000.0,
+  "drawRadiusXZ": 16,
+  "drawRadiusY": 8
+}
