@@ -34,7 +34,6 @@ import core.terrain.TerrainGenerator
 import core.viewport.ViewportTypes
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import kotlin.random.Random
 import kotlin.time.Duration.Companion.milliseconds
 
 class GameFragment(
@@ -93,7 +92,11 @@ class GameFragment(
         Gdx.input.inputProcessor = inputMultiplexer
 
         if (navigation.isLocal) {
-            startWorld(navigation.seed?: Random.nextInt())
+            val worldData = navigation.worldData?: run {
+                onMenuScreen.invoke()
+                return
+            }
+            startWorld(worldData.meta.seed.toInt())
         } else gameClient.start(
             address = navigation.joinParams.address,
             port = navigation.joinParams.port,
@@ -110,12 +113,14 @@ class GameFragment(
     private fun startServer(joinParams: GameServerAddress): Boolean {
         if (!navigation.isLocal) return false
         val artemisWorld = artemisWorld?: return false
+        val worldData = navigation.worldData?: return false
         val timeState = artemisWorld.getRegistered(TimeState::class.java)
         val generator = gameGContext.getObject<TerrainGenerator>()
 
+
         val serverData = ServerData(
-            worldName = navigation.worldName,
-            serverName = navigation.worldName,
+            worldName = worldData.meta.name,
+            serverName = worldData.meta.name,
             serverPort = joinParams.port,
             chunkSize = ChunkWorldUpdater.CHUNK_SIZE,
             chunkHeight = ChunkWorldUpdater.CHUNK_HEIGHT,
@@ -149,6 +154,11 @@ class GameFragment(
 
     private fun startWorld(worldSeed: Int) {
         if (artemisWorld != null) return
+
+        /*
+        val updater = gameGContext.getRawObject<ChunkWorldUpdater>()
+        updater.setWorldFile(navigation.worldFile)
+         */
 
         val generator = gameGContext.getRawObject<TerrainGenerator>()
         generator.worldSeedFromServer = worldSeed
@@ -210,6 +220,8 @@ class GameFragment(
     override fun onDestroy() {
         Gdx.input.inputProcessor = null
         Gdx.input.isCursorCatched = false
+
+        //navigation.worldData?.close()
 
         gameClient.dispose()
         inputMultiplexer.clear()

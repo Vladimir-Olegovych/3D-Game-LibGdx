@@ -48,4 +48,17 @@ sealed class NetworkEvent {
         val requestId: Int = 0,
         val entityId: Int = 0,
     ) : NetworkEvent()
+
+    class ChunkChanges(
+        val chunkPosition: NetIntVector3 = NetIntVector3.ZERO,
+        val indexes: IntArray = IntArray(0),
+        val blocks: ByteArray = ByteArray(0)
+    ) : NetworkEvent()
+
+
+    class SetBlock(
+        val chunkPosition: NetIntVector3 = NetIntVector3.ZERO,
+        val index: Int = 0,
+        val blockType: Byte = 0
+    ) : NetworkEvent()
 }

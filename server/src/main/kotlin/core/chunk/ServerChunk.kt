@@ -29,6 +29,9 @@ internal class ServerChunk internal constructor(
     /** Сущности-наблюдатели (с ObserverComponent), которые видят этот чанк. */
     val observers = IntBag()
 
+    /** Изменения на чанке. */
+    val chunkChanges = HashMap<Int, Byte>()
+
     internal val isUnused: Boolean get() = entities.size() == 0 && observers.size() == 0
 
     override fun toString() = "ServerChunk($x, $y, $z; entities=${entities.size()}, observers=${observers.size()})"

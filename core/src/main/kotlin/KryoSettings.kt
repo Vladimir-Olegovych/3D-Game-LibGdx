@@ -9,7 +9,9 @@ fun Kryo.registerAllEvents() {
     register(GamePacket::class.java)
     register(NetworkEvent::class.java)
     register(Array<NetworkEvent>::class.java)
+
     register(NetVector3::class.java)
+    register(NetIntVector3::class.java)
     register(NetQuaternion::class.java)
 
     register(NetworkEvent.HelloFromServer::class.java)
@@ -19,4 +21,7 @@ fun Kryo.registerAllEvents() {
 
     register(NetworkEvent.SpawnRequest::class.java)
     register(NetworkEvent.EntityAssigned::class.java)
+
+    register(NetworkEvent.ChunkChanges::class.java)
+    register(NetworkEvent.SetBlock::class.java)
 }

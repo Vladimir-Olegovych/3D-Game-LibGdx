@@ -31,6 +31,7 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
 import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicInteger
 
@@ -90,6 +91,20 @@ class ChunkWorldUpdater : LaunchedEffect, DisposableEffect, DeltaUpdater(WorldCo
     private lateinit var meshGenerator: MeshGenerator
     private lateinit var terrainGenerator: TerrainGenerator
     private lateinit var mainScope: CoroutineScope
+
+    interface ChunkWorldListener {
+        suspend fun getChunkChanges(position: IntVector3): HashMap<Int, Byte>?
+    }
+
+    private val listeners = ConcurrentLinkedQueue<ChunkWorldListener>()
+
+    fun addListener(listener: ChunkWorldListener) {
+        listeners += listener
+    }
+
+    fun removeListener(listener: ChunkWorldListener) {
+        listeners -= listener
+    }
 
     override fun launch(gContext: GContext) {
         chunkEventBus = gContext.getObject(EventBusTypes.CHUNK_EVENT_BUS)

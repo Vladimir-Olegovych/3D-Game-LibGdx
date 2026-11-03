@@ -109,7 +109,7 @@ class MultiplayerFragment(
         onGameScreen.invoke(
             Navigation.Game(
                 isLocal = false,
-                worldName = "",
+                worldData = null,
                 joinParams = GameServerAddress(
                     address = address,
                     port = port

@@ -17,7 +17,6 @@ import core.animator.ModelAnimator
 import core.assets.ModelID
 import core.blocks.types.BlockType
 import core.controls.PInputProcessor
-import core.debug.startTest100Box
 import core.defaults.PlayerConstants
 import core.items.ItemManager
 import core.mesh.defaultPlayerHitBox
@@ -139,7 +138,7 @@ class WorldSystem: BaseSystem() {
             )
         )
 
-        world.startTest100Box()
+        //world.startTest100Box()
     }
 
 }

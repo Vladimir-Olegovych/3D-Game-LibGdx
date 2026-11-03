@@ -10,6 +10,7 @@ sealed class ChunkEvent {
     class LoadAdditionalChunksRequest(val playerPosition: IntVector3): ChunkEvent()
     class ChunksPreparation(val worldGenerationData: WorldGenerationData): ChunkEvent()
     class ChunksGenerating(val entityIds: Map<IntVector3, Int>, val worldChunksPreparation: WorldChunksPreparation): ChunkEvent()
+    class ChunksNetworkTunnel(val worldChunksPreparation: WorldChunksPreparation): ChunkEvent()
     class ChunksMeshing(val worldChunksPreparation: WorldChunksPreparation): ChunkEvent()
     class FinalizeCreation(val worldChunksPreparation: WorldChunksPreparation): ChunkEvent()
 

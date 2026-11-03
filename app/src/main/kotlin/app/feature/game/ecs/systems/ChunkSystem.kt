@@ -80,7 +80,7 @@ class ChunkSystem: BaseSystem() {
     }
 
     override fun dispose() {
-        chunkWorldUpdater.stop(false)
+        chunkWorldUpdater.stop(true)
     }
 
     @BusEvent

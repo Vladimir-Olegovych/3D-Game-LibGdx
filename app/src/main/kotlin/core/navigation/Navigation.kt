@@ -1,5 +1,6 @@
 package core.navigation
 
+import core.chunk.kryo.WorldData
 import core.client.GameServerAddress
 
 sealed class Navigation {
@@ -8,8 +9,7 @@ sealed class Navigation {
     data object WorldSelect: Navigation()
     data class Game(
         val isLocal: Boolean,
-        val worldName: String,
-        val seed: Int? = null,
+        val worldData: WorldData?,
         val joinParams: GameServerAddress = GameServerAddress(
             address = "127.0.0.1",
             port = 5551

@@ -17,9 +17,17 @@ import com.gigapi.setOnClickListener
 import com.gigapi.texture.ColorDrawable
 import com.gigapi.viewport.UnfairViewport
 import core.assets.SkinID
+import core.chunk.kryo.MetaData
+import core.chunk.kryo.createWorldData
+import core.chunk.kryo.readMetaData
+import core.chunk.kryo.readWorldData
 import core.defaults.CameraTypes
+import core.defaults.WorldConstants
 import core.navigation.Navigation
+import core.utils.safeName
 import core.viewport.ViewportTypes
+import java.io.File
+import kotlin.random.Random
 
 class WorldSelectFragment(
     private val navigation: Navigation.WorldSelect,
@@ -37,8 +45,7 @@ class WorldSelectFragment(
     private lateinit var worldsTable: Table
     private lateinit var createWorldDialog: CreateWorldDialog
 
-    // заглушка, потом заменишь на чтение с диска/сервера
-    private val worlds = mutableListOf("World 1", "World 2", "World 3")
+    private val worlds = ArrayList<Pair<File, MetaData>>()
     private var selectedIndex = -1
 
     override fun onCreate() {
@@ -50,15 +57,34 @@ class WorldSelectFragment(
         menuBackground = assetManager.get<Skin>(SkinID.BLOCK.skin).atlas.textures.first()
         buttonSkin = assetManager.get(SkinID.BUTTON.skin)
 
+        worlds.clear()
+        val savesDirectory = File(WorldConstants.SAVES_DIRECTORY)
+        if (!savesDirectory.exists()) savesDirectory.mkdir()
+
+        val listFiles = savesDirectory.listFiles()
+        if (listFiles != null) for (file in listFiles) {
+            if (!file.isFile) continue
+            runCatching { readMetaData(file) }.onFailure {
+                it.printStackTrace()
+            }.onSuccess { metaData ->
+                worlds.add(Pair(file, metaData))
+            }
+        }
+
         createWorldDialog = CreateWorldDialog(
             gContext = gContext,
             callbacks = CreateWorldCallbacks(
                 onConfirm = { name, seed ->
-                    if (name !in worlds) worlds.add(name)
+                    val safeWorldName = name.safeName()
+                    val worldToCreate = File(WorldConstants.SAVES_DIRECTORY + "$safeWorldName.world")
+                    val worldData = runCatching {
+                        createWorldData(worldToCreate, name, (seed?: Random.nextInt()).toLong())
+                    }.getOrNull()
+
+
                     onGameScreen.invoke(Navigation.Game(
                         isLocal = true,
-                        worldName = name,
-                        seed = seed
+                        worldData = worldData,
                     ))
                 },
                 onCancel = {
@@ -78,10 +104,10 @@ class WorldSelectFragment(
             createWorldDialog.show()
         }
         val loadButton = TextButton("load selected", buttonSkin).setOnClickListener {
-            val name = worlds.getOrNull(selectedIndex) ?: return@setOnClickListener
+            val data = worlds.getOrNull(selectedIndex) ?: return@setOnClickListener
             onGameScreen.invoke(Navigation.Game(
                 isLocal = true,
-                worldName = name
+                worldData = runCatching { readWorldData(data.first) }.getOrNull()
             ))
         }
         val backButton = TextButton("back", buttonSkin).setOnClickListener {
@@ -105,7 +131,7 @@ class WorldSelectFragment(
 
     private fun refreshWorlds() {
         worldsTable.clearChildren()
-        worlds.forEachIndexed { index, name ->
+        worlds.forEachIndexed { index, data ->
             val row = Table().apply {
                 touchable = com.badlogic.gdx.scenes.scene2d.Touchable.enabled
                 pad(6f)
@@ -113,7 +139,7 @@ class WorldSelectFragment(
                     if (index == selectedIndex) ColorDrawable(0.2f, 0.5f, 0.9f, 0.8f)
                     else ColorDrawable(0f, 0f, 0f, 0.4f)
                 )
-                add(Label(name, buttonSkin, "small")).left().expandX()
+                add(Label(data.second.name, buttonSkin, "small")).left().expandX()
             }
             row.setOnClickListener {
                 selectedIndex = index
