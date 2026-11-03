@@ -67,11 +67,13 @@ class DrawSystem : BaseEntitySystem() {
     private val tmpDimensions = Vector3()
     private val tmpToObject = Vector3()
 
+
     override fun begin() {
         val fog = timeState.fogColor()
 
         Gdx.gl.glClearColor(fog[0], fog[1], fog[2], 1f)
-        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT or GL20.GL_DEPTH_BUFFER_BIT)
+        Gdx.gl.glStencilMask(0xFF)
+        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT or GL20.GL_DEPTH_BUFFER_BIT or GL20.GL_STENCIL_BUFFER_BIT)
 
         starRenderer.render()
         skyPlanetRenderer.render()
@@ -81,6 +83,17 @@ class DrawSystem : BaseEntitySystem() {
     }
 
     override fun processSystem() {
+        val gl = Gdx.gl
+
+        // 1. чанки: помечаем отрисованные пиксели в stencil
+        gl.glEnable(GL20.GL_STENCIL_TEST)
+        gl.glStencilMask(0xFF)
+        gl.glStencilFunc(GL20.GL_ALWAYS, 1, 0xFF)
+        gl.glStencilOp(GL20.GL_KEEP, GL20.GL_KEEP, GL20.GL_REPLACE)
+        drawTasks[0].draw(subscription.entities)
+
+        gl.glStencilFunc(GL20.GL_NOTEQUAL, 1, 0xFF)
+        gl.glStencilOp(GL20.GL_KEEP, GL20.GL_KEEP, GL20.GL_KEEP)
         lodRenderer.render(
             camera,
             timeState.fogColor(),
@@ -88,9 +101,9 @@ class DrawSystem : BaseEntitySystem() {
             timeState.maxShadowThreshold,
             timeState.nightBlueFilter
         )
-        drawTasks.forEach { task ->
-            task.draw(subscription.entities)
-        }
+
+        gl.glDisable(GL20.GL_STENCIL_TEST)
+        drawTasks[1].draw(subscription.entities)
     }
 
     override fun end() {

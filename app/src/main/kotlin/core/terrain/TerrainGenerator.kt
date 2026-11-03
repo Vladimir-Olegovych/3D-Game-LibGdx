@@ -16,6 +16,7 @@ import core.terrain.biome.BiomeGenerator
 import core.terrain.biome.BiomePointGrid
 import core.terrain.biome.BiomePoints
 import core.terrain.biome.BiomeSelector
+import core.terrain.biome.BiomeWarp
 import core.terrain.biome.biomes.DesertBiomeGenerator
 import core.terrain.biome.biomes.ForestBiomeGenerator
 import core.terrain.biome.biomes.MountainBiomeGenerator
@@ -41,6 +42,9 @@ class LodSample(val height: Int, val biome: BiomeType)
 class TerrainGenerator : DisposableEffect, LaunchedEffect {
 
     companion object {
+        private const val WARP_SCALE_X = 10f//1f * 3f
+        private const val WARP_SCALE_Z = 4f//32f * 3f
+
         const val UNDERGROUND_HEIGHT = 80
         const val CAVE_THRESHOLD = 0.025f
         const val CAVE_LEVEL = -UNDERGROUND_HEIGHT
@@ -54,6 +58,7 @@ class TerrainGenerator : DisposableEffect, LaunchedEffect {
          * ВАЖНО: работает, только если blendedNoise.second — это ВЫСОТА ПОВЕРХНОСТИ В МИРОВЫХ БЛОКАХ.
          */
         var skySkipEnabled = true
+
     }
 
     /** Примитивные массивы вместо Array<Pair<Float, Int>?>: нет боксинга и в кэше меньше объектов. */
@@ -65,6 +70,7 @@ class TerrainGenerator : DisposableEffect, LaunchedEffect {
     )
 
     private lateinit var noiseWarp: DomainWarping2D
+    private lateinit var biomeWarp: BiomeWarp
     private lateinit var biomePointGrid: BiomePointGrid
     private lateinit var biomeGenerators: Map<BiomeType, BiomeGenerator>
     private lateinit var structurePlacer: StructurePlacer
@@ -105,6 +111,7 @@ class TerrainGenerator : DisposableEffect, LaunchedEffect {
         val noise = gContext.getObject<PerlinNoise>(NoiceTypes.PERLIN_WORLD)
         val perlinNoiseGenerator = noise.asGenerator()
         noiseWarp = getNoiseDomainWarping(perlinNoiseGenerator)
+        biomeWarp = BiomeWarp(worldSeed)
         biomePointGrid = gContext.getObject()
 
         structurePlacer = StructurePlacer(
@@ -155,9 +162,7 @@ class TerrainGenerator : DisposableEffect, LaunchedEffect {
         val cx = chunkData.position.x
         val cz = chunkData.position.z
 
-        val column = columnCache.computeIfAbsent(packKey(cx, cz)) {
-            computeColumn(cx, cz, w, points)
-        }
+        val column = getOrComputeColumn(cx, cz, w, points)
 
         val chunkMinY = chunkData.position.y * chunkData.chunkHeight
         val skipTerrain = skySkipEnabled && chunkMinY > column.maxSurface + SKY_MARGIN
@@ -176,6 +181,19 @@ class TerrainGenerator : DisposableEffect, LaunchedEffect {
         structurePlacer.apply(chunkData)
     }
 
+    /** Без computeIfAbsent: тяжёлый расчёт не держит блокировку корзины ConcurrentHashMap. */
+    private fun getOrComputeColumn(cx: Int, cz: Int, w: Int, points: BiomePoints): ColumnInfo {
+        val key = packKey(cx, cz)
+        columnCache[key]?.let { return it }
+        val computed = computeColumn(cx, cz, w, points)
+        return columnCache.putIfAbsent(key, computed) ?: computed
+    }
+
+    /** Прогрев колонки (вызывается параллельно по всем уникальным колонкам батча). */
+    fun prepareColumn(cx: Int, cz: Int, w: Int, points: BiomePoints) {
+        getOrComputeColumn(cx, cz, w, points)
+    }
+
     private fun computeColumn(cx: Int, cz: Int, w: Int, points: BiomePoints): ColumnInfo {
         val n = w * w
         val biomes = arrayOfNulls<BiomePointGrid.BiomeData>(n)
@@ -188,10 +206,10 @@ class TerrainGenerator : DisposableEffect, LaunchedEffect {
                 val wx = cx * w + lx
                 val wz = cz * w + lz
                 val offset = noiseWarp.generateDomainOffset(wx, wz)
-                val warpX = (wx + offset.x * 10.0f).toInt()
-                val warpZ = (wz + offset.y * 8.0f).toInt()
+                val warpX = (wx + offset.x * WARP_SCALE_X).toInt()
+                val warpZ = (wz + offset.y * WARP_SCALE_Z).toInt()
 
-                val biomeData = biomePointGrid.getBiomeAt(points, warpX, warpZ)
+                val biomeData = lookupBiome(points, wx, wz)
                 if (biomeGenerators[biomeData.currentBiome] == null) continue
 
                 val blended = blendSurface(biomeData, warpX, warpZ)
@@ -203,6 +221,16 @@ class TerrainGenerator : DisposableEffect, LaunchedEffect {
             }
         }
         return ColumnInfo(biomes, terrain, surface, maxSurface)
+    }
+
+    /**
+     * Биом ищется по СВОЕМУ, сильному и многослойному варпу — границы получаются извилистыми.
+     * Высота при этом по-прежнему считается по мягкому варпу (WARP_SCALE_*).
+     * Должно использоваться и в computeColumn, и в sampleSurface — иначе LOD и структуры разойдутся с чанками.
+     */
+    private fun lookupBiome(points: BiomePoints, wx: Int, wz: Int): BiomePointGrid.BiomeData {
+        val p = biomeWarp.warp(wx, wz)
+        return biomePointGrid.getBiomeAt(points, p.x, p.z)
     }
 
     private fun blendSurface(
@@ -244,12 +272,12 @@ class TerrainGenerator : DisposableEffect, LaunchedEffect {
 
     fun sampleSurface(wx: Int, wz: Int): LodSample {
         val offset = noiseWarp.generateDomainOffset(wx, wz)
-        val warpX = (wx + offset.x * 10.0f).toInt()
-        val warpZ = (wz + offset.y * 8.0f).toInt()
+        val warpX = (wx + offset.x * WARP_SCALE_X).toInt()
+        val warpZ = (wz + offset.y * WARP_SCALE_Z).toInt()
 
         // Окно биомов берётся из ограниченного LRU в BiomePointGrid — отдельный кэш и clear() не нужны.
         val points = biomePointGrid.getPointsAround(wx, wz)
-        val biomeData = biomePointGrid.getBiomeAt(points, warpX, warpZ)
+        val biomeData = lookupBiome(points, wx, wz)
         val blended = blendSurface(biomeData, warpX, warpZ)
         return LodSample(blended.second, biomeData.currentBiome)
     }

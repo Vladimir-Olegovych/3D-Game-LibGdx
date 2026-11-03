@@ -14,14 +14,12 @@ import core.controls.PInputProcessor
 import core.defaults.CameraTypes
 import core.defaults.CastTypes
 import core.defaults.PlayerConstants
+import core.defaults.PlayerConstants.FREE_CAMERA_SPEED
 import kotlin.math.cos
 import kotlin.math.sin
 
 class CameraSystem : PInputProcessor.InputListener, BaseSystem() {
 
-    companion object {
-        private const val FREE_CAMERA_SPEED = 90f
-    }
     @Wire(name = EventBusTypes.CHUNK_EVENT_BUS)
     private lateinit var chunkEventBus: EventBus
     @Wire

@@ -14,8 +14,22 @@ class BiomePoints internal constructor(
     private val minCellX: Int,
     private val minCellZ: Int,
     private val size: Int,
-    private val biomes: Array<BiomeType>
+    private val biomes: Array<BiomeType>,
+    private val sitesX: IntArray,
+    private val sitesZ: IntArray
 ) {
+    /** Индекс ячейки в окне или -1; позиции точек посчитаны один раз при построении окна. */
+    internal fun indexOf(cellX: Int, cellZ: Int): Int {
+        val ix = cellX - minCellX
+        val iz = cellZ - minCellZ
+        if (ix < 0 || iz < 0 || ix >= size || iz >= size) return -1
+        return iz * size + ix
+    }
+
+    internal fun biomeAt(index: Int): BiomeType = biomes[index]
+    internal fun siteXAt(index: Int): Int = sitesX[index]
+    internal fun siteZAt(index: Int): Int = sitesZ[index]
+
     fun biomeAtCell(cellX: Int, cellZ: Int): BiomeType? {
         val ix = cellX - minCellX
         val iz = cellZ - minCellZ
@@ -47,13 +61,20 @@ internal class LruCache<K : Any, V : Any>(private val capacity: Int) {
 class BiomePointGrid : LaunchedEffect, DisposableEffect {
 
     companion object {
-        const val STEP_ADD = 32
-        const val POINT_RADIUS = ChunkWorldUpdater.DRAW_RADIUS_XZ / 2
+        /** Шаг сетки в чанках. Было 96 (1536 блоков) — биомы получались огромными. */
+        const val STEP_ADD = 48
         const val POINT_WORLD_STEP = ChunkWorldUpdater.CHUNK_SIZE * STEP_ADD
         const val BLEND_DISTANCE = POINT_WORLD_STEP * 0.4
 
-        private const val HALF_GRID = POINT_RADIUS / 2
+        /**
+         * Окно побольше: биомный варп (до ~700 блоков) + SEARCH_RADIUS + позиция игрока
+         * не должны выходить за пределы окна, иначе чанки и LOD увидят разные биомы.
+         */
+        private const val HALF_GRID = 6
         private const val GRID_SIZE = HALF_GRID * 2
+
+        /** Насколько точка биома смещается от центра ячейки (доля шага): рвёт «квадратную» сетку. */
+        private const val SITE_JITTER = 0.35
 
         /**
          * Точка влияет, только если dist < minDist + BLEND_DISTANCE (<= ~1.11 шага),
@@ -61,7 +82,7 @@ class BiomePointGrid : LaunchedEffect, DisposableEffect {
          */
         private const val SEARCH_RADIUS = 2
 
-        private const val WINDOW_CACHE_SIZE = 256
+        private const val WINDOW_CACHE_SIZE = 1024
 
         private val ALL_BIOMES: Array<BiomeType> = BiomeType.entries.toTypedArray()
     }
@@ -74,6 +95,23 @@ class BiomePointGrid : LaunchedEffect, DisposableEffect {
     }
 
     override fun dispose() = windows.clear()
+
+    private fun hash(cx: Int, cz: Int, salt: Int): Int {
+        var h = selector.seed * 0x45d9f3b + cx * 374761393 + cz * 668265263 + salt * 0x27d4eb2d
+        h = (h xor (h ushr 13)) * 1274126177
+        return h xor (h ushr 16)
+    }
+
+    private fun jitter(h: Int): Double = ((h ushr 8) and 0xFFFF) / 65535.0 - 0.5
+
+    /** Мировая позиция точки биома ячейки (детерминированный джиттер от сида). */
+    fun siteX(cx: Int, cz: Int): Int =
+        cx * POINT_WORLD_STEP + POINT_WORLD_STEP / 2 +
+                (jitter(hash(cx, cz, 1)) * 2.0 * SITE_JITTER * POINT_WORLD_STEP).toInt()
+
+    fun siteZ(cx: Int, cz: Int): Int =
+        cz * POINT_WORLD_STEP + POINT_WORLD_STEP / 2 +
+                (jitter(hash(cx, cz, 2)) * 2.0 * SITE_JITTER * POINT_WORLD_STEP).toInt()
 
     data class BiomeData(
         val currentBiome: BiomeType,
@@ -89,9 +127,11 @@ class BiomePointGrid : LaunchedEffect, DisposableEffect {
 
         for (cz in cellZ - SEARCH_RADIUS..cellZ + SEARCH_RADIUS) {
             for (cx in cellX - SEARCH_RADIUS..cellX + SEARCH_RADIUS) {
-                val biome = points.biomeAtCell(cx, cz) ?: continue
-                val dx = worldX.toDouble() - (cx * POINT_WORLD_STEP + POINT_WORLD_STEP / 2)
-                val dz = worldZ.toDouble() - (cz * POINT_WORLD_STEP + POINT_WORLD_STEP / 2)
+                val idx = points.indexOf(cx, cz)
+                if (idx < 0) continue
+                val biome = points.biomeAt(idx)
+                val dx = worldX.toDouble() - points.siteXAt(idx)
+                val dz = worldZ.toDouble() - points.siteZAt(idx)
                 val d2 = dx * dx + dz * dz
                 if (d2 < nearestSq[biome.ordinal]) nearestSq[biome.ordinal] = d2
             }
@@ -143,15 +183,17 @@ class BiomePointGrid : LaunchedEffect, DisposableEffect {
         return windows.getOrCompute(key) {
             val minX = centerCellX - HALF_GRID
             val minZ = centerCellZ - HALF_GRID
-            val biomes = Array(GRID_SIZE * GRID_SIZE) { idx ->
+            val n = GRID_SIZE * GRID_SIZE
+            val sx = IntArray(n)
+            val sz = IntArray(n)
+            val biomes = Array(n) { idx ->
                 val cellX = minX + idx % GRID_SIZE
                 val cellZ = minZ + idx / GRID_SIZE
-                selector.getBiomeAt(
-                    cellX * POINT_WORLD_STEP + POINT_WORLD_STEP / 2,
-                    cellZ * POINT_WORLD_STEP + POINT_WORLD_STEP / 2
-                )
+                sx[idx] = siteX(cellX, cellZ)
+                sz[idx] = siteZ(cellX, cellZ)
+                selector.getBiomeAt(sx[idx], sz[idx])
             }
-            BiomePoints(minX, minZ, GRID_SIZE, biomes)
+            BiomePoints(minX, minZ, GRID_SIZE, biomes, sx, sz)
         }
     }
 }

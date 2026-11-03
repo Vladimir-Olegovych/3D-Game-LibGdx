@@ -30,22 +30,18 @@ import kotlin.math.sqrt
  * Настройки LOD.
  *
  * Уровень L: клетка = BASE_CELL * 2^L блоков, тайл = TILE_CELLS клеток.
- * Каждый уровень покрывает квадрат (2*RING+1)^2 тайлов вокруг игрока,
- * поэтому каждый следующий уровень покрывает в 2 раза большую площадь.
- * Число уровней считается автоматически, чтобы покрыть FOG_DISTANCE.
+ * Каждый уровень покрывает квадрат (2 * RING + 1)^2 тайлов вокруг игрока.
  */
 object LodConfig {
-    const val TILE_CELLS = 32
-    const val BASE_CELL = 4
+    const val TILE_CELLS = 48
+    const val BASE_CELL = 2
     const val RING = 3
 
-    /** Дальность тумана = far plane камеры. Дальше этого мир просто растворяется в тумане. */
     const val FOG_DISTANCE = 50_000f
 
     const val MAX_PENDING = 3
     const val MAX_UPLOADS_PER_FRAME = 3
 
-    /** Смещение верха поверхности относительно значения высоты из генератора. */
     const val HEIGHT_OFFSET = 1f
 
     val LEVELS: Int = run {
@@ -57,30 +53,20 @@ object LodConfig {
     fun cellBlocks(level: Int) = BASE_CELL shl level
     fun tileBlocks(level: Int) = TILE_CELLS * cellBlocks(level)
 
-    /**
-     * LOD опускается вниз, чтобы всегда оказываться ПОД настоящими чанками
-     * и под более детальными уровнями (вместо борьбы за глубину).
-     */
-    fun bias(level: Int) = 1f + cellBlocks(level) * 0.4f
+    fun bias(level: Int) = 1f + cellBlocks(level) * 0.35f
 
-    /**
-     * Переход между уровнями: тайл уровня L к расстоянию fadeEnd (Chebyshev от камеры) полностью
-     * растворяется (dither), открывая более грубый уровень под собой.
-     * fadeEnd = RING * tile — это гарантированно покрытая область уровня при любой позиции игрока.
-     */
     fun fadeEnd(level: Int): Float =
         if (level >= LEVELS - 1) 2e9f else RING * tileBlocks(level).toFloat()
 
     fun fadeStart(level: Int): Float =
-        if (level >= LEVELS - 1) 1e9f else fadeEnd(level) * 0.65f
+        if (level >= LEVELS - 1) 1e9f else fadeEnd(level) * 0.78f
 
-    /** Переход чанки -> LOD: чанки растворяются на краю радиуса прорисовки, открывая LOD под ними. */
     val CHUNK_FADE_END: Float =
         (ChunkWorldUpdater.CHUNK_SIZE * ChunkWorldUpdater.DRAW_RADIUS_XZ - 24).toFloat()
+
     val CHUNK_FADE_START: Float = CHUNK_FADE_END - 64f
 
-    /** Глубина «юбок» по краям тайла, закрывающих трещины между уровнями. */
-    fun skirtDepth(level: Int) = 4f + cellBlocks(level) * 2f
+    fun skirtDepth(level: Int) = 2f + cellBlocks(level) * 1.25f
 }
 
 class LodTerrainRenderer : LaunchedEffect, DisposableEffect {
@@ -94,12 +80,23 @@ class LodTerrainRenderer : LaunchedEffect, DisposableEffect {
         val maxY: Float
     )
 
-    private class Tile(val mesh: Mesh, val centerY: Float, val halfY: Float)
+    private class Tile(
+        val mesh: Mesh,
+        val centerY: Float,
+        val halfY: Float
+    )
 
-    private class Candidate(val level: Int, val tx: Int, val tz: Int, val key: Long, val dist2: Float)
+    private class Candidate(
+        val level: Int,
+        val tx: Int,
+        val tz: Int,
+        val key: Long,
+        val dist2: Float
+    )
 
     private lateinit var terrain: TerrainGenerator
     private lateinit var sh: ShaderProgram
+
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
     private val tiles = HashMap<Long, Tile>()
@@ -113,7 +110,7 @@ class LodTerrainRenderer : LaunchedEffect, DisposableEffect {
     private var frame = 0
 
     override fun launch(gContext: GContext) {
-        sh = gContext.getObject<ShaderProgram>(ShaderTypes.LOD_SHADER)
+        sh = gContext.getObject(ShaderTypes.LOD_SHADER)
         terrain = gContext.getObject()
     }
 
@@ -127,7 +124,7 @@ class LodTerrainRenderer : LaunchedEffect, DisposableEffect {
         shader = null
     }
 
-    // ------------------------------------------------------------------ render (GL thread)
+    // ------------------------------------------------------------------ render
 
     fun render(
         camera: PerspectiveCamera,
@@ -137,13 +134,16 @@ class LodTerrainRenderer : LaunchedEffect, DisposableEffect {
         nightBlueFilter: Float
     ) {
         if (!::terrain.isInitialized) return
+
         frame++
 
         val camX = camera.position.x
         val camZ = camera.position.z
+
         updateStreaming(camX, camZ)
 
         Gdx.gl.glDisable(GL20.GL_CULL_FACE)
+
         sh.bind()
         sh.setUniformMatrix("modelViewProjection", camera.combined)
         sh.setUniformf("viewPosition", camera.position)
@@ -153,12 +153,13 @@ class LodTerrainRenderer : LaunchedEffect, DisposableEffect {
         sh.setUniformf("u_maxShadowThreshold", maxShadowThreshold)
         sh.setUniformf("u_nightBlueFilter", nightBlueFilter)
 
-        // от детальных к грубым: early-Z отсекает грубые тайлы под детальными
         for (level in 0 until LodConfig.LEVELS) {
             val tileSize = LodConfig.tileBlocks(level).toFloat()
             val half = tileSize * 0.5f
+
             val px = floor(camX / tileSize).toInt()
             val pz = floor(camZ / tileSize).toInt()
+
             sh.setUniformf("u_bias", LodConfig.bias(level))
             sh.setUniformf("u_fadeStart", LodConfig.fadeStart(level))
             sh.setUniformf("u_fadeEnd", LodConfig.fadeEnd(level))
@@ -166,35 +167,54 @@ class LodTerrainRenderer : LaunchedEffect, DisposableEffect {
             for (tz in pz - LodConfig.RING..pz + LodConfig.RING) {
                 for (tx in px - LodConfig.RING..px + LodConfig.RING) {
                     val tile = tiles[key(level, tx, tz)] ?: continue
+
                     val ox = tx * tileSize
                     val oz = tz * tileSize
-                    if (level > 0 && coveredByFiner(level, tx, tz, ox, oz, tileSize, camX, camZ)) continue
 
-                    if (!camera.frustum.boundsInFrustum(ox + half, tile.centerY, oz + half, half, tile.halfY, half)) {
+                    if (level > 0 && coveredByFiner(level, tx, tz, ox, oz, tileSize, camX, camZ)) {
                         continue
                     }
+
+                    if (!camera.frustum.boundsInFrustum(
+                            ox + half,
+                            tile.centerY,
+                            oz + half,
+                            half,
+                            tile.halfY,
+                            half
+                        )
+                    ) {
+                        continue
+                    }
+
                     sh.setUniformf("u_origin", ox, 0f, oz)
                     tile.mesh.render(sh, GL20.GL_TRIANGLES)
                 }
             }
         }
+
         Gdx.gl.glEnable(GL20.GL_CULL_FACE)
     }
 
-    /**
-     * Грубый тайл можно не рисовать, только если он целиком лежит в НЕпрозрачной зоне
-     * более детального уровня (до fadeStart) и все 4 дочерних тайла загружены.
-     * Внутри зоны перехода грубый тайл обязан рисоваться — он виден сквозь растворяющийся детальный.
-     */
     private fun coveredByFiner(
-        level: Int, tx: Int, tz: Int, ox: Float, oz: Float, size: Float, camX: Float, camZ: Float
+        level: Int,
+        tx: Int,
+        tz: Int,
+        ox: Float,
+        oz: Float,
+        size: Float,
+        camX: Float,
+        camZ: Float
     ): Boolean {
         val reach = LodConfig.fadeStart(level - 1)
+
         val farthest = max(
             max(abs(ox - camX), abs(ox + size - camX)),
             max(abs(oz - camZ), abs(oz + size - camZ))
         )
+
         if (farthest > reach) return false
+
         return childrenReady(level, tx, tz)
     }
 
@@ -202,80 +222,106 @@ class LodTerrainRenderer : LaunchedEffect, DisposableEffect {
         val l = level - 1
         val x = tx * 2
         val z = tz * 2
-        return tiles.containsKey(key(l, x, z)) && tiles.containsKey(key(l, x + 1, z)) &&
-                tiles.containsKey(key(l, x, z + 1)) && tiles.containsKey(key(l, x + 1, z + 1))
+
+        return tiles.containsKey(key(l, x, z)) &&
+                tiles.containsKey(key(l, x + 1, z)) &&
+                tiles.containsKey(key(l, x, z + 1)) &&
+                tiles.containsKey(key(l, x + 1, z + 1))
     }
 
     // ------------------------------------------------------------------ streaming
 
     private fun updateStreaming(camX: Float, camZ: Float) {
-        // 1. результаты ошибок
         while (true) {
             val k = failed.poll() ?: break
             pending.remove(k)
             retryAt[k] = frame + 300
         }
 
-        // 2. загрузка готовых тайлов в GPU (ограничено на кадр)
         var uploads = 0
+
         while (uploads < LodConfig.MAX_UPLOADS_PER_FRAME) {
             val data = ready.poll() ?: break
             pending.remove(data.key)
+
             val level = data.level
             val tx = unpackX(data.key)
             val tz = unpackZ(data.key)
+
             if (isOutOfRange(level, tx, tz, camX, camZ, margin = 1)) continue
 
             val mesh = Mesh(
-                true, data.vertices.size / FLOATS, data.indices.size,
-                VertexAttribute.Position(), VertexAttribute.Normal(), VertexAttribute.ColorPacked()
+                true,
+                data.vertices.size / FLOATS,
+                data.indices.size,
+                VertexAttribute.Position(),
+                VertexAttribute.Normal(),
+                VertexAttribute.ColorPacked()
             )
+
             mesh.setVertices(data.vertices)
             mesh.setIndices(data.indices)
 
             val bias = LodConfig.bias(level)
             val minY = data.minY - bias
             val maxY = data.maxY
-            tiles.put(data.key, Tile(mesh, (minY + maxY) * 0.5f, (maxY - minY) * 0.5f))?.mesh?.dispose()
+
+            tiles.put(
+                data.key,
+                Tile(
+                    mesh,
+                    (minY + maxY) * 0.5f,
+                    (maxY - minY) * 0.5f
+                )
+            )?.mesh?.dispose()
+
             uploads++
         }
 
-        // 3. выгрузка тайлов, ушедших далеко от игрока (гистерезис в 1 тайл)
         val it = tiles.entries.iterator()
+
         while (it.hasNext()) {
             val e = it.next()
             val level = levelOf(e.key)
+
             if (isOutOfRange(level, unpackX(e.key), unpackZ(e.key), camX, camZ, margin = 1)) {
                 e.value.mesh.dispose()
                 it.remove()
             }
         }
 
-        // 4. запрос недостающих тайлов, ближайшие первыми
         if (frame % 6 != 0 || pending.size >= LodConfig.MAX_PENDING) return
 
         candidates.clear()
+
         for (level in 0 until LodConfig.LEVELS) {
             val tileSize = LodConfig.tileBlocks(level).toFloat()
             val px = floor(camX / tileSize).toInt()
             val pz = floor(camZ / tileSize).toInt()
+
             for (tz in pz - LodConfig.RING..pz + LodConfig.RING) {
                 for (tx in px - LodConfig.RING..px + LodConfig.RING) {
                     val k = key(level, tx, tz)
+
                     if (tiles.containsKey(k) || pending.contains(k)) continue
                     if ((retryAt[k] ?: 0) > frame) continue
+
                     val dx = (tx + 0.5f) * tileSize - camX
                     val dz = (tz + 0.5f) * tileSize - camZ
+
                     candidates.add(Candidate(level, tx, tz, k, dx * dx + dz * dz))
                 }
             }
         }
+
         candidates.sortBy { it.dist2 }
 
         var i = 0
+
         while (i < candidates.size && pending.size < LodConfig.MAX_PENDING) {
             val c = candidates[i++]
             pending.add(c.key)
+
             scope.launch {
                 try {
                     ready.add(buildTile(c.key, c.level, c.tx, c.tz))
@@ -289,31 +335,41 @@ class LodTerrainRenderer : LaunchedEffect, DisposableEffect {
         }
     }
 
-    private fun isOutOfRange(level: Int, tx: Int, tz: Int, camX: Float, camZ: Float, margin: Int): Boolean {
+    private fun isOutOfRange(
+        level: Int,
+        tx: Int,
+        tz: Int,
+        camX: Float,
+        camZ: Float,
+        margin: Int
+    ): Boolean {
         val tileSize = LodConfig.tileBlocks(level).toFloat()
         val px = floor(camX / tileSize).toInt()
         val pz = floor(camZ / tileSize).toInt()
         val r = LodConfig.RING + margin
+
         return abs(tx - px) > r || abs(tz - pz) > r
     }
 
-    // ------------------------------------------------------------------ tile generation (background thread)
+    // ------------------------------------------------------------------ tile generation
 
     private fun buildTile(key: Long, level: Int, tx: Int, tz: Int): TileData {
         val n = LodConfig.TILE_CELLS
         val cellI = LodConfig.cellBlocks(level)
         val cell = cellI.toFloat()
+
         val baseX = tx * n * cellI
         val baseZ = tz * n * cellI
 
-        // сетка с рамкой в 1 клетку — чтобы нормали на краях тайла совпадали у соседей
         val stride = n + 3
         val heights = FloatArray(stride * stride)
         val biomes = arrayOfNulls<BiomeType>(stride * stride)
+
         for (j in -1..n + 1) {
             for (i in -1..n + 1) {
                 val s = terrain.sampleSurface(baseX + i * cellI, baseZ + j * cellI)
                 val idx = (j + 1) * stride + (i + 1)
+
                 heights[idx] = s.height.toFloat()
                 biomes[idx] = s.biome
             }
@@ -321,8 +377,10 @@ class LodTerrainRenderer : LaunchedEffect, DisposableEffect {
 
         val side = n + 1
         val skirtDepth = LodConfig.skirtDepth(level)
+
         val vertexCount = side * side + 4 * side
         val v = FloatArray(vertexCount * FLOATS)
+
         var minY = Float.MAX_VALUE
         var maxY = -Float.MAX_VALUE
         var p = 0
@@ -331,32 +389,47 @@ class LodTerrainRenderer : LaunchedEffect, DisposableEffect {
             for (i in 0..n) {
                 val idx = (j + 1) * stride + (i + 1)
                 val h = heights[idx]
-                val nx = heights[idx - 1] - heights[idx + 1]
+
+                val left = heights[idx - 1]
+                val right = heights[idx + 1]
+                val up = heights[idx - stride]
+                val down = heights[idx + stride]
+
+                val nx = left - right
                 val ny = 2f * cell
-                val nz = heights[idx - stride] - heights[idx + stride]
+                val nz = up - down
+
                 val inv = 1f / sqrt(nx * nx + ny * ny + nz * nz)
                 val y = h + LodConfig.HEIGHT_OFFSET
 
                 v[p++] = i * cell
                 v[p++] = y
                 v[p++] = j * cell
+
                 v[p++] = nx * inv
                 v[p++] = ny * inv
                 v[p++] = nz * inv
-                v[p++] = colorOf(biomes[idx]!!, h)
+
+                v[p++] = colorOf(
+                    biome = biomes[idx]!!,
+                    h = h,
+                    slope = sqrt(nx * nx + nz * nz) / (2f * cell),
+                    worldX = baseX + i * cellI,
+                    worldZ = baseZ + j * cellI
+                )
 
                 if (y < minY) minY = y
                 if (y > maxY) maxY = y
             }
         }
 
-        // «юбки» по четырём краям
         val edges = arrayOf(
-            IntArray(side) { it },              // j = 0
-            IntArray(side) { n * side + it },   // j = n
-            IntArray(side) { it * side },       // i = 0
-            IntArray(side) { it * side + n }    // i = n
+            IntArray(side) { it },
+            IntArray(side) { n * side + it },
+            IntArray(side) { it * side },
+            IntArray(side) { it * side + n }
         )
+
         val indices = ShortArray(n * n * 6 + 4 * n * 6)
         var q = 0
 
@@ -366,62 +439,156 @@ class LodTerrainRenderer : LaunchedEffect, DisposableEffect {
                 val b = a + 1
                 val c = a + side
                 val d = c + 1
-                indices[q++] = a.toShort(); indices[q++] = c.toShort(); indices[q++] = b.toShort()
-                indices[q++] = b.toShort(); indices[q++] = c.toShort(); indices[q++] = d.toShort()
+
+                indices[q++] = a.toShort()
+                indices[q++] = c.toShort()
+                indices[q++] = b.toShort()
+
+                indices[q++] = b.toShort()
+                indices[q++] = c.toShort()
+                indices[q++] = d.toShort()
             }
         }
 
         var skirtStart = side * side
+
         for (edge in edges) {
             for (k in 0..n) {
                 val dst = (skirtStart + k) * FLOATS
+
                 System.arraycopy(v, edge[k] * FLOATS, v, dst, FLOATS)
                 v[dst + 1] -= skirtDepth
             }
+
             for (k in 0 until n) {
                 val a = edge[k]
                 val b = edge[k + 1]
                 val c = skirtStart + k
                 val d = skirtStart + k + 1
-                indices[q++] = a.toShort(); indices[q++] = c.toShort(); indices[q++] = b.toShort()
-                indices[q++] = b.toShort(); indices[q++] = c.toShort(); indices[q++] = d.toShort()
+
+                indices[q++] = a.toShort()
+                indices[q++] = c.toShort()
+                indices[q++] = b.toShort()
+
+                indices[q++] = b.toShort()
+                indices[q++] = c.toShort()
+                indices[q++] = d.toShort()
             }
+
             skirtStart += side
         }
 
-        return TileData(key, level, v, indices, minY - skirtDepth, maxY)
+        return TileData(
+            key,
+            level,
+            v,
+            indices,
+            minY - skirtDepth,
+            maxY
+        )
     }
 
-    /** Цвет вершины по биому и высоте. Подстрой под свой атлас. */
-    private fun colorOf(biome: BiomeType, h: Float): Float {
-        return when (biome) {
-            BiomeType.FOREST -> Color.toFloatBits(0.30f, 0.55f, 0.22f, 1f)
-            BiomeType.SPRUCE_FOREST -> Color.toFloatBits(0.18f, 0.38f, 0.25f, 1f)
-            BiomeType.DESERT -> Color.toFloatBits(0.86f, 0.78f, 0.52f, 1f)
-            BiomeType.MOUNTAINS -> {
-                val t = ((h - SNOW_LINE) / 25f).coerceIn(0f, 1f)
-                val g = 0.45f + (0.95f - 0.45f) * t
-                Color.toFloatBits(g, g, g + 0.02f * t, 1f)
+    private fun colorOf(
+        biome: BiomeType,
+        h: Float,
+        slope: Float,
+        worldX: Int,
+        worldZ: Int
+    ): Float {
+        val variation = hashNoise(worldX, worldZ)
+        val heightTint = ((h - TerrainGenerator.WORLD_SURFACE) / 90f).coerceIn(-1.0, 1.0)
+        val rockiness = (slope - 0.55f).coerceIn(0f, 1f)
+
+        var r: Float
+        var g: Float
+        var b: Float
+
+        when (biome) {
+            BiomeType.FOREST -> {
+                r = 0.28f
+                g = 0.54f
+                b = 0.21f
             }
-            else -> Color.toFloatBits(0.5f, 0.5f, 0.5f, 1f)
+
+            BiomeType.SPRUCE_FOREST -> {
+                r = 0.17f
+                g = 0.37f
+                b = 0.25f
+            }
+
+            BiomeType.DESERT -> {
+                r = 0.86f
+                g = 0.77f
+                b = 0.51f
+            }
+
+            BiomeType.MOUNTAINS -> {
+                val snow = ((h - SNOW_LINE) / 25f).coerceIn(0f, 1f)
+                val base = 0.44f + 0.50f * snow
+
+                r = base
+                g = base
+                b = base + 0.02f * snow
+            }
+
+            else -> {
+                r = 0.50f
+                g = 0.50f
+                b = 0.50f
+            }
         }
+
+        // Плавное высотное затемнение/осветление.
+        val heightShift = heightTint * 0.07f
+        r += heightShift.toFloat()
+        g += heightShift.toFloat()
+        b += heightShift.toFloat()
+
+        // Каменистые склоны становятся серее и темнее.
+        r += (0.44f - r) * rockiness * 0.55f
+        g += (0.43f - g) * rockiness * 0.55f
+        b += (0.40f - b) * rockiness * 0.55f
+
+        // Мелкая вариация, чтобы поверхность не выглядела пластиковой.
+        val noise = (variation - 0.5f) * 0.055f
+        r += noise
+        g += noise
+        b += noise
+
+        return Color.toFloatBits(
+            r.coerceIn(0f, 1f),
+            g.coerceIn(0f, 1f),
+            b.coerceIn(0f, 1f),
+            1f
+        )
+    }
+
+    private fun hashNoise(x: Int, z: Int): Float {
+        var h = x * 374761393 + z * 668265263
+        h = (h xor (h ushr 13)) * 1274126177
+        h = h xor (h ushr 16)
+
+        return (h and 0xFFFF).toFloat() / 65535f
     }
 
     // ------------------------------------------------------------------ keys
 
     private fun key(level: Int, tx: Int, tz: Int): Long =
-        (level.toLong() shl 56) or ((tx.toLong() and MASK) shl 28) or (tz.toLong() and MASK)
+        (level.toLong() shl 56) or
+                ((tx.toLong() and MASK) shl 28) or
+                (tz.toLong() and MASK)
 
     private fun levelOf(key: Long): Int = (key ushr 56).toInt()
+
     private fun unpackX(key: Long): Int = signExtend((key shr 28) and MASK)
     private fun unpackZ(key: Long): Int = signExtend(key and MASK)
+
     private fun signExtend(v: Long): Int = ((v shl 36) shr 36).toInt()
 
     private companion object {
-        const val FLOATS = 7 // pos(3) + normal(3) + packed color(1)
+        const val FLOATS = 7
         const val MASK = 0xFFFFFFFL
+
         val SNOW_LINE = TerrainGenerator.WORLD_SURFACE.toFloat() + 70f
-
     }
-
 }

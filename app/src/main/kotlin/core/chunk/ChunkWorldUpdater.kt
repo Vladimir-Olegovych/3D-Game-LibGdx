@@ -39,16 +39,19 @@ class ChunkWorldUpdater : LaunchedEffect, DisposableEffect, DeltaUpdater(WorldCo
 
     companion object {
         const val DRAW_RADIUS_XZ = 16
-        const val DRAW_RADIUS_Y = 10
+        const val DRAW_RADIUS_Y = 6
         const val CHUNK_SIZE = 16
         const val CHUNK_HEIGHT = 16
         const val DATA_RADIUS_EXTRA = 1
         const val REMOVE_MARGIN = 1
 
         const val FIRST_BATCH_CHUNKS = 200
-        const val BATCH_CHUNKS = 64 * 4
-        const val BATCH_MESHES = 64 * 4
+        const val BATCH_CHUNKS = 64
+        const val BATCH_MESHES = 64
         const val BATCH_TIMEOUT_MS = 15_000L
+
+        /** Сколько батчей может идти одновременно: генерация следующего перекрывается с мешингом текущего. */
+        const val MAX_BATCHES_IN_FLIGHT = 2
     }
 
     private val isFirstGeneration = AtomicBoolean(true)
@@ -76,7 +79,7 @@ class ChunkWorldUpdater : LaunchedEffect, DisposableEffect, DeltaUpdater(WorldCo
     private val editRemeshPositions = ConcurrentHashMap.newKeySet<IntVector3>()
 
     private val remeshRunning = AtomicBoolean(false)
-    private val batchInFlight = AtomicBoolean(false)
+    private val batchesInFlight = AtomicInteger(0)
     private val repeatRequested = AtomicBoolean(false)
     private val batchProgress = AtomicInteger(0)
     @Volatile private var batchStartedAt = 0L
@@ -161,17 +164,20 @@ class ChunkWorldUpdater : LaunchedEffect, DisposableEffect, DeltaUpdater(WorldCo
         lastPlayerPosition = event.playerPosition
 
         val now = System.currentTimeMillis()
-        if (!batchInFlight.compareAndSet(false, true)) {
+        if (batchesInFlight.incrementAndGet() > MAX_BATCHES_IN_FLIGHT) {
             if (now - batchStartedAt < BATCH_TIMEOUT_MS) {
-                // Батч ещё идёт: запомним, что игрок сместился, и повторим по его окончании.
+                // Все слоты заняты: запомним, что игрок сместился, и повторим по окончании батча.
+                batchesInFlight.decrementAndGet()
                 repeatRequested.set(true)
                 return
             }
+            batchesInFlight.set(1) // зависший батч — сбрасываем счётчик
         }
         batchStartedAt = now
 
         val generationData = getWorldGenerationData(event.playerPosition)
-        chunkEventBus?.sendEvent(ChunkEvent.ChunksPreparation(generationData))
+        // напрямую, без лишнего круга через шину (ждать следующий тик update не нужно)
+        chunksPreparation(ChunkEvent.ChunksPreparation(generationData))
     }
 
     @BusEvent
@@ -247,6 +253,18 @@ class ChunkWorldUpdater : LaunchedEffect, DisposableEffect, DeltaUpdater(WorldCo
                 createdChunks[position] = chunkData
             }
 
+            // Колонки считаем заранее и параллельно: раньше ~20 чанков одной колонки стояли в очереди
+            // на одной блокировке computeIfAbsent, пока один поток считал колонку.
+            createdChunks.keys
+                .distinctBy { (it.x.toLong() shl 32) xor (it.z.toLong() and 0xFFFFFFFFL) }
+                .map { pos ->
+                    async(Dispatchers.Default) {
+                        parallelismChunks.withPermit {
+                            terrainGenerator.prepareColumn(pos.x, pos.z, CHUNK_SIZE, points)
+                        }
+                    }
+                }.awaitAll()
+
             createdChunks.values.map { chunkData ->
                 async(Dispatchers.Default) {
                     parallelismChunks.withPermit { generateChunk(chunkData, points) }
@@ -275,6 +293,13 @@ class ChunkWorldUpdater : LaunchedEffect, DisposableEffect, DeltaUpdater(WorldCo
 
             if (lightRemeshPositions.isNotEmpty()) scheduleRemesh()
             batchProgress.addAndGet(createdChunks.size)
+
+            // Генерация этого батча закончена — можно сразу начинать следующий, пока он мешится.
+            if (batchesInFlight.get() < MAX_BATCHES_IN_FLIGHT) {
+                lastPlayerPosition?.let {
+                    chunkEventBus?.sendEvent(ChunkEvent.LoadAdditionalChunksRequest(it))
+                }
+            }
         } catch (e: CancellationException) {
             throw e
         } catch (e: Exception) {
@@ -283,7 +308,7 @@ class ChunkWorldUpdater : LaunchedEffect, DisposableEffect, DeltaUpdater(WorldCo
             pendingChunkPositions.removeAll(preparation.toCreateChunkDates.toSet())
         }
 
-        chunkEventBus?.sendEvent(ChunkEvent.ChunksMeshing(preparation))
+        chunksMeshing(ChunkEvent.ChunksMeshing(preparation))
     }
 
     @BusEvent
@@ -292,7 +317,7 @@ class ChunkWorldUpdater : LaunchedEffect, DisposableEffect, DeltaUpdater(WorldCo
         try {
             preparation.toCreateMeshDates.map { position ->
                 async(Dispatchers.Default) {
-                    parallelismMesh.withPermit { meshChunk(position, remesh = false, rebuildPhysics = false) }
+                    meshChunk(position, remesh = false, rebuildPhysics = false)
                 }
             }.awaitAll()
         } catch (e: CancellationException) {
@@ -302,7 +327,7 @@ class ChunkWorldUpdater : LaunchedEffect, DisposableEffect, DeltaUpdater(WorldCo
         } finally {
             pendingMeshPositions.removeAll(preparation.toCreateMeshDates.toSet())
         }
-        chunkEventBus?.sendEvent(ChunkEvent.FinalizeCreation(preparation))
+        finalizeCreation(ChunkEvent.FinalizeCreation(preparation))
     }
 
     @BusEvent
@@ -362,7 +387,7 @@ class ChunkWorldUpdater : LaunchedEffect, DisposableEffect, DeltaUpdater(WorldCo
 
     private fun finishBatch(allowFollowUp: Boolean) {
         val progressed = batchProgress.getAndSet(0) > 0
-        batchInFlight.set(false)
+        batchesInFlight.updateAndGet { if (it > 0) it - 1 else 0 }
         val moved = repeatRequested.getAndSet(false)
         if ((allowFollowUp && progressed) || moved) {
             lastPlayerPosition?.let {
@@ -454,10 +479,10 @@ class ChunkWorldUpdater : LaunchedEffect, DisposableEffect, DeltaUpdater(WorldCo
                     if (edited.isEmpty() && lit.isEmpty()) break
 
                     edited.map { p ->
-                        async { parallelismMesh.withPermit { meshChunk(p, remesh = true, rebuildPhysics = true) } }
+                        async { meshChunk(p, remesh = true, rebuildPhysics = true) }
                     }.awaitAll()
                     lit.map { p ->
-                        async { parallelismMesh.withPermit { meshChunk(p, remesh = true, rebuildPhysics = false) } }
+                        async { meshChunk(p, remesh = true, rebuildPhysics = false) }
                     }.awaitAll()
                 }
             } catch (e: CancellationException) {
@@ -512,7 +537,10 @@ class ChunkWorldUpdater : LaunchedEffect, DisposableEffect, DeltaUpdater(WorldCo
 
         val rawMeshData =
             if (chunkData.isEmpty || isBuried(position, chunkData)) null
-            else meshGenerator.createMesh(createdChunkDataMap, chunkData).takeUnless { it.isEmpty() }
+            else if (urgent) meshGenerator.createMesh(createdChunkDataMap, chunkData).takeUnless { it.isEmpty() }
+            // Пермит держим только на CPU-часть: раньше он удерживался и пока воркер ждал GL-поток при загрузке.
+            else parallelismMesh.withPermit { meshGenerator.createMesh(createdChunkDataMap, chunkData) }
+                .takeUnless { it.isEmpty() }
 
         if (rawMeshData == null) {
             createdMeshDataMap[position] = MeshData(null)

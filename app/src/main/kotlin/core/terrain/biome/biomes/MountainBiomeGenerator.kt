@@ -19,12 +19,13 @@ import core.terrain.layers.CaveLayerHandler
 import core.terrain.layers.SurfaceLayerHandler
 import core.terrain.layers.UndergroundLayerHandler
 import math.noice.FastNoise
+import kotlin.math.pow
 import kotlin.random.Random
 
 class MountainBiomeGenerator : LaunchedEffect, BiomeGenerator() {
 
     private val baseNoiseSettings = NoiseSettings(
-        noiseZoom = 0.04f,
+        noiseZoom = 0.001f,
         octaves = 5,
         persistance = 0.1f,
         redistributionModifier = 1.4f,
@@ -49,10 +50,28 @@ class MountainBiomeGenerator : LaunchedEffect, BiomeGenerator() {
 
     override fun computeSurfaceNoise(worldX: Int, worldZ: Int): Pair<Float, Int> {
         val height = TerrainGenerator.WORLD_HEIGHT
+
         var terrainHeight = baseDomainWarping.generateDomainNoise(worldX, worldZ, baseNoiseSettings)
         terrainHeight = NoiceUtils.redistribution(terrainHeight, baseNoiseSettings)
-        val surfaceHeight = NoiceUtils.remapValue01ToInt(terrainHeight, 0f, height.toFloat())
-        return Pair(terrainHeight, surfaceHeight + (height))
+
+        // 1. Усиливаем контраст — растягиваем верх, чтобы были острые пики
+        terrainHeight = 1f - (1f - terrainHeight).pow(1.8f)  // exponent > 1 → выше горы
+
+        // 2. Мягко поднимаем низины, НЕ обрезая пики
+        val minTerrainLevel = 0.9f
+        if (terrainHeight < minTerrainLevel) {
+            terrainHeight = minTerrainLevel - (minTerrainLevel - terrainHeight) * 0.25f
+        }
+
+        // 3. Опционально: ridged-слой для хребтов
+        val ridge = 1f - kotlin.math.abs(baseDomainWarping.generateDomainNoise(worldX, worldZ, baseNoiseSettings))
+        terrainHeight = (terrainHeight * 0.75f + ridge.pow(3f) * 0.25f).coerceIn(0f, 1f)
+
+        val baseHeight = 400
+        val mountainHeight = height - baseHeight
+        val surfaceHeight = (terrainHeight * mountainHeight).toInt() + baseHeight
+
+        return Pair(terrainHeight, surfaceHeight)
     }
 
     override fun process(chunkData: ChunkData,
