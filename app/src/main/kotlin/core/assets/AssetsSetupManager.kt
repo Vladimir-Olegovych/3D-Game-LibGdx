@@ -49,6 +49,11 @@ object AssetsSetupManager: LaunchedEffect {
             Gdx.files.internal("shaders/chunk/fragment_shader_chunk.glsl").readString()
         )
         gContext.setObject(ShaderTypes.CHUNK_SHADER, chunkShader)
+        val lodShader = ShaderProgram(
+            Gdx.files.internal("shaders/lod/vertex_shader_lod.glsl").readString(),
+            Gdx.files.internal("shaders/lod/fragment_shader_lod.glsl").readString()
+        )
+        gContext.setObject(ShaderTypes.LOD_SHADER, lodShader)
         val modelShader = ShaderProgram(
             Gdx.files.internal("shaders/model/vertex_shader_model.glsl").readString(),
             Gdx.files.internal("shaders/model/fragment_shader_model.glsl").readString()

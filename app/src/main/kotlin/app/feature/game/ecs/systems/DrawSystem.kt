@@ -18,6 +18,8 @@ import com.gigapi.texture.DefaultsTextures
 import core.animator.ModelAnimator
 import core.chunk.ChunkWorldUpdater
 import core.defaults.CameraTypes
+import core.lod.LodConfig
+import core.lod.LodTerrainRenderer
 import core.mesh.generators.ChunkMeshSplit
 import core.mesh.generators.GreedyChunkMesher
 import core.renderers.SkyPlanetRenderer
@@ -53,6 +55,8 @@ class DrawSystem : BaseEntitySystem() {
 
     @Wire
     private lateinit var skyPlanetRenderer: SkyPlanetRenderer
+    @Wire
+    private lateinit var lodRenderer: LodTerrainRenderer
 
     private val drawTasks = arrayOf(
         DrawTaskChunks(),
@@ -77,6 +81,13 @@ class DrawSystem : BaseEntitySystem() {
     }
 
     override fun processSystem() {
+        lodRenderer.render(
+            camera,
+            timeState.fogColor(),
+            timeState.dayPhase,
+            timeState.maxShadowThreshold,
+            timeState.nightBlueFilter
+        )
         drawTasks.forEach { task ->
             task.draw(subscription.entities)
         }
@@ -278,10 +289,6 @@ class DrawSystem : BaseEntitySystem() {
 
     inner class DrawTaskChunks : DrawTask {
 
-        private val fogVerticalRadius =
-            ChunkWorldUpdater.CHUNK_HEIGHT * ChunkWorldUpdater.DRAW_RADIUS_Y -
-                    ChunkWorldUpdater.CHUNK_HEIGHT * 2f
-
         /** Вторая программа: тот же код, но с #define CUTOUT (discard для листвы и т.п.). */
         private val cutoutShader: ShaderProgram by lazy {
             val program = ShaderProgram(
@@ -316,11 +323,13 @@ class DrawSystem : BaseEntitySystem() {
 
         private fun bindCommon(shader: ShaderProgram) {
             shader.bind()
+            shader.setUniformf("u_lodFadeStart", LodConfig.CHUNK_FADE_START)
+            shader.setUniformf("u_lodFadeEnd", LodConfig.CHUNK_FADE_END)
             shader.setUniformi("u_texture", 0)
             shader.setUniformMatrix("modelViewProjection", camera.combined)
             shader.setUniformf("viewPosition", camera.position)
             shader.setUniformf("horizontalRadius", camera.far)
-            shader.setUniformf("verticalRadius", fogVerticalRadius)
+            shader.setUniformf("verticalRadius", camera.far)
             shader.setUniformf("u_tileSize", GreedyChunkMesher.tileSizeU, GreedyChunkMesher.tileSizeV)
 
             val fog = timeState.fogColor()

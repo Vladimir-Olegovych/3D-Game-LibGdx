@@ -21,6 +21,7 @@ import core.controls.PInputProcessor
 import core.controls.UInputProcessor
 import core.crafting.CraftManager
 import core.items.ItemManager
+import core.lod.LodTerrainRenderer
 import core.network.NetworkStateUpdater
 import core.renderers.SkyPlanetRenderer
 import core.renderers.StarRenderer
@@ -60,6 +61,8 @@ object DefaultWorldSetupManager: LaunchedEffect {
         //UI
         gContext.setObject(AimUI())
         gContext.setObject(DataUI())
+        //---
+        gContext.setObject(LodTerrainRenderer())
         //---
         gContext.setObject(PhysicsWorldUpdater())
         //---

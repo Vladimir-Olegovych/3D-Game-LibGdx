@@ -4,24 +4,18 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="21bb169d-cf41-4c8a-bf73-e63da1eaa6c0" name="Changes" comment="update network">
-      <change afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/chunk/kryo/WorldStorage.kt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/utils/Utils.kt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/core/src/main/kotlin/NetIntVector3.kt" afterDir="false" />
+    <list default="true" id="21bb169d-cf41-4c8a-bf73-e63da1eaa6c0" name="Changes" comment="update world storage">
+      <change afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/lod/LodTerrainRenderer.kt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/src/main/resources/shaders/lod/fragment_shader_lod.glsl" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/src/main/resources/shaders/lod/vertex_shader_lod.glsl" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/app/feature/game/GameFragment.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/app/feature/game/GameFragment.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/app/feature/game/ecs/systems/ChunkSystem.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/app/feature/game/ecs/systems/ChunkSystem.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/app/feature/game/ecs/systems/WorldSystem.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/app/feature/game/ecs/systems/WorldSystem.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/app/feature/game/event/ChunkEvent.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/app/feature/game/event/ChunkEvent.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/app/feature/multiplayer/MultiplayerFragment.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/app/feature/multiplayer/MultiplayerFragment.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/app/feature/worldselect/WorldSelectFragment.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/app/feature/worldselect/WorldSelectFragment.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/core/chunk/ChunkWorldUpdater.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/chunk/ChunkWorldUpdater.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/core/defaults/WorldConstants.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/defaults/WorldConstants.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/core/navigation/Navigation.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/navigation/Navigation.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/core/src/main/kotlin/GamePacket.kt" beforeDir="false" afterPath="$PROJECT_DIR$/core/src/main/kotlin/GamePacket.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/core/src/main/kotlin/KryoSettings.kt" beforeDir="false" afterPath="$PROJECT_DIR$/core/src/main/kotlin/KryoSettings.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/server/src/main/kotlin/core/chunk/ServerChunk.kt" beforeDir="false" afterPath="$PROJECT_DIR$/server/src/main/kotlin/core/chunk/ServerChunk.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/server/src/main/kotlin/event/ServerChunkEvent.kt" beforeDir="false" afterPath="$PROJECT_DIR$/server/src/main/kotlin/event/ServerChunkEvent.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/app/feature/game/ecs/systems/DrawSystem.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/app/feature/game/ecs/systems/DrawSystem.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/core/assets/AssetsSetupManager.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/assets/AssetsSetupManager.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/core/defaults/DefaultGameSetupManager.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/defaults/DefaultGameSetupManager.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/core/defaults/DefaultWorldSetupManager.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/defaults/DefaultWorldSetupManager.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/core/shaders/ShaderTypes.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/core/shaders/ShaderTypes.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/resources/shaders/chunk/fragment_shader_chunk.glsl" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/resources/shaders/chunk/fragment_shader_chunk.glsl" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/resources/shaders/chunk/vertex_shader_chunk.glsl" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/resources/shaders/chunk/vertex_shader_chunk.glsl" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -126,16 +120,16 @@
     &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
     &quot;git-widget-placeholder&quot;: &quot;main&quot;,
     &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
-    &quot;last_opened_file_path&quot;: &quot;/home/vladimir/Documents/Java/GDX-3D-TEST/server/src/main/kotlin/core/chunk&quot;
+    &quot;last_opened_file_path&quot;: &quot;/home/vladimir/Documents/Java/GDX-3D-TEST/app/src/main/resources/shaders/lod&quot;
   }
 }</component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/app/src/main/resources/shaders/lod" />
       <recent name="$PROJECT_DIR$/server/src/main/kotlin/core/chunk" />
       <recent name="$PROJECT_DIR$/configs" />
       <recent name="$PROJECT_DIR$/app/src/main/kotlin/app/feature/game/ui" />
       <recent name="$PROJECT_DIR$/app/src/main/kotlin/core/mesh" />
-      <recent name="$PROJECT_DIR$/app/src/main/resources/music" />
     </key>
     <key name="CopyKotlinDeclarationDialog.RECENTS_KEY">
       <recent name="" />
@@ -268,10 +262,10 @@
       </method>
     </configuration>
     <list>
-      <item itemvalue="Gradle.GDX-3D-TEST [:app:assemble]" />
-      <item itemvalue="Gradle.GDX-3D-TEST [:core:assemble]" />
       <item itemvalue="Gradle.GDX-3D-TEST [desktop:shadowJar]" />
       <item itemvalue="Gradle.GDX-3D-TEST [server:assemble]" />
+      <item itemvalue="Gradle.GDX-3D-TEST [:app:assemble]" />
+      <item itemvalue="Gradle.GDX-3D-TEST [:core:assemble]" />
       <item itemvalue="Kotlin.DesktopMainKt" />
       <item itemvalue="Kotlin.ServerMainKt" />
     </list>
@@ -358,6 +352,7 @@
     <MESSAGE value="added open lan connection" />
     <MESSAGE value="update network with exceptions" />
     <MESSAGE value="update network" />
-    <option name="LAST_COMMIT_MESSAGE" value="update network" />
+    <MESSAGE value="update world storage" />
+    <option name="LAST_COMMIT_MESSAGE" value="update world storage" />
   </component>
 </project>

@@ -12,6 +12,7 @@ uniform float verticalRadius;
 varying vec4 v_TileA;      // xy = локальные UV, zw = повторы
 varying vec4 v_TileB;      // xy = origin в атласе, z = sky, w = block
 varying vec2 v_Misc;       // x = ao * dirLight, y = fog
+varying vec2 v_Rel;
 
 void main() {
     vec4 worldPosition = transform * vec4(a_Pos.xyz, 1.0);
@@ -28,6 +29,7 @@ void main() {
     );
     float fog = clamp((ellipsoidDist - 0.7) / (0.95 - 0.7), 0.0, 1.0);
 
+    v_Rel = diff.xz;
     v_TileA = a_Tile;
     v_TileB = vec4(a_Origin, a_Shade.y, a_Shade.z);
     v_Misc  = vec2(a_Shade.x * dirLight, fog);

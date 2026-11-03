@@ -9,7 +9,10 @@ precision mediump float;
 varying vec4 v_TileA;
 varying vec4 v_TileB;
 varying vec2 v_Misc;
+varying vec2 v_Rel;
 
+uniform float u_lodFadeStart;
+uniform float u_lodFadeEnd;
 uniform sampler2D u_texture;
 uniform vec2 u_tileSize;
 uniform vec3 fogColor;
@@ -20,6 +23,12 @@ uniform float u_nightBlueFilter;
 float curve(float l) { return pow(l, 1.7); }
 
 void main() {
+    float cheb = max(abs(v_Rel.x), abs(v_Rel.y));
+    float fade = clamp((cheb - u_lodFadeStart) / (u_lodFadeEnd - u_lodFadeStart), 0.0, 1.0);
+    if (fade > 0.0) {
+        float ign = fract(52.9829189 * fract(dot(gl_FragCoord.xy, vec2(0.06711056, 0.00583715))));
+        if (fade > ign) discard;
+    }
     float fog = v_Misc.y;
 
     #ifndef CUTOUT
