@@ -17,6 +17,7 @@ import core.terrain.biome.BiomePointGrid
 import core.terrain.biome.BiomePoints
 import core.terrain.biome.BiomeSelector
 import core.terrain.biome.BiomeWarp
+import core.terrain.biome.biomes.CanyonBiomeGenerator
 import core.terrain.biome.biomes.DesertBiomeGenerator
 import core.terrain.biome.biomes.ForestBiomeGenerator
 import core.terrain.biome.biomes.MountainBiomeGenerator
@@ -100,12 +101,14 @@ class TerrainGenerator : DisposableEffect, LaunchedEffect {
         gContext.setObject(SpruceBiomeGenerator())
         gContext.setObject(DesertBiomeGenerator())
         gContext.setObject(MountainBiomeGenerator())
+        gContext.setObject(CanyonBiomeGenerator())
 
         biomeGenerators = EnumMap<BiomeType, BiomeGenerator>(BiomeType::class.java).apply {
             put(BiomeType.FOREST, gContext.getObject<ForestBiomeGenerator>())
             put(BiomeType.SPRUCE_FOREST, gContext.getObject<SpruceBiomeGenerator>())
             put(BiomeType.DESERT, gContext.getObject<DesertBiomeGenerator>())
             put(BiomeType.MOUNTAINS, gContext.getObject<MountainBiomeGenerator>())
+            put(BiomeType.CANYON, gContext.getObject<CanyonBiomeGenerator>())
         }
 
         val noise = gContext.getObject<PerlinNoise>(NoiceTypes.PERLIN_WORLD)
