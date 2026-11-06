@@ -1,30 +1,62 @@
 {
-  "recipes" : [ {
-    "result" : {
-      "item" : "OAK_WOODEN_PLANKS",
-      "count" : 4
+  "recipes" : [
+    {
+      "result" : {
+        "item" : "OAK_WOODEN_PLANKS",
+        "count" : 4
+      },
+      "ingredients" : [ {
+        "item" : "OAK_WOOD",
+        "count" : 1
+      } ]
     },
-    "ingredients" : [ {
-      "item" : "OAK_WOOD",
-      "count" : 1
-    } ]
-  }, {
-    "result" : {
-      "item" : "DIAMOND_PICKAXE",
-      "count" : 1
+
+
+    {
+      "result" : {
+        "item" : "STICK",
+        "count" : 4
+      },
+      "ingredients" : [ {
+        "item" : "OAK_WOODEN_PLANKS",
+        "count" : 1
+      } ]
     },
-    "ingredients" : [ {
-      "item" : "OAK_WOODEN_PLANKS",
-      "count" : 1
-    } ]
-  }, {
-    "result" : {
-      "item" : "IRON_AXE",
-      "count" : 1
+
+
+    {
+      "result" : {
+        "item" : "WOOD_PICKAXE",
+        "count" : 1
+      },
+      "ingredients" : [
+        {
+          "item" : "OAK_WOODEN_PLANKS",
+          "count" : 3
+        }, {
+          "item" : "STICK",
+          "count" : 2
+        }
+      ]
     },
-    "ingredients" : [ {
-      "item" : "OAK_WOODEN_PLANKS",
-      "count" : 1
-    } ]
-  } ]
+
+
+    {
+      "result" : {
+        "item" : "STONE_PICKAXE",
+        "count" : 1
+      },
+      "ingredients" : [
+        {
+          "item" : "STONE",
+          "count" : 3
+        }, {
+          "item" : "STICK",
+          "count" : 2
+        }
+      ]
+    }
+
+
+  ]
 }

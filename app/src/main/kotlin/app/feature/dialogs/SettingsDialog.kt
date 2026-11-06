@@ -3,6 +3,7 @@ package app.feature.dialogs
 import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.assets.AssetManager
 import com.badlogic.gdx.graphics.GL20
+import com.badlogic.gdx.graphics.PerspectiveCamera
 import com.badlogic.gdx.scenes.scene2d.Actor
 import com.badlogic.gdx.scenes.scene2d.Stage
 import com.badlogic.gdx.scenes.scene2d.Touchable
@@ -12,6 +13,8 @@ import com.gigapi.setOnClickListener
 import com.gigapi.texture.ColorDrawable
 import com.gigapi.viewport.UnfairViewport
 import core.assets.SkinID
+import core.chunk.ChunkWorldUpdater
+import core.lod.LodConfig.FOG_DISTANCE
 import core.settings.SettingsSO
 
 class SettingsDialogCallbacks(
@@ -19,6 +22,7 @@ class SettingsDialogCallbacks(
 )
 
 class SettingsDialog(
+    private val camera: PerspectiveCamera,
     private val settingsSO: SettingsSO,
     private val assetManager: AssetManager,
     private val viewport: UnfairViewport,
@@ -114,6 +118,14 @@ class SettingsDialog(
             ?: settingsSO.drawRadiusXZ
         settingsSO.drawRadiusY = drawRadiusYField.text.toIntOrNull()
             ?: settingsSO.drawRadiusY
+
+        val radius = (ChunkWorldUpdater.CHUNK_SIZE * settingsSO.drawRadiusXZ) - ChunkWorldUpdater.CHUNK_SIZE * 1.5F
+
+        if (!settingsSO.isLodEnabled) {
+            camera.far = radius
+        } else {
+            camera.far = FOG_DISTANCE
+        }
     }
 
     override fun onShow() {

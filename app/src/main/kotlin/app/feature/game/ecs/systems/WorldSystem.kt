@@ -70,6 +70,7 @@ class WorldSystem: BaseSystem() {
         itemManager.getItem(BlockType.GRASS_PLANT_2)?.let { inventoryComponent.addItem(it, 64) }
         itemManager.getItem(BlockType.DIRT)?.let { inventoryComponent.addItem(it, 64) }
         itemManager.getItem(BlockType.CACTUS)?.let { inventoryComponent.addItem(it, 64) }
+        itemManager.getItem(BlockType.TORCH)?.let { inventoryComponent.addItem(it, 64) }
 
         inventoryListener = object : PInputProcessor.InputListener {
             override fun selectSlot(slot: Int) {

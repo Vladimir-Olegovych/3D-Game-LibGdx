@@ -1,6 +1,7 @@
 package core.terrain.level
 
 import com.gigapi.math.noice.SpawnMask
+import core.blocks.types.BlockType
 import core.terrain.biome.models.BiomeType
 import core.terrain.structures.builder.StructureBuilder
 
@@ -37,6 +38,9 @@ abstract class WorldStructure {
 
     /** Дополнительное условие по условиям мира в точке привязки. */
     open fun canSpawn(surfaceY: Int, biome: BiomeType): Boolean = true
+
+    /** Дополнительное условие спавна на блоке. */
+    open val ground: Set<BlockType>? = null
 
     /** Строит структуру. Точка (0,0,0) билдера = блок поверхности в точке привязки. */
     abstract fun build(b: StructureBuilder)

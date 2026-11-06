@@ -43,7 +43,7 @@ object AssetsSetupManager: LaunchedEffect {
         }
         gContext.setObject(musicAssetManager)
         //---
-        //ShaderProgram.pedantic = false
+        ShaderProgram.pedantic = false
         val chunkShader = ShaderProgram(
             Gdx.files.internal("shaders/chunk/vertex_shader_chunk.glsl").readString(),
             Gdx.files.internal("shaders/chunk/fragment_shader_chunk.glsl").readString()

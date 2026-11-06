@@ -9,7 +9,7 @@
       "maxStack": 1,
       "stackable": false,
       "toolType": "AXE",
-      "toolLevel": 2
+      "toolLevel": 3
     },
     {
       "id": "DIAMOND_PICKAXE",
@@ -20,7 +20,40 @@
       "maxStack": 1,
       "stackable": false,
       "toolType": "PICKAXE",
-      "toolLevel": 3
+      "toolLevel": 4
+    },
+    {
+      "id": "STONE_PICKAXE",
+      "name": "Stone Pickaxe",
+      "description": "Strong pickaxe from Germany 2",
+      "skinID": "ITEM",
+      "regionName": "tile_stone_pickaxe",
+      "maxStack": 1,
+      "stackable": false,
+      "toolType": "PICKAXE",
+      "toolLevel": 2
+    },
+    {
+      "id": "WOOD_PICKAXE",
+      "name": "Stone Pickaxe",
+      "description": "Strong pickaxe from Germany 2",
+      "skinID": "ITEM",
+      "regionName": "tile_wood_pickaxe",
+      "maxStack": 1,
+      "stackable": false,
+      "toolType": "PICKAXE",
+      "toolLevel": 1
+    },
+    {
+      "id": "STICK",
+      "name": "Wooden stick",
+      "description": "Strong stick from Germany",
+      "skinID": "ITEM",
+      "regionName": "tile_stick",
+      "maxStack": 64,
+      "stackable": true,
+      "toolType": null,
+      "toolLevel": 0
     }
   ]
 }

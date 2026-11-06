@@ -1,11 +1,11 @@
 package core.terrain.biome
 
 import core.chunk.ChunkData
-import core.terrain.BlockLayerHandler
+import core.terrain.layers.SurfaceLayerHandler
 
 abstract class BiomeGenerator {
 
-    protected abstract val startLayerHandler: BlockLayerHandler
+    abstract val surfaceLayerHandler: SurfaceLayerHandler
 
     abstract fun computeSurfaceNoise(worldX: Int, worldZ: Int): Pair<Float, Int>
 

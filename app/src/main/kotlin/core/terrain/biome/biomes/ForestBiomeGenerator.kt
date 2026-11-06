@@ -19,7 +19,7 @@ import core.terrain.layers.SurfaceLayerHandler
 import core.terrain.layers.UndergroundLayerHandler
 import math.noice.FastNoise
 
-class ForestBiomeGenerator : LaunchedEffect, BiomeGenerator() {
+class ForestBiomeGenerator(private val seed: Int) : LaunchedEffect, BiomeGenerator() {
 
     private val baseNoiseSettings = NoiseSettings(
         noiseZoom = 0.004f,
@@ -30,7 +30,7 @@ class ForestBiomeGenerator : LaunchedEffect, BiomeGenerator() {
     )
 
     private lateinit var baseDomainWarping: DomainWarping2D
-    override val startLayerHandler = SurfaceLayerHandler()
+    override val surfaceLayerHandler = SurfaceLayerHandler(seed = seed)
 
     override fun launch(gContext: GContext) {
         val perlinNoise = gContext.getObject<PerlinNoise>(NoiceTypes.PERLIN_WORLD)
@@ -39,9 +39,8 @@ class ForestBiomeGenerator : LaunchedEffect, BiomeGenerator() {
 
         baseDomainWarping = getSurfaceDomainWarping(noiceGenerator)
 
-        startLayerHandler
-            //.setNext(SurfacePlantLayerHandler())
-            .setNext(UndergroundLayerHandler())
+        surfaceLayerHandler
+            .setNext(UndergroundLayerHandler(seed = seed))
             .setNext(CaveLayerHandler(caveNoise))
     }
 
@@ -65,7 +64,7 @@ class ForestBiomeGenerator : LaunchedEffect, BiomeGenerator() {
             worldPosition.y = chunkData.position.y * chunkData.chunkHeight + y
             val localPosition = IntVector3(x, y, z)
 
-            startLayerHandler.handle(
+            surfaceLayerHandler.handle(
                 chunkData,
                 localPosition,
                 worldPosition,
@@ -87,7 +86,7 @@ class ForestBiomeGenerator : LaunchedEffect, BiomeGenerator() {
             worldPosition.y = chunkData.position.y * chunkData.chunkHeight + y
             val localPosition = IntVector3(x, y, z)
 
-            startLayerHandler.handle(
+            surfaceLayerHandler.handle(
                 chunkData,
                 localPosition,
                 worldPosition,

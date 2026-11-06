@@ -75,6 +75,7 @@ class StructurePlacer(
 
         val sample = surface(ax, az)
         s.biomes?.let { if (sample.biome !in it) return null }
+        s.ground?.let { if (sample.ground !in it) return null }
         if (!s.canSpawn(sample.height, sample.biome)) return null
 
         return Placed(ax, sample.height, az, splitMix(hash), sample.biome, m)

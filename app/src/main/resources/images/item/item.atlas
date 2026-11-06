@@ -1,8 +1,14 @@
 item.png
-size:720,360
+size:1800,360
 filter:Linear,Linear
 repeat:none
 tile_diamond_pickaxe
 bounds:0,0,360,360
-tile_iron_axe
+tile_iront_axe
+bounds:1080,0,360,360
+tile_stick
+bounds:720,0,360,360
+tile_stone_pickaxe
+bounds:1440,0,360,360
+tile_wood_pickaxe
 bounds:360,0,360,360

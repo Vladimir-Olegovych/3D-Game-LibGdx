@@ -28,6 +28,7 @@ enum class BiomeType(
             null
         )
     ),
+    /*
     CANYON(
         id = 4,
         config = arrayOf(
@@ -36,6 +37,8 @@ enum class BiomeType(
             BiomeConfig(start = 0.2f, end = 1.0f)
         )
     ),
+    
+     */
     MOUNTAINS(
         id = 3,
         config = arrayOf(

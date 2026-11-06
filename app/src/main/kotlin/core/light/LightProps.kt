@@ -28,7 +28,7 @@ object LightProps {
         set(BlockType.GRASS_PLANT_1, opacity = 1)
         set(BlockType.GRASS_PLANT_2, opacity = 1)
         set(BlockType.WHEAT_PLANT_1, opacity = 1)
-        //LightProps.set(BlockType.TORCH, opacity = 0, emission = 14)
-        set(BlockType.OAK_WOODEN_PLANKS, opacity = 0, emission = 14)
+
+        set(BlockType.TORCH, opacity = 0, emission = 14)
     }
 }

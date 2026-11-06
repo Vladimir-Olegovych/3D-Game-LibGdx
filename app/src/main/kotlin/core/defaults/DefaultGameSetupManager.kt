@@ -11,15 +11,18 @@ import com.badlogic.gdx.scenes.scene2d.Stage
 import com.gigapi.effects.LaunchedEffect
 import com.gigapi.general.GContext
 import com.gigapi.kryo.GameClient
+import com.gigapi.storage.json.AppConfig
 import com.gigapi.viewport.UnfairViewport
 import com.gigcreator.KRYO_CLIENT_BUFFER_SIZE
 import core.blocks.BlockDataManager
 import core.chunk.ChunkWorldUpdater
+import core.configs.ConfigTypes
 import core.lod.LodConfig.FOG_DISTANCE
 import core.lod.LodTerrainRenderer
 import core.mesh.generators.ChunkMesher
 import core.mesh.generators.GreedyChunkMesher
 import core.scope.DispatcherTypes
+import core.settings.SettingsSO
 import core.terrain.TerrainGenerator
 import core.viewport.ViewportTypes
 import kotlinx.coroutines.CoroutineDispatcher
@@ -28,11 +31,19 @@ import java.util.concurrent.Executor
 
 object DefaultGameSetupManager: Executor, LaunchedEffect {
     override fun launch(gContext: GContext) {
+        val settingsSO = gContext.getObject<AppConfig<SettingsSO>>(ConfigTypes.SETTINGS_SO).getConfig()
         val perspectiveCamera = PerspectiveCamera(90f, Gdx.graphics.width.toFloat(), Gdx.graphics.height.toFloat())
         perspectiveCamera.position.set(Vector3(0f, TerrainGenerator.WORLD_SURFACE.toFloat(), 0f))
         perspectiveCamera.lookAt(-10f, TerrainGenerator.WORLD_SURFACE.toFloat(), -10f)
         perspectiveCamera.near = 0.2f
-        perspectiveCamera.far = FOG_DISTANCE//(ChunkWorldUpdater.CHUNK_SIZE * ChunkWorldUpdater.DRAW_RADIUS_XZ) - ChunkWorldUpdater.CHUNK_SIZE * 1.5F
+
+        val radius = (ChunkWorldUpdater.CHUNK_SIZE * settingsSO.drawRadiusXZ) - ChunkWorldUpdater.CHUNK_SIZE * 1.5F
+        if (!settingsSO.isLodEnabled) {
+            perspectiveCamera.far = radius
+        } else {
+            perspectiveCamera.far = FOG_DISTANCE
+        }
+
         perspectiveCamera.update()
         gContext.setObject(CameraTypes.GL_3D, perspectiveCamera)
         //---

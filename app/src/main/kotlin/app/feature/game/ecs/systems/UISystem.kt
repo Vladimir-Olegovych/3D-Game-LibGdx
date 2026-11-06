@@ -13,6 +13,7 @@ import com.artemis.annotations.Wire
 import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.InputMultiplexer
 import com.badlogic.gdx.assets.AssetManager
+import com.badlogic.gdx.graphics.PerspectiveCamera
 import com.badlogic.gdx.scenes.scene2d.Stage
 import com.gigapi.dialogs.DialogManager
 import com.gigapi.storage.json.AppConfig
@@ -23,6 +24,7 @@ import core.controls.PInputProcessor
 import core.controls.UInputProcessor
 import core.crafting.CraftManager
 import core.crafting.CraftingRecipeSO
+import core.defaults.CameraTypes
 import core.defaults.PlayerConstants
 import core.items.ItemManager
 import core.navigation.Navigation
@@ -36,6 +38,8 @@ class UISystem(
     //Custom
     @Wire(name = ViewportTypes.UNFAIR)
     private lateinit var viewport: UnfairViewport
+    @Wire(name = CameraTypes.GL_3D)
+    private lateinit var camera: PerspectiveCamera
     @Wire(name = ConfigTypes.CRAFTING_RECIPES_SO)
     private lateinit var craftConfig: AppConfig<CraftingRecipeSO>
     @Wire(name = ConfigTypes.SETTINGS_SO)
@@ -87,6 +91,7 @@ class UISystem(
         )
         pauseDialog = PauseDialog(
             stage = stage,
+            camera = camera,
             viewport = viewport,
             navigation = navigation,
             assetManager = assetManager,

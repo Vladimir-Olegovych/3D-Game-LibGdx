@@ -467,20 +467,32 @@ class GreedyChunkMesher: LaunchedEffect, MeshGenerator {
         }
 
         private fun emitModel(quadsList: List<ModelQuad>, x: Int, y: Int, z: Int, o: Int) {
-            // берём "боковую" текстуру: направление 0 (+X) -> faceUVs отдаёт side
-            val t = tileInfo(0, o)
-            // свет клетки самого блока (нормаль вверх), без AO
+            // свет клетки самого блока, без AO
             val nrm = DIRS[2].normal
             val lt = LightMesher.computeFaceLight(x, y, z, nrm.x, nrm.y, nrm.z, lightAt)
-            for (q in quadsList) pushModelQuad(q, x, y, z, t, lt[0], lt[1])
+            // тайл берётся по texDir квада: CROSS -> side (0), TORCH -> up/side/down
+            for (q in quadsList) pushModelQuad(q, x, y, z, tileInfo(q.texDir, o), lt[0], lt[1])
         }
 
         private fun pushModelQuad(q: ModelQuad, x: Int, y: Int, z: Int, t: TileInfo, sky: Float, blk: Float) {
             quads++
             val base = vb.n / STRIDE
+            val k = if (q.fine) BlockModels.FINE_SCALE else 1
+
+            val wDir = if (q.fine)
+                q.dir or BlockModels.FINE_FLAG or (if (q.halfXZ) BlockModels.HALF_FLAG else 0)
+            else q.dir
+
             for (i in 0 until 4) {
-                vb.add(pack(x + q.corners[i * 3], y + q.corners[i * 3 + 1], z + q.corners[i * 3 + 2], q.dir))
-                vb.add(pack(Math.round(t.loc[i * 2]), Math.round(t.loc[i * 2 + 1]), 1, 1))
+                vb.add(pack(
+                    x * k + q.corners[i * 3],
+                    y * k + q.corners[i * 3 + 1],
+                    z * k + q.corners[i * 3 + 2],
+                    wDir
+                ))
+                val uv = q.uv
+                if (q.fine && uv != null) vb.add(pack(uv[i * 2], uv[i * 2 + 1], 1, 1))
+                else vb.add(pack(Math.round(t.loc[i * 2]), Math.round(t.loc[i * 2 + 1]), 1, 1))
                 vb.add(pack(255, q8(sky), q8(blk), 0))
                 vb.add(t.originWord)
             }

@@ -7,16 +7,20 @@ import core.terrain.structures.builder.Place
 import core.terrain.structures.builder.StructureBuilder
 import kotlin.math.sqrt
 
-class SpruceTreeStructure : WorldStructure() {
+class SpruceTreeStructure(
+    override val id: String,
+    override val chance: Float = 0.8f,
+    override val biomes: Set<BiomeType>,
+    override val ground: Set<BlockType>,
+) : WorldStructure() {
 
-    override val id = "spruce_tree"
     override val cellSize = 5
-    override val chance = 0.8f
     override val radius = 4
     override val above = 46
-    override val biomes = setOf(BiomeType.SPRUCE_FOREST)
 
     override fun build(b: StructureBuilder) {
+        b.set(0, 0, 0, BlockType.DIRT, Place.ALWAYS)
+
         val random = b.random
         val treeHeight = random.nextInt(32, 42)
 
@@ -45,4 +49,22 @@ class SpruceTreeStructure : WorldStructure() {
             b.set(x, y, z, BlockType.LEAVES)
         }
     }
+
+    companion object {
+        val structures = listOf(
+            SpruceTreeStructure(
+                id = "spruce_tree",
+                biomes = setOf(BiomeType.SPRUCE_FOREST),
+                ground = setOf(BlockType.GRASS),
+                chance = 0.8f
+            ),
+            SpruceTreeStructure(
+                id = "spruce_tree_snow",
+                biomes = setOf(BiomeType.MOUNTAINS),
+                ground = setOf(BlockType.SNOW_DIRT),
+                chance = 0.4f
+            ),
+        )
+    }
 }
+

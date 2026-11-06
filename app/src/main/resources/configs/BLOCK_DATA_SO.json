@@ -27,10 +27,55 @@
     "generateCollider" : true,
     "shape" : "CUBE"
   }, {
+    "blockType" : "CHALK",
+    "regionNameUp" : "tile_chalk",
+    "regionNameSide" : "tile_chalk",
+    "regionNameDown" : "tile_chalk",
+    "pickable" : false,
+    "generateAllSides" : false,
+    "generateCollider" : true,
+    "shape" : "CUBE"
+  }, {
+    "blockType" : "CLAY",
+    "regionNameUp" : "tile_clay",
+    "regionNameSide" : "tile_clay",
+    "regionNameDown" : "tile_clay",
+    "pickable" : false,
+    "generateAllSides" : false,
+    "generateCollider" : true,
+    "shape" : "CUBE"
+  }, {
+    "blockType" : "GRAVEL",
+    "regionNameUp" : "tile_gravel",
+    "regionNameSide" : "tile_gravel",
+    "regionNameDown" : "tile_gravel",
+    "pickable" : false,
+    "generateAllSides" : false,
+    "generateCollider" : true,
+    "shape" : "CUBE"
+  }, {
     "blockType" : "SAND",
     "regionNameUp" : "tile_sand",
     "regionNameSide" : "tile_sand",
     "regionNameDown" : "tile_sand",
+    "pickable" : false,
+    "generateAllSides" : false,
+    "generateCollider" : true,
+    "shape" : "CUBE"
+  }, {
+    "blockType" : "SNOW",
+    "regionNameUp" : "tile_snow",
+    "regionNameSide" : "tile_snow",
+    "regionNameDown" : "tile_snow",
+    "pickable" : false,
+    "generateAllSides" : false,
+    "generateCollider" : true,
+    "shape" : "CUBE"
+  }, {
+    "blockType" : "SNOW_DIRT",
+    "regionNameUp" : "tile_snow",
+    "regionNameSide" : "tile_snow_dirt_side",
+    "regionNameDown" : "tile_dirt",
     "pickable" : false,
     "generateAllSides" : false,
     "generateCollider" : true,
@@ -100,13 +145,30 @@
     "generateAllSides" : true,
     "generateCollider" : false,
     "shape" : "CROSS"
+  }, {
+    "blockType" : "TORCH",
+    "regionNameUp" : "tile_torch_top",
+    "regionNameSide" : "tile_torch",
+    "regionNameDown" : null,
+    "pickable" : true,
+    "generateAllSides" : true,
+    "generateCollider" : false,
+    "shape" : "TORCH"
   }],
   "blockInfoList" : [ {
     "blockType" : "GRASS",
     "digTime" : 0.6,
     "digItem" : "SHOVEL"
   }, {
+    "blockType" : "SNOW_DIRT",
+    "digTime" : 0.6,
+    "digItem" : "SHOVEL"
+  }, {
     "blockType" : "DIRT",
+    "digTime" : 0.5,
+    "digItem" : "SHOVEL"
+  }, {
+    "blockType" : "SNOW",
     "digTime" : 0.5,
     "digItem" : "SHOVEL"
   }, {
@@ -116,7 +178,19 @@
   }, {
     "blockType" : "SAND",
     "digTime" : 0.5,
-    "digItem" : "SWORD"
+    "digItem" : "SHOVEL"
+  }, {
+    "blockType" : "CLAY",
+    "digTime" : 0.5,
+    "digItem" : "SHOVEL"
+  }, {
+    "blockType" : "GRAVEL",
+    "digTime" : 0.5,
+    "digItem" : "SHOVEL"
+  }, {
+    "blockType" : "CHALK",
+    "digTime" : 2.0,
+    "digItem" : "PICKAXE"
   }, {
     "blockType" : "OAK_WOOD",
     "digTime" : 1.5,
@@ -144,6 +218,10 @@
   }, {
     "blockType" : "WHEAT_PLANT_1",
     "digTime" : 0.2,
+    "digItem" : "SWORD"
+  }, {
+    "blockType" : "TORCH",
+    "digTime" : 0.01,
     "digItem" : "SWORD"
   }]
 }

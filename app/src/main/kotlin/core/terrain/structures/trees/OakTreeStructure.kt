@@ -15,8 +15,11 @@ class OakTreeStructure : WorldStructure() {
     override val radius = 5
     override val above = 12
     override val biomes = setOf(BiomeType.FOREST)
+    override val ground: Set<BlockType> = setOf(BlockType.GRASS)
 
     override fun build(b: StructureBuilder) {
+        b.set(0, 0, 0, BlockType.DIRT, Place.ALWAYS)
+
         val random = b.random
         val treeHeight = random.nextInt(5, 9)
         val trunkOffset = random.nextInt(-1, 1)

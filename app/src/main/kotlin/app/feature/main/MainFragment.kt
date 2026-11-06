@@ -6,6 +6,7 @@ import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.assets.AssetManager
 import com.badlogic.gdx.graphics.GL20
 import com.badlogic.gdx.graphics.OrthographicCamera
+import com.badlogic.gdx.graphics.PerspectiveCamera
 import com.badlogic.gdx.graphics.Texture
 import com.badlogic.gdx.graphics.g2d.SpriteBatch
 import com.badlogic.gdx.scenes.scene2d.Stage
@@ -44,9 +45,11 @@ class MainFragment(
         viewport = gContext.getObject(ViewportTypes.UNFAIR)
         stage = gContext.getObject()
         camera = gContext.getObject(CameraTypes.GL_2D)
+        val camera3d = gContext.getObject<PerspectiveCamera>(CameraTypes.GL_3D)
         val assetManager = gContext.getObject<AssetManager>()
         menuBackground = assetManager.get<Skin>(SkinID.BLOCK.skin).atlas.textures.first()
         settingsDialog = SettingsDialog(
+            camera = camera3d,
             settingsSO = gContext.getObject<AppConfig<SettingsSO>>(ConfigTypes.SETTINGS_SO).getConfig(),
             assetManager = assetManager,
             viewport = viewport,

@@ -20,7 +20,7 @@ import core.terrain.layers.SurfaceLayerHandler
 import core.terrain.layers.UndergroundLayerHandler
 import math.noice.FastNoise
 
-class DesertBiomeGenerator : LaunchedEffect, BiomeGenerator() {
+class DesertBiomeGenerator(private val seed: Int) : LaunchedEffect, BiomeGenerator() {
 
     private val baseNoiseSettings = NoiseSettings(
         noiseZoom = 0.0001f,
@@ -31,8 +31,10 @@ class DesertBiomeGenerator : LaunchedEffect, BiomeGenerator() {
     )
 
     private lateinit var baseDomainWarping: DomainWarping2D
-    override val startLayerHandler = SurfaceLayerHandler(
-        surfaceBlockType = BlockType.SAND, underSurfaceBlockType = BlockType.SAND
+    override val surfaceLayerHandler = SurfaceLayerHandler(
+        seed = seed,
+        surfaceBlockType = BlockType.SAND,
+        underSurfaceBlockType = BlockType.SAND
     )
 
     override fun launch(gContext: GContext) {
@@ -42,8 +44,8 @@ class DesertBiomeGenerator : LaunchedEffect, BiomeGenerator() {
 
         baseDomainWarping = getSurfaceDomainWarping(noiceGenerator)
 
-        startLayerHandler
-            .setNext(UndergroundLayerHandler())
+        surfaceLayerHandler
+            .setNext(UndergroundLayerHandler(seed = seed))
             .setNext(CaveLayerHandler(caveNoise))
     }
 
@@ -67,7 +69,7 @@ class DesertBiomeGenerator : LaunchedEffect, BiomeGenerator() {
             worldPosition.y = chunkData.position.y * chunkData.chunkHeight + y
             val localPosition = IntVector3(x, y, z)
 
-            startLayerHandler.handle(
+            surfaceLayerHandler.handle(
                 chunkData,
                 localPosition,
                 worldPosition,
@@ -89,7 +91,7 @@ class DesertBiomeGenerator : LaunchedEffect, BiomeGenerator() {
             worldPosition.y = chunkData.position.y * chunkData.chunkHeight + y
             val localPosition = IntVector3(x, y, z)
 
-            startLayerHandler.handle(
+            surfaceLayerHandler.handle(
                 chunkData,
                 localPosition,
                 worldPosition,

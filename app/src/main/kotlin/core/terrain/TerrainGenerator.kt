@@ -9,6 +9,7 @@ import com.gigapi.math.noice.RandomNoise
 import com.gigapi.math.noice.domain.DomainWarping2D
 import com.gigapi.math.noice.models.NoiseSettings
 import com.gigapi.math.vector.IntVector3
+import core.blocks.types.BlockType
 import core.chunk.ChunkData
 import core.noice.NoiceTypes
 import core.noice.asGenerator
@@ -37,8 +38,11 @@ import java.util.concurrent.ConcurrentHashMap
 import kotlin.math.max
 import kotlin.math.roundToInt
 
-/** Результат дешёвой выборки поверхности для LOD (без пещер/деревьев). */
-class LodSample(val height: Int, val biome: BiomeType)
+class LodSample(
+    val height: Int,
+    val biome: BiomeType,
+    val ground: BlockType
+)
 
 class TerrainGenerator : DisposableEffect, LaunchedEffect {
 
@@ -46,9 +50,9 @@ class TerrainGenerator : DisposableEffect, LaunchedEffect {
         private const val WARP_SCALE_X = 10f//1f * 3f
         private const val WARP_SCALE_Z = 4f//32f * 3f
 
-        const val UNDERGROUND_HEIGHT = 80
+        const val UNDERGROUND_HEIGHT = 6
         const val CAVE_THRESHOLD = 0.025f
-        const val CAVE_LEVEL = -UNDERGROUND_HEIGHT
+        const val CAVE_LEVEL = -80
         const val WORLD_HEIGHT = 300
         const val WORLD_SURFACE = WORLD_HEIGHT / 1.5
         const val SKY_MARGIN = 40
@@ -97,18 +101,18 @@ class TerrainGenerator : DisposableEffect, LaunchedEffect {
         gContext.setObject(BiomeSelector(worldSeed))
         gContext.setObject(BiomePointGrid())
 
-        gContext.setObject(ForestBiomeGenerator())
-        gContext.setObject(SpruceBiomeGenerator())
-        gContext.setObject(DesertBiomeGenerator())
-        gContext.setObject(MountainBiomeGenerator())
-        gContext.setObject(CanyonBiomeGenerator())
+        gContext.setObject(ForestBiomeGenerator(worldSeed))
+        gContext.setObject(SpruceBiomeGenerator(worldSeed))
+        gContext.setObject(DesertBiomeGenerator(worldSeed))
+        gContext.setObject(MountainBiomeGenerator(worldSeed))
+        gContext.setObject(CanyonBiomeGenerator(worldSeed))
 
         biomeGenerators = EnumMap<BiomeType, BiomeGenerator>(BiomeType::class.java).apply {
             put(BiomeType.FOREST, gContext.getObject<ForestBiomeGenerator>())
             put(BiomeType.SPRUCE_FOREST, gContext.getObject<SpruceBiomeGenerator>())
             put(BiomeType.DESERT, gContext.getObject<DesertBiomeGenerator>())
             put(BiomeType.MOUNTAINS, gContext.getObject<MountainBiomeGenerator>())
-            put(BiomeType.CANYON, gContext.getObject<CanyonBiomeGenerator>())
+            //put(BiomeType.CANYON, gContext.getObject<CanyonBiomeGenerator>())
         }
 
         val noise = gContext.getObject<PerlinNoise>(NoiceTypes.PERLIN_WORLD)
@@ -121,7 +125,7 @@ class TerrainGenerator : DisposableEffect, LaunchedEffect {
             seed = worldSeed,
             structures = listOf(
                 *PlantPatch.structures.toTypedArray(), RockStructure(),
-                OakTreeStructure(), SpruceTreeStructure(), CactusStructure(),
+                OakTreeStructure(), *SpruceTreeStructure.structures.toTypedArray(), CactusStructure(),
                 OldHouseStructure()
             ),
             noise = perlinNoiseGenerator,
@@ -278,11 +282,13 @@ class TerrainGenerator : DisposableEffect, LaunchedEffect {
         val warpX = (wx + offset.x * WARP_SCALE_X).toInt()
         val warpZ = (wz + offset.y * WARP_SCALE_Z).toInt()
 
-        // Окно биомов берётся из ограниченного LRU в BiomePointGrid — отдельный кэш и clear() не нужны.
         val points = biomePointGrid.getPointsAround(wx, wz)
         val biomeData = lookupBiome(points, wx, wz)
         val blended = blendSurface(biomeData, warpX, warpZ)
-        return LodSample(blended.second, biomeData.currentBiome)
+        val surfaceY = blended.second
+        val biomeGenerator = biomeGenerators[biomeData.currentBiome]!!
+        val ground = biomeGenerator.surfaceLayerHandler.topBlockAt(wx, wz, surfaceY)
+        return LodSample(surfaceY, biomeData.currentBiome, ground)
     }
 
     private fun packKey(x: Int, z: Int): Long =

@@ -5,6 +5,7 @@ import app.feature.dialogs.SettingsDialogCallbacks
 import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.InputMultiplexer
 import com.badlogic.gdx.assets.AssetManager
+import com.badlogic.gdx.graphics.PerspectiveCamera
 import com.badlogic.gdx.scenes.scene2d.Stage
 import com.badlogic.gdx.scenes.scene2d.ui.Skin
 import com.badlogic.gdx.scenes.scene2d.ui.Table
@@ -29,6 +30,7 @@ class PauseDialogCallbacks(
 
 class PauseDialog(
     private val stage: Stage,
+    private val camera: PerspectiveCamera,
     private val viewport: UnfairViewport,
     private val settingsSO: SettingsSO,
     private val navigation: Navigation.Game,
@@ -47,6 +49,7 @@ class PauseDialog(
         )
 
         val settingsDialog = SettingsDialog(
+            camera = camera,
             settingsSO = settingsSO,
             assetManager = assetManager,
             viewport = viewport,

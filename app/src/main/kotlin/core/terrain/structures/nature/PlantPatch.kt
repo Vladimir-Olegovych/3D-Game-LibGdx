@@ -20,6 +20,7 @@ class PlantPatch(
     override val cellSize = 1
     override val radius = 0
     override val above = 1
+    override val ground: Set<BlockType> = setOf(BlockType.GRASS)
 
     override fun canSpawn(surfaceY: Int, biome: BiomeType): Boolean {
         if (heightThreshold == null) return super.canSpawn(surfaceY, biome)

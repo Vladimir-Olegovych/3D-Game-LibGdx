@@ -561,11 +561,14 @@ class LodTerrainRenderer : LaunchedEffect, DisposableEffect {
                 b = 184f / 255f
             }
 
+            /*
             BiomeType.CANYON -> {
                 r = 155f / 255f
                 g = 187f / 255f
                 b = 189f / 255f
             }
+
+             */
 
             BiomeType.MOUNTAINS -> {
                 val snow = ((h - SNOW_LINE) / 25f).coerceIn(0f, 1f)

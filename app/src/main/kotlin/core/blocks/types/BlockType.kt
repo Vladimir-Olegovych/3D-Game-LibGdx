@@ -6,6 +6,11 @@ enum class BlockType {
     GRASS,
     DIRT,
     STONE,
+    CHALK,
+    CLAY,
+    GRAVEL,
+    SNOW,
+    SNOW_DIRT,
     OAK_WOOD,
     OAK_WOODEN_PLANKS,
     LEAVES,
@@ -13,7 +18,8 @@ enum class BlockType {
     CACTUS,
     GRASS_PLANT_1,
     GRASS_PLANT_2,
-    WHEAT_PLANT_1;
+    WHEAT_PLANT_1,
+    TORCH;
 
     companion object {
         fun fromName(name: String): BlockType? {

@@ -22,7 +22,7 @@ import math.noice.FastNoise
 import kotlin.math.pow
 import kotlin.random.Random
 
-class MountainBiomeGenerator : LaunchedEffect, BiomeGenerator() {
+class MountainBiomeGenerator(private val seed: Int) : LaunchedEffect, BiomeGenerator() {
 
     private val baseNoiseSettings = NoiseSettings(
         noiseZoom = 0.001f,
@@ -33,7 +33,11 @@ class MountainBiomeGenerator : LaunchedEffect, BiomeGenerator() {
     )
 
     private lateinit var baseDomainWarping: DomainWarping2D
-    override val startLayerHandler = SurfaceLayerHandler(surfaceBlockType = BlockType.STONE)
+    override val surfaceLayerHandler = SurfaceLayerHandler(
+        seed = seed,
+        surfaceBlockType = BlockType.SNOW_DIRT,
+        snowSurfaceHeight = 250
+    )
 
     override fun launch(gContext: GContext) {
         val perlinNoise = gContext.getObject<PerlinNoise>(NoiceTypes.PERLIN_WORLD)
@@ -43,8 +47,8 @@ class MountainBiomeGenerator : LaunchedEffect, BiomeGenerator() {
 
         baseDomainWarping = getSurfaceDomainWarping(noiceGenerator)
 
-        startLayerHandler
-            .setNext(UndergroundLayerHandler())
+        surfaceLayerHandler
+            .setNext(UndergroundLayerHandler(seed = seed))
             .setNext(CaveLayerHandler(caveNoise))
     }
 
@@ -86,7 +90,7 @@ class MountainBiomeGenerator : LaunchedEffect, BiomeGenerator() {
             worldPosition.y = chunkData.position.y * chunkData.chunkHeight + y
             val localPosition = IntVector3(x, y, z)
 
-            startLayerHandler.handle(
+            surfaceLayerHandler.handle(
                 chunkData,
                 localPosition,
                 worldPosition,
@@ -108,7 +112,7 @@ class MountainBiomeGenerator : LaunchedEffect, BiomeGenerator() {
             worldPosition.y = chunkData.position.y * chunkData.chunkHeight + y
             val localPosition = IntVector3(x, y, z)
 
-            startLayerHandler.handle(
+            surfaceLayerHandler.handle(
                 chunkData,
                 localPosition,
                 worldPosition,

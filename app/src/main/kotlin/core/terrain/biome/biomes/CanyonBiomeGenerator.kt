@@ -21,10 +21,10 @@ import core.terrain.layers.UndergroundLayerHandler
 import math.noice.FastNoise
 import kotlin.math.pow
 
-class CanyonBiomeGenerator : LaunchedEffect, BiomeGenerator() {
+class CanyonBiomeGenerator(private val seed: Int) : LaunchedEffect, BiomeGenerator() {
 
     private val baseNoiseSettings = NoiseSettings(
-        noiseZoom = 0.0006f,
+        noiseZoom = 0.01f,
         octaves = 5,
         persistance = 0.5f,
         redistributionModifier = 4.0f,
@@ -32,8 +32,10 @@ class CanyonBiomeGenerator : LaunchedEffect, BiomeGenerator() {
     )
 
     private lateinit var baseDomainWarping: DomainWarping2D
-    override val startLayerHandler = SurfaceLayerHandler(
-        surfaceBlockType = BlockType.STONE, underSurfaceBlockType = BlockType.STONE
+    override val surfaceLayerHandler = SurfaceLayerHandler(
+        seed = seed,
+        surfaceBlockType = BlockType.STONE,
+        underSurfaceBlockType = BlockType.STONE
     )
 
     override fun launch(gContext: GContext) {
@@ -43,8 +45,8 @@ class CanyonBiomeGenerator : LaunchedEffect, BiomeGenerator() {
 
         baseDomainWarping = getSurfaceDomainWarping(noiceGenerator)
 
-        startLayerHandler
-            .setNext(UndergroundLayerHandler())
+        surfaceLayerHandler
+            .setNext(UndergroundLayerHandler(seed = seed))
             .setNext(CaveLayerHandler(caveNoise))
     }
 
@@ -83,7 +85,7 @@ class CanyonBiomeGenerator : LaunchedEffect, BiomeGenerator() {
             worldPosition.y = chunkData.position.y * chunkData.chunkHeight + y
             val localPosition = IntVector3(x, y, z)
 
-            startLayerHandler.handle(
+            surfaceLayerHandler.handle(
                 chunkData,
                 localPosition,
                 worldPosition,
@@ -105,7 +107,7 @@ class CanyonBiomeGenerator : LaunchedEffect, BiomeGenerator() {
             worldPosition.y = chunkData.position.y * chunkData.chunkHeight + y
             val localPosition = IntVector3(x, y, z)
 
-            startLayerHandler.handle(
+            surfaceLayerHandler.handle(
                 chunkData,
                 localPosition,
                 worldPosition,
