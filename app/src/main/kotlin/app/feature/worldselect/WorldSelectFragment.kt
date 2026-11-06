@@ -92,7 +92,6 @@ class WorldSelectFragment(
                 }
             )
         )
-        createWorldDialog.attach(dialogManager)
 
         worldsTable = Table().apply { top() }
         val scrollPane = ScrollPane(worldsTable).apply {
@@ -101,7 +100,7 @@ class WorldSelectFragment(
         }
 
         val createButton = TextButton("create world", buttonSkin).setOnClickListener {
-            createWorldDialog.show()
+            createWorldDialog.show(dialogManager)
         }
         val loadButton = TextButton("load selected", buttonSkin).setOnClickListener {
             val data = worlds.getOrNull(selectedIndex) ?: return@setOnClickListener
@@ -169,7 +168,7 @@ class WorldSelectFragment(
     override fun onPause() {}
 
     override fun onDestroy() {
-        createWorldDialog.unattach()
+        createWorldDialog.dismiss()
         Gdx.input.inputProcessor = null
         stage.clear()
     }

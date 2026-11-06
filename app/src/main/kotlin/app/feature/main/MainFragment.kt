@@ -1,5 +1,7 @@
 package app.feature.main
 
+import app.feature.dialogs.SettingsDialog
+import app.feature.dialogs.SettingsDialogCallbacks
 import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.assets.AssetManager
 import com.badlogic.gdx.graphics.GL20
@@ -14,10 +16,13 @@ import com.gigapi.fillDraw
 import com.gigapi.fragment.Fragment
 import com.gigapi.general.GContext
 import com.gigapi.setOnClickListener
+import com.gigapi.storage.json.AppConfig
 import com.gigapi.viewport.UnfairViewport
 import core.assets.SkinID
+import core.configs.ConfigTypes
 import core.defaults.CameraTypes
 import core.navigation.Navigation
+import core.settings.SettingsSO
 import core.viewport.ViewportTypes
 
 class MainFragment(
@@ -32,6 +37,7 @@ class MainFragment(
     private lateinit var camera: OrthographicCamera
     private lateinit var viewport: UnfairViewport
     private lateinit var menuBackground: Texture
+    private lateinit var settingsDialog: SettingsDialog
 
     override fun onCreate() {
         spriteBatch = gContext.getObject()
@@ -40,6 +46,16 @@ class MainFragment(
         camera = gContext.getObject(CameraTypes.GL_2D)
         val assetManager = gContext.getObject<AssetManager>()
         menuBackground = assetManager.get<Skin>(SkinID.BLOCK.skin).atlas.textures.first()
+        settingsDialog = SettingsDialog(
+            settingsSO = gContext.getObject<AppConfig<SettingsSO>>(ConfigTypes.SETTINGS_SO).getConfig(),
+            assetManager = assetManager,
+            viewport = viewport,
+            callbacks = SettingsDialogCallbacks(
+                onBack = {
+                    Gdx.input.inputProcessor = stage
+                }
+            )
+        )
 
         val skin = assetManager.get<Skin>(SkinID.BUTTON.skin)
         val menuTable = Table().apply {
@@ -54,7 +70,7 @@ class MainFragment(
             onMultiplayerScreen.invoke()
         }
         val settingsButton = TextButton("Settings", skin).setOnClickListener {
-            println("settingsButton")
+            settingsDialog.show(dialogManager)
         }
         val quitButton = TextButton("Quit", skin).setOnClickListener {
             Gdx.app.exit()
@@ -70,6 +86,7 @@ class MainFragment(
     }
 
     override fun onRender(deltaTime: Float) {
+        if (settingsDialog.isShowed()) return
         Gdx.gl.glClearColor(135 / 255f, 206 / 255f, 235 / 255f, 1f)
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT or GL20.GL_DEPTH_BUFFER_BIT)
         stage.act(deltaTime)
@@ -95,6 +112,7 @@ class MainFragment(
 
     override fun onDestroy() {
         Gdx.input.inputProcessor = null
+        settingsDialog.dismiss()
         stage.clear()
     }
 }

@@ -27,6 +27,15 @@
       down: ic_button_on
     }
   }
+  CheckBoxStyle: {
+    default: {
+      font: small,
+      fontColor: default
+
+      up: ic_button_off
+      down: ic_button_on
+    }
+  }
   ImageButtonStyle: {
     default: {
       up: ic_button_off

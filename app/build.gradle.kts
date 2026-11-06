@@ -14,7 +14,6 @@ dependencies {
 
     api(files("/home/vladimir/Documents/Java/GdxUtils/build/libs/GdxUtils-1.0-SNAPSHOT.jar"))
     api(files("/home/vladimir/Documents/Java/GdxGraphicsUtils/build/libs/GdxGraphicsUtils-1.0-SNAPSHOT.jar"))
-
     api("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.1")
     api("net.onedaybeard.artemis:artemis-odb:2.3.0")
 

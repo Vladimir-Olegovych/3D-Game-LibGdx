@@ -6,7 +6,7 @@ import com.badlogic.gdx.math.Vector3
 object PlayerConstants {
     const val FREE_CAMERA_SPEED = 500f
     const val REACH_DISTANCE = 6f
-    const val PLAYER_SPEED = 100f
+    const val PLAYER_SPEED = 20f
     const val PLAYER_RUN_SPEED = 15f
     const val JUMP_FORCE = 10f
     const val JUMP_FORCE_REVERSE = -10f

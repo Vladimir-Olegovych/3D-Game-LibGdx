@@ -26,6 +26,7 @@ import core.crafting.CraftingRecipeSO
 import core.defaults.PlayerConstants
 import core.items.ItemManager
 import core.navigation.Navigation
+import core.settings.SettingsSO
 import core.viewport.ViewportTypes
 
 class UISystem(
@@ -37,6 +38,8 @@ class UISystem(
     private lateinit var viewport: UnfairViewport
     @Wire(name = ConfigTypes.CRAFTING_RECIPES_SO)
     private lateinit var craftConfig: AppConfig<CraftingRecipeSO>
+    @Wire(name = ConfigTypes.SETTINGS_SO)
+    private lateinit var settingsConfig: AppConfig<SettingsSO>
     @Wire
     private lateinit var stage: Stage
     @Wire
@@ -77,7 +80,6 @@ class UISystem(
                 Gdx.input.isCursorCatched = true
             },
             onResume = {},
-            onSettings = {},
             openLanWorld = openLanWorld,
             onQuit = {
                 onQuit.invoke()
@@ -85,12 +87,13 @@ class UISystem(
         )
         pauseDialog = PauseDialog(
             stage = stage,
+            viewport = viewport,
             navigation = navigation,
             assetManager = assetManager,
+            inputMultiplexer = inputMultiplexer,
+            settingsSO = settingsConfig.getConfig(),
             callbacks = pauseDialogCallbacks
-        ).apply { attach(dialogManager) }
-
-        pauseDialog.attach(dialogManager)
+        )
 
         inventoryDialog = InventoryDialog(
             stage = stage,
@@ -100,7 +103,6 @@ class UISystem(
             craftConfig = craftConfig,
             inventoryComponent = playerInventoryComponent
         )
-        inventoryDialog.attach(dialogManager)
 
         inventoryUI = InventoryUI(
             assetManager = assetManager,
@@ -124,7 +126,7 @@ class UISystem(
             inputMultiplexer.addProcessor(pInputProcessor)
         } else {
             Gdx.input.isCursorCatched = false
-            inventoryDialog.show()
+            inventoryDialog.show(dialogManager)
             inventoryUI.getUI().isVisible = false
             pInputProcessor.clear()
             inputMultiplexer.removeProcessor(pInputProcessor)
@@ -143,7 +145,7 @@ class UISystem(
             inputMultiplexer.addProcessor(pInputProcessor)
         } else {
             Gdx.input.isCursorCatched = false
-            pauseDialog.show()
+            pauseDialog.show(dialogManager)
             pInputProcessor.clear()
             inputMultiplexer.removeProcessor(pInputProcessor)
         }
@@ -160,8 +162,8 @@ class UISystem(
     override fun dispose() {
         uInputProcessor.removeListener(this)
 
-        pauseDialog.unattach()
-        inventoryDialog.unattach()
+        pauseDialog.dismiss()
+        inventoryDialog.dismiss()
         stage.clear()
     }
 }

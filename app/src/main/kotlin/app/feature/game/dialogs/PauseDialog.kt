@@ -1,5 +1,9 @@
 package app.feature.game.dialogs
 
+import app.feature.dialogs.SettingsDialog
+import app.feature.dialogs.SettingsDialogCallbacks
+import com.badlogic.gdx.Gdx
+import com.badlogic.gdx.InputMultiplexer
 import com.badlogic.gdx.assets.AssetManager
 import com.badlogic.gdx.scenes.scene2d.Stage
 import com.badlogic.gdx.scenes.scene2d.ui.Skin
@@ -8,29 +12,46 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextButton
 import com.badlogic.gdx.scenes.scene2d.ui.TextField
 import com.gigapi.dialogs.Dialog
 import com.gigapi.setOnClickListener
+import com.gigapi.storage.json.AppConfig
 import com.gigapi.texture.ColorDrawable
+import com.gigapi.viewport.UnfairViewport
 import core.assets.SkinID
 import core.client.GameServerAddress
 import core.navigation.Navigation
+import core.settings.SettingsSO
 
 class PauseDialogCallbacks(
     val onDismiss: () -> Unit,
     val onResume: () -> Unit,
-    val onSettings: () -> Unit,
     val onQuit: () -> Unit,
     val openLanWorld: (GameServerAddress) -> Boolean
 )
 
 class PauseDialog(
     private val stage: Stage,
+    private val viewport: UnfairViewport,
+    private val settingsSO: SettingsSO,
     private val navigation: Navigation.Game,
     private val assetManager: AssetManager,
+    private val inputMultiplexer: InputMultiplexer,
     private val callbacks: PauseDialogCallbacks
 ) : Dialog() {
 
     private val fullscreenOverlay: Table
 
     init {
+        val settingsCallbacks = SettingsDialogCallbacks(
+            onBack = {
+                Gdx.input.inputProcessor = inputMultiplexer
+            }
+        )
+
+        val settingsDialog = SettingsDialog(
+            settingsSO = settingsSO,
+            assetManager = assetManager,
+            viewport = viewport,
+            callbacks = settingsCallbacks
+        )
         val buttonSkin = assetManager.get<Skin>(SkinID.BUTTON.skin)
 
         val portField = TextField("5551", buttonSkin).apply {
@@ -70,9 +91,7 @@ class PauseDialog(
 
             add(
                 TextButton("settings", buttonSkin).setOnClickListener {
-                    dismiss()
-                    callbacks.onDismiss()
-                    callbacks.onSettings()
+                    dialogManager?.let { settingsDialog.show(it) }
                 }
             ).height(40F).width(70F).padTop(8F).row()
 
